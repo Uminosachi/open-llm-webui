@@ -1,5 +1,6 @@
 # Open CALM WebUI
-This is a web application that executes the Open CALM model released by [CyberAgent, Inc.](https://huggingface.co/cyberagent) on the browser.
+
+This is a web application that executes the [Open CALM model](https://huggingface.co/cyberagent) developed by [CyberAgent, Inc.](https://www.cyberagent.co.jp/) on the browser.
 
 ## Installation
 
@@ -25,7 +26,7 @@ cd open-calm-webui
 pip install -r requirements.txt
 ```
 
-If you are using CUDA 11.7 or CUDA 11.8 or macOS, please use a file with the corresponding suffix instead of the previous one.
+If you are using CUDA 11.7 or CUDA 11.8 or macOS, please use a file with the corresponding suffix (_cu117, _cu118, _mac) instead of the previous one.
 
 ## Running the application
 
