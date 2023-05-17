@@ -13,6 +13,9 @@ def get_open_calm_model_ids():
         list: List of Open CALM model IDs.
     """
     open_calm_model_ids = [
+        "cyberagent/open-calm-small",
+        "cyberagent/open-calm-medium",
+        "cyberagent/open-calm-large",
         "cyberagent/open-calm-1b",
         "cyberagent/open-calm-3b",
         "cyberagent/open-calm-7b",
