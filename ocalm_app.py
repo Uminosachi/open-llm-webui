@@ -25,7 +25,7 @@ def download_model(open_calm_model_id, local_files_only=False):
     try:
         snapshot_download(repo_id=open_calm_model_id, local_files_only=local_files_only)
     except FileNotFoundError:
-        return "Model not found. Please click 'Download model'."
+        return "Model not found. Please click Download model button."
     return "Download completed."
 
 def torch_gc():
