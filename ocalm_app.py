@@ -47,6 +47,9 @@ def open_calm_inference(open_calm_model_id, input_text_box, max_new_tokens, temp
     if dwonload_result != "Download completed.":
         return "", dwonload_result
     
+    if len(input_text_box.strip()) == 0:
+        return "", "Input text is empty."
+    
     print(f"Loading {open_calm_model_id}")
     if platform.system() == "Darwin":
         model = AutoModelForCausalLM.from_pretrained(open_calm_model_id, torch_dtype=torch.float32)
