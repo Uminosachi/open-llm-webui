@@ -1,0 +1,7 @@
+torch==1.13.1
+accelerate==0.18.0
+gradio==3.28.1
+gradio-client==0.1.4
+huggingface-hub==0.14.1
+transformers==4.28.1
+
