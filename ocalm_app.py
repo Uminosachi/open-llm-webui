@@ -4,6 +4,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import time
 import gc
+import platform
 
 def get_open_calm_model_ids():
     """Get Open CALM model IDs.
@@ -44,7 +45,10 @@ def open_calm_inference(open_calm_model_id, input_text_box, max_new_tokens, temp
         return "", dwonload_result
     
     print(f"Loading {open_calm_model_id}")
-    model = AutoModelForCausalLM.from_pretrained(open_calm_model_id, device_map="auto", torch_dtype=torch.float16)
+    if platform.system() == "Darwin":
+        model = AutoModelForCausalLM.from_pretrained(open_calm_model_id, torch_dtype=torch.float32)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(open_calm_model_id, device_map="auto", torch_dtype=torch.float16)
     tokenizer = AutoTokenizer.from_pretrained(open_calm_model_id)
 
     print(f"Generating...")
