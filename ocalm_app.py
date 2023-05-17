@@ -87,7 +87,7 @@ def on_ui_tabs():
                 with gr.Row():
                     with gr.Column():
                         open_calm_model_id = gr.Dropdown(label="Open CALM model ID", elem_id="open_calm_model_id", choices=open_calm_model_ids,
-                                                         value=open_calm_model_ids[1], show_label=True)
+                                                         value=open_calm_model_ids[3], show_label=True)
                     with gr.Column():
                         with gr.Row():
                             download_model_btn = gr.Button("Download model", elem_id="download_model_btn")
