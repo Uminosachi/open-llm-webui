@@ -51,6 +51,8 @@ To download the model:
 * Adjust the values of Max New Tokens, Temperature, Top k, Top p and Repetition penalty as necessary.
 * Click the Generate button.
 
+![UI image](images/open-calm-webui_ui_image_1.png)
+
 ## Model Credit
 
 * **Developed by**: [CyberAgent, Inc.](https://www.cyberagent.co.jp/)
