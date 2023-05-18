@@ -1,6 +1,6 @@
 # Open CALM WebUI
 
-This is a web application that executes the [Open CALM model](https://huggingface.co/cyberagent) developed by [CyberAgent, Inc.](https://www.cyberagent.co.jp/) on the browser.
+This is a web application that executes the [Open CALM model](https://huggingface.co/cyberagent) developed by [CyberAgent, Inc.](https://www.cyberagent.co.jp/) within a browser interface.
 
 ## Installation
 
