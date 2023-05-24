@@ -5,9 +5,11 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import time
 import gc
 import platform
+from transformers import OpenLlamaModel, OpenLlamaConfig
+from transformers import LlamaTokenizer, LlamaForCausalLM
 
 def get_open_calm_model_ids():
-    """Get Open CALM model IDs.
+    """Get Open CALM and Llama model IDs.
 
     Returns:
         list: List of Open CALM model IDs.
@@ -19,6 +21,8 @@ def get_open_calm_model_ids():
         "cyberagent/open-calm-1b",
         "cyberagent/open-calm-3b",
         "cyberagent/open-calm-7b",
+        "decapoda-research/llama-7b-hf",
+        "decapoda-research/llama-13b-hf",
         ]
     return open_calm_model_ids
 
@@ -53,15 +57,25 @@ def open_calm_inference(open_calm_model_id, input_text_box, max_new_tokens, temp
     if len(input_text_box.strip()) == 0:
         return "", "Input text is empty."
     
+    if "open-calm" in open_calm_model_id:
+        model_class = AutoModelForCausalLM
+        tokenizer_class = AutoTokenizer
+    elif "llama" in open_calm_model_id:
+        model_class = LlamaForCausalLM
+        tokenizer_class = LlamaTokenizer
+
     print(f"Loading {open_calm_model_id}")
     if platform.system() == "Darwin":
-        model = AutoModelForCausalLM.from_pretrained(open_calm_model_id, torch_dtype=torch.float32)
+        model = model_class.from_pretrained(open_calm_model_id, torch_dtype=torch.float32)
     else:
-        model = AutoModelForCausalLM.from_pretrained(open_calm_model_id, device_map="auto", torch_dtype=torch.float16)
-    tokenizer = AutoTokenizer.from_pretrained(open_calm_model_id)
+        model = model_class.from_pretrained(open_calm_model_id, device_map="auto", torch_dtype=torch.float16)
+    tokenizer = tokenizer_class.from_pretrained(open_calm_model_id)
 
     print(f"Generating...")
-    inputs = tokenizer(input_text_box, return_tensors="pt").to(model.device)
+    inputs = tokenizer(
+        input_text_box,
+        return_tensors="pt",
+    ).to(model.device)
 
     t1 = time.time()
     with torch.no_grad():

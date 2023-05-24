@@ -5,3 +5,5 @@ gradio-client
 huggingface-hub
 transformers
 safetensors
+sentencepiece
+xformers
