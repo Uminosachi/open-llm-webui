@@ -7,3 +7,4 @@ transformers
 safetensors
 sentencepiece
 xformers
+protobuf==3.20.3

@@ -23,6 +23,7 @@ def get_open_calm_model_ids():
         "cyberagent/open-calm-7b",
         "decapoda-research/llama-7b-hf",
         "decapoda-research/llama-13b-hf",
+        "rinna/japanese-gpt-neox-3.6b",
         ]
     return open_calm_model_ids
 
@@ -63,18 +64,26 @@ def open_calm_inference(open_calm_model_id, input_text_box, max_new_tokens, temp
     elif "llama" in open_calm_model_id:
         model_class = LlamaForCausalLM
         tokenizer_class = LlamaTokenizer
+    elif "japanese-gpt-neox" in open_calm_model_id:
+        model_class = AutoModelForCausalLM
+        tokenizer_class = AutoTokenizer
 
     print(f"Loading {open_calm_model_id}")
     if platform.system() == "Darwin":
         model = model_class.from_pretrained(open_calm_model_id, torch_dtype=torch.float32)
     else:
         model = model_class.from_pretrained(open_calm_model_id, device_map="auto", torch_dtype=torch.float16)
-    tokenizer = tokenizer_class.from_pretrained(open_calm_model_id)
+    
+    tokenizer = tokenizer_class.from_pretrained(
+        open_calm_model_id,
+        use_fast=False if "japanese-gpt-neox" in open_calm_model_id else True,
+    )
 
     print(f"Generating...")
     inputs = tokenizer(
         input_text_box,
         return_tensors="pt",
+        add_special_tokens=False if "japanese-gpt-neox" in open_calm_model_id else True,
     ).to(model.device)
 
     t1 = time.time()
@@ -88,6 +97,8 @@ def open_calm_inference(open_calm_model_id, input_text_box, max_new_tokens, temp
             top_p=top_p,
             repetition_penalty=float(repetition_penalty),
             pad_token_id=tokenizer.pad_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
         )
     t2 = time.time()
     elapsed_time = t2-t1
@@ -102,15 +113,15 @@ def on_ui_tabs():
     open_calm_model_ids = get_open_calm_model_ids()
 
     block = gr.Blocks().queue()
-    block.title = "Open CALM"
+    block.title = "LLM WebUI"
     with block as open_calm_interface:
         with gr.Row():
-            gr.Markdown("## [Open CALM by CyberAgent, Inc.](https://huggingface.co/cyberagent)")
+            gr.Markdown("## LLM WebUI Inference")
         with gr.Row():
             with gr.Column():
                 with gr.Row():
                     with gr.Column():
-                        open_calm_model_id = gr.Dropdown(label="Open CALM model ID", elem_id="open_calm_model_id", choices=open_calm_model_ids,
+                        open_calm_model_id = gr.Dropdown(label="LLM model ID", elem_id="open_calm_model_id", choices=open_calm_model_ids,
                                                          value=open_calm_model_ids[3], show_label=True)
                     with gr.Column():
                         with gr.Row():
