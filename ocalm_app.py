@@ -122,6 +122,7 @@ def open_calm_inference(chatbot, open_calm_model_id, input_text_box, max_new_tok
     print("Generation completed.")
     print("Output text: " + output)
     
+    output = output.replace("\n", "<br>")
     chatbot.append((input_text_box, output))
     return "", chatbot, f"Generation time: {elapsed_time} seconds"
 
