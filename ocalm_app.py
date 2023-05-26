@@ -162,6 +162,9 @@ def on_ui_tabs():
             gr.Markdown("## Open LLM WebUI")
         with gr.Row():
             with gr.Column():
+                chatbot = gr.Chatbot([], elem_id="chatbot").style(height=640)
+            
+            with gr.Column():
                 with gr.Row():
                     with gr.Column():
                         open_calm_model_id = gr.Dropdown(label="LLM model ID", elem_id="open_calm_model_id", choices=open_calm_model_ids,
@@ -184,12 +187,9 @@ def on_ui_tabs():
                     top_k = gr.Slider(minimum=1, maximum=100, step=1, value=50, label="Top k", elem_id="top_k")
                     top_p = gr.Slider(minimum=0.1, maximum=1.0, step=0.1, value=1.0, label="Top p", elem_id="top_p")
                     repetition_penalty = gr.Slider(minimum=1.0, maximum=10.0, step=0.5, value=1.0, label="Repetition penalty", elem_id="repetition_penalty")
-
+                
                 generate_btn = gr.Button("Generate", elem_id="generate_btn")
                 clear_btn = gr.Button("Clear text", elem_id="clear_btn")
-            
-            with gr.Column():
-                chatbot = gr.Chatbot([], elem_id="chatbot").style(height=640)
             
             download_model_btn.click(download_model, inputs=[open_calm_model_id], outputs=[status_text])
             generate_inputs = [chatbot, open_calm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty]
