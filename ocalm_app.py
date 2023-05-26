@@ -113,8 +113,7 @@ def open_calm_inference(chatbot, open_calm_model_id, input_text_box, max_new_tok
     if "japanese-gpt-neox" in open_calm_model_id:
         output = output.replace("<NL>", "\n")
     print("Generation completed.")
-
-    # return output, f"Generation time: {elapsed_time} seconds"
+    
     chatbot.append((input_text_box, f"{open_calm_model_id}: " + output))
     return "", chatbot, f"Generation time: {elapsed_time} seconds"
 
@@ -138,7 +137,6 @@ def on_ui_tabs():
                         with gr.Row():
                             status_text = gr.Textbox(label="", max_lines=1, show_label=False, interactive=False)
                 
-                # input_text_box = gr.Textbox(label="Input text", elem_id="input_text_box", placeholder="Input text here", max_lines=16, show_label=True)
                 input_text_box = gr.Textbox(
                     label="Input text",
                     placeholder="Send a message",
@@ -153,19 +151,17 @@ def on_ui_tabs():
                     repetition_penalty = gr.Slider(minimum=1.0, maximum=10.0, step=0.5, value=1.0, label="Repetition penalty", elem_id="repetition_penalty")
 
                 generate_btn = gr.Button("Generate", elem_id="generate_btn")
-                # output_text_box = gr.Textbox(label="Output text", elem_id="output_text_box", placeholder="Output text here", show_label=True, interactive=False)
-                clear_btn = gr.Button("Clear", elem_id="clear_btn")
+                clear_btn = gr.Button("Clear text", elem_id="clear_btn")
             
             with gr.Column():
                 chatbot = gr.Chatbot([], elem_id="chatbot").style(height=640)
             
             download_model_btn.click(download_model, inputs=[open_calm_model_id], outputs=[status_text])
             generate_inputs = [chatbot, open_calm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty]
-            # generate_btn.click(open_calm_inference, inputs=generate_inputs, outputs=[output_text_box, status_text])
             generate_btn.click(open_calm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text], queue=False)
             input_text_box.submit(open_calm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text], queue=False)
             
-            clear_btn.click(lambda: None, None, chatbot, queue=False)
+            clear_btn.click(lambda: [None, None], None, [input_text_box, chatbot], queue=False)
             
     return [(open_calm_interface, "Open CALM", "open_calm")]
 

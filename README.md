@@ -49,7 +49,7 @@ To download the model:
 
 * Enter your message in the Input text box.
 * Adjust the values of Max New Tokens, Temperature, Top k, Top p and Repetition penalty as necessary.
-* Click the Generate button.
+* Press Enter on your keyboard or click the "Generate" button.
 
 ![UI image](images/open-calm-webui_ui_image_1.png)
 
