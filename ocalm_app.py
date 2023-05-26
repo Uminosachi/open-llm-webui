@@ -29,6 +29,15 @@ def get_open_calm_model_ids():
     return open_calm_model_ids
 
 def download_model(open_calm_model_id, local_files_only=False):
+    """Download Open CALM and Llama models.
+
+    Args:
+        open_calm_model_id (str): String of Open CALM model ID.
+        local_files_only (bool, optional): If True, use only local files. Defaults to False.
+
+    Returns:
+        str: string of download result.
+    """
     if not local_files_only:
         print(f"Downloading {open_calm_model_id}")
     try:
@@ -50,6 +59,21 @@ def clear_cache():
     torch_gc()
 
 def open_calm_inference(chatbot, open_calm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty):
+    """Open CALM inference.
+
+    Args:
+        chatbot (list): Chatbot history.
+        open_calm_model_id (str): String of Open CALM model ID.
+        input_text_box (str): Input text.
+        max_new_tokens (int): Parameter for generate method.
+        temperature (float): Parameter for generate method.
+        top_k (int): Parameter for generate method.
+        top_p (float): Parameter for generate method.
+        repetition_penalty (float): Parameter for generate method.
+
+    Returns:
+        tuple(str, list, str): Input text, chatbot history, and inference result.
+    """
     clear_cache()
     if input_text_box is None or len(input_text_box.strip()) == 0:
         return "", chatbot, "Input text is empty."
@@ -88,7 +112,7 @@ def open_calm_inference(chatbot, open_calm_model_id, input_text_box, max_new_tok
         use_fast=False if "japanese-gpt-neox" in open_calm_model_id else True,
     )
 
-    print("Input text: " + input_text_box if "instruction-sft" not in open_calm_model_id else sft_input_text)
+    print("Input text: " + (input_text_box if "instruction-sft" not in open_calm_model_id else sft_input_text))
     print(f"Generating...")
     inputs = tokenizer(
         input_text_box if "instruction-sft" not in open_calm_model_id else sft_input_text,
@@ -116,7 +140,6 @@ def open_calm_inference(chatbot, open_calm_model_id, input_text_box, max_new_tok
 
     output = tokenizer.decode(tokens[0], skip_special_tokens=True)
     if "instruction-sft" in open_calm_model_id:
-        print(output)
         output = output.split("<NL>")[-1].replace("システム: ", "")
 
     print("Generation completed.")
