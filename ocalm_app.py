@@ -58,10 +58,7 @@ def open_calm_inference(chatbot, open_calm_model_id, input_text_box, max_new_tok
     
     dwonload_result = download_model(open_calm_model_id, local_files_only=True)
     if dwonload_result != "Download completed.":
-        return "", dwonload_result
-    
-    if len(input_text_box.strip()) == 0:
-        return "", "Input text is empty."
+        return input_text_box, chatbot, dwonload_result
     
     if "open-calm" in open_calm_model_id:
         model_class = AutoModelForCausalLM
@@ -72,7 +69,14 @@ def open_calm_inference(chatbot, open_calm_model_id, input_text_box, max_new_tok
     elif "japanese-gpt-neox" in open_calm_model_id:
         model_class = AutoModelForCausalLM
         tokenizer_class = AutoTokenizer
-
+        
+        if "instruction-sft" in open_calm_model_id:
+            sft_input_text = []
+            for user_text, system_text in chatbot:
+                sft_input_text.append("ユーザー: " + user_text + "<NL>システム: " + system_text)
+        
+            sft_input_text = "<NL>".join(sft_input_text) + "<NL>ユーザー: " + input_text_box + "<NL>システム: "
+    
     print(f"Loading {open_calm_model_id}")
     if platform.system() == "Darwin":
         model = model_class.from_pretrained(open_calm_model_id, torch_dtype=torch.float32)
@@ -84,9 +88,10 @@ def open_calm_inference(chatbot, open_calm_model_id, input_text_box, max_new_tok
         use_fast=False if "japanese-gpt-neox" in open_calm_model_id else True,
     )
 
+    print("Input text: " + input_text_box if "instruction-sft" not in open_calm_model_id else sft_input_text)
     print(f"Generating...")
     inputs = tokenizer(
-        input_text_box,
+        input_text_box if "instruction-sft" not in open_calm_model_id else sft_input_text,
         return_tensors="pt",
         add_special_tokens=False if "japanese-gpt-neox" in open_calm_model_id else True,
     ).to(model.device)
@@ -110,11 +115,14 @@ def open_calm_inference(chatbot, open_calm_model_id, input_text_box, max_new_tok
     print(f"Generation time: {elapsed_time} seconds")
 
     output = tokenizer.decode(tokens[0], skip_special_tokens=True)
-    if "japanese-gpt-neox" in open_calm_model_id:
-        output = output.replace("<NL>", "\n")
+    if "instruction-sft" in open_calm_model_id:
+        print(output)
+        output = output.split("<NL>")[-1].replace("システム: ", "")
+
     print("Generation completed.")
+    print("Output text: " + output)
     
-    chatbot.append((input_text_box, f"{open_calm_model_id}: " + output))
+    chatbot.append((input_text_box, output))
     return "", chatbot, f"Generation time: {elapsed_time} seconds"
 
 def on_ui_tabs():
