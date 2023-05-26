@@ -24,6 +24,7 @@ def get_open_calm_model_ids():
         "decapoda-research/llama-7b-hf",
         "decapoda-research/llama-13b-hf",
         "rinna/japanese-gpt-neox-3.6b",
+        "rinna/japanese-gpt-neox-3.6b-instruction-sft",
         ]
     return open_calm_model_ids
 
@@ -105,6 +106,8 @@ def open_calm_inference(open_calm_model_id, input_text_box, max_new_tokens, temp
     print(f"Generation time: {elapsed_time} seconds")
 
     output = tokenizer.decode(tokens[0], skip_special_tokens=True)
+    if "japanese-gpt-neox" in open_calm_model_id:
+        output = output.replace("<NL>", "\n")
     print("Generation completed.")
 
     return output, f"Generation time: {elapsed_time} seconds"
