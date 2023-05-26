@@ -15,6 +15,8 @@ def get_open_calm_model_ids():
         list: List of Open CALM model IDs.
     """
     open_calm_model_ids = [
+        "rinna/japanese-gpt-neox-3.6b",
+        "rinna/japanese-gpt-neox-3.6b-instruction-sft",
         "cyberagent/open-calm-small",
         "cyberagent/open-calm-medium",
         "cyberagent/open-calm-large",
@@ -23,8 +25,6 @@ def get_open_calm_model_ids():
         "cyberagent/open-calm-7b",
         "decapoda-research/llama-7b-hf",
         "decapoda-research/llama-13b-hf",
-        "rinna/japanese-gpt-neox-3.6b",
-        "rinna/japanese-gpt-neox-3.6b-instruction-sft",
         ]
     return open_calm_model_ids
 
@@ -165,7 +165,7 @@ def on_ui_tabs():
                 with gr.Row():
                     with gr.Column():
                         open_calm_model_id = gr.Dropdown(label="LLM model ID", elem_id="open_calm_model_id", choices=open_calm_model_ids,
-                                                         value=open_calm_model_ids[3], show_label=True)
+                                                         value=open_calm_model_ids[1], show_label=True)
                     with gr.Column():
                         with gr.Row():
                             download_model_btn = gr.Button("Download model", elem_id="download_model_btn")
