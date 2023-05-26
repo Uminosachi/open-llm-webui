@@ -98,8 +98,11 @@ def open_calm_inference(chatbot, open_calm_model_id, input_text_box, max_new_tok
             sft_input_text = []
             for user_text, system_text in chatbot:
                 sft_input_text.append("ユーザー: " + user_text + "<NL>システム: " + system_text)
-        
-            sft_input_text = "<NL>".join(sft_input_text) + "<NL>ユーザー: " + input_text_box + "<NL>システム: "
+
+            if len(sft_input_text) > 0:
+                sft_input_text = "<NL>".join(sft_input_text) + "<NL>ユーザー: " + input_text_box + "<NL>システム: "
+            else:
+                sft_input_text = "ユーザー: " + input_text_box + "<NL>システム: "
     
     print(f"Loading {open_calm_model_id}")
     if platform.system() == "Darwin":
