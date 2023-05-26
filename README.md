@@ -1,4 +1,4 @@
-# LLM WebUI Inference
+# Open LLM WebUI
 
 This repository contains a web application designed to execute Large Language Models (LLMs), such as the [Open CALM model](https://huggingface.co/cyberagent).
 

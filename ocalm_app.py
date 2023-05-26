@@ -153,10 +153,10 @@ def on_ui_tabs():
     open_calm_model_ids = get_open_calm_model_ids()
 
     block = gr.Blocks().queue()
-    block.title = "LLM WebUI"
+    block.title = "Open LLM WebUI"
     with block as open_calm_interface:
         with gr.Row():
-            gr.Markdown("## LLM WebUI Inference")
+            gr.Markdown("## Open LLM WebUI")
         with gr.Row():
             with gr.Column():
                 with gr.Row():
