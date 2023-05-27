@@ -49,6 +49,12 @@ def download_model(open_calm_model_id, local_files_only=False):
 
     return "Download completed."
 
+model_cache = dict(
+    preloaded_model_id=None,
+    preloaded_model=None,
+    preloaded_tokenizer=None,
+)
+
 def torch_gc():
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
@@ -75,6 +81,8 @@ def open_calm_inference(chatbot, open_calm_model_id, input_text_box, max_new_tok
         tuple(str, list, str): Input text, chatbot history, and inference result.
     """
     clear_cache()
+    global model_cache
+    
     if input_text_box is None or len(input_text_box.strip()) == 0:
         return "", chatbot, "Input text is empty."
     
@@ -105,15 +113,31 @@ def open_calm_inference(chatbot, open_calm_model_id, input_text_box, max_new_tok
                 sft_input_text = "ユーザー: " + input_text_box + "<NL>システム: "
     
     print(f"Loading {open_calm_model_id}")
-    if platform.system() == "Darwin":
-        model = model_class.from_pretrained(open_calm_model_id, torch_dtype=torch.float32)
+    if (model_cache.get("preloaded_model_id") != open_calm_model_id or 
+        model_cache.get("preloaded_model") is None or 
+        model_cache.get("preloaded_tokenizer") is None):
+        
+        for key in model_cache.keys():
+            model_cache[key] = None
+        clear_cache()
+        
+        if platform.system() == "Darwin":
+            model = model_class.from_pretrained(open_calm_model_id, torch_dtype=torch.float32)
+        else:
+            model = model_class.from_pretrained(open_calm_model_id, device_map="auto", torch_dtype=torch.float16)
+        
+        tokenizer = tokenizer_class.from_pretrained(
+            open_calm_model_id,
+            use_fast=False if "japanese-gpt-neox" in open_calm_model_id else True,
+        )
+        
+        model_cache["preloaded_model_id"] = open_calm_model_id
+        model_cache["preloaded_model"] = model
+        model_cache["preloaded_tokenizer"] = tokenizer
     else:
-        model = model_class.from_pretrained(open_calm_model_id, device_map="auto", torch_dtype=torch.float16)
-    
-    tokenizer = tokenizer_class.from_pretrained(
-        open_calm_model_id,
-        use_fast=False if "japanese-gpt-neox" in open_calm_model_id else True,
-    )
+        print("Using preloaded model")
+        model = model_cache["preloaded_model"]
+        tokenizer = model_cache["preloaded_tokenizer"]
 
     print("Input text: " + (input_text_box if "instruction-sft" not in open_calm_model_id else sft_input_text))
     print(f"Generating...")
