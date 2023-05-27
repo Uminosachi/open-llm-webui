@@ -287,7 +287,10 @@ def open_calm_inference(chatbot, open_calm_model_id, input_text_box, max_new_tok
 
 def user(message, history):
     # Append the user's message to the conversation history
-    return message, history + [[message, ""]]
+    if len(message.strip()) > 0:
+        return message, history + [[message, ""]]
+    else:
+        return message, history
 
 def on_ui_tabs():
     open_calm_model_ids = get_open_calm_model_ids()
