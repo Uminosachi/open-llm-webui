@@ -1,6 +1,6 @@
 # Open LLM WebUI
 
-This repository contains a web application designed to execute Large Language Models (LLMs), such as the [Open CALM model](https://huggingface.co/cyberagent).
+This repository contains a web application designed to execute Large Language Models (LLMs), such as the [Open CALM model](https://huggingface.co/cyberagent) and the [Japanese GPT-NeoX model](https://huggingface.co/rinna/japanese-gpt-neox-3.6b-instruction-sft).
 
 ## Installation
 

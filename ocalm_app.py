@@ -69,18 +69,14 @@ def get_model_and_tokenizer_class(open_calm_model_id):
     Returns:
         tuple(class, class): Tuple of model and tokenizer class.
     """
-    if "open-calm" in open_calm_model_id:
+    if ("open-calm" in open_calm_model_id or
+        "japanese-gpt-neox" in open_calm_model_id or
+        "stablelm" in open_calm_model_id):
         model_class = AutoModelForCausalLM
         tokenizer_class = AutoTokenizer
     elif "llama" in open_calm_model_id:
         model_class = LlamaForCausalLM
         tokenizer_class = LlamaTokenizer
-    elif "japanese-gpt-neox" in open_calm_model_id:
-        model_class = AutoModelForCausalLM
-        tokenizer_class = AutoTokenizer
-    elif "stablelm" in open_calm_model_id:
-        model_class = AutoModelForCausalLM
-        tokenizer_class = AutoTokenizer
     else:
         model_class = AutoModelForCausalLM
         tokenizer_class = AutoTokenizer
@@ -112,36 +108,6 @@ def create_prompt(chatbot, open_calm_model_id, input_text_box):
         prompt = input_text_box
     
     return prompt
-
-def retreive_output_text(output_text, open_calm_model_id):
-    """Retreive output text from generate method.
-
-    Args:
-        output_text (str): Output text from generate method.
-        open_calm_model_id (str): String of Open CALM model ID.
-
-    Returns:
-        str: Retreived output text.
-    """
-    global model_cache
-    
-    if "instruction-sft" in open_calm_model_id:
-        output_text = output_text.split("<NL>")[-1].replace("システム: ", "")
-    elif "stablelm" in open_calm_model_id:
-        if model_cache.get("preloaded_streamer") is not None:
-            streamer = model_cache.get("preloaded_streamer")
-            partial_text = ""
-            for new_text in streamer:
-                # print(new_text)
-                partial_text += new_text
-            
-            output_text = partial_text
-        else:
-            output_text = output_text
-    else:
-        output_text = output_text
-    
-    return output_text
 
 def get_generate_kwargs(tokenizer, inputs, open_calm_model_id, generate_params):
     """Get generate kwargs.
@@ -182,6 +148,36 @@ def get_generate_kwargs(tokenizer, inputs, open_calm_model_id, generate_params):
         generate_kwargs.update(stablelm_generate_kwargs)
     
     return generate_kwargs
+
+def retreive_output_text(output_text, open_calm_model_id):
+    """Retreive output text from generate method.
+
+    Args:
+        output_text (str): Output text from generate method.
+        open_calm_model_id (str): String of Open CALM model ID.
+
+    Returns:
+        str: Retreived output text.
+    """
+    global model_cache
+    
+    if "instruction-sft" in open_calm_model_id:
+        output_text = output_text.split("<NL>")[-1].replace("システム: ", "")
+    elif "stablelm" in open_calm_model_id:
+        if model_cache.get("preloaded_streamer") is not None:
+            streamer = model_cache.get("preloaded_streamer")
+            partial_text = ""
+            for new_text in streamer:
+                # print(new_text)
+                partial_text += new_text
+            
+            output_text = partial_text
+        else:
+            output_text = output_text
+    else:
+        output_text = output_text
+    
+    return output_text
 
 def torch_gc():
     if torch.cuda.is_available():
@@ -303,7 +299,7 @@ def on_ui_tabs():
             gr.Markdown("## Open LLM WebUI")
         with gr.Row():
             with gr.Column():
-                chatbot = gr.Chatbot([], elem_id="chatbot").style(height=640)
+                chatbot = gr.Chatbot(value=[], elem_id="chatbot").style(height=640)
             
             with gr.Column():
                 with gr.Row():
@@ -325,16 +321,16 @@ def on_ui_tabs():
                 max_new_tokens = gr.Slider(minimum=1, maximum=512, step=1, value=64, label="Max new tokens", elem_id="max_new_tokens")
                 with gr.Accordion("Advanced options", open=False):
                     temperature = gr.Slider(minimum=0.1, maximum=1.0, step=0.1, value=0.7, label="Temperature", elem_id="temperature")
-                    top_k = gr.Slider(minimum=1, maximum=1000, step=1, value=50, label="Top k", elem_id="top_k")
+                    top_k = gr.Slider(minimum=1, maximum=200, step=1, value=50, label="Top k", elem_id="top_k")
                     top_p = gr.Slider(minimum=0.1, maximum=1.0, step=0.1, value=1.0, label="Top p", elem_id="top_p")
-                    repetition_penalty = gr.Slider(minimum=1.0, maximum=10.0, step=0.5, value=1.0, label="Repetition penalty", elem_id="repetition_penalty")
+                    repetition_penalty = gr.Slider(minimum=1.0, maximum=10.0, step=0.1, value=1.0, label="Repetition penalty", elem_id="repetition_penalty")
                 
                 generate_btn = gr.Button("Generate", elem_id="generate_btn")
                 clear_btn = gr.Button("Clear text", elem_id="clear_btn")
             
             download_model_btn.click(fn=download_model, inputs=[open_calm_model_id], outputs=[status_text])
-            generate_inputs = [chatbot, open_calm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty]
             
+            generate_inputs = [chatbot, open_calm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty]
             generate_btn.click(fn=user, inputs=[input_text_box, chatbot], outputs=[input_text_box, chatbot], queue=False).then(
                 fn=open_calm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text], queue=False)
             input_text_box.submit(fn=user, inputs=[input_text_box, chatbot], outputs=[input_text_box, chatbot], queue=False).then(
