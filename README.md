@@ -6,32 +6,36 @@ This repository contains a web application designed to execute Large Language Mo
 
 Please follow these steps to install the software:
 
-1. Create a new conda environment:
+* Create a new conda environment:
 
 ```bash
-conda create -n calm python=3.10
-conda activate calm
+conda create -n ollm python=3.10
+conda activate ollm
 ```
 
-2. Clone the software repository:
+* Clone the software repository:
 
 ```bash
-git clone https://github.com/Uminosachi/open-calm-webui.git
-cd open-calm-webui
+git clone https://github.com/Uminosachi/open-llm-webui.git
+cd open-llm-webui
 ```
 
-3. Install the required Python packages:
+* For the CUDA environment, install the following packages:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-If you are using CUDA 11.7 or CUDA 11.8 or macOS, please use a file with the corresponding suffix (_cu117, _cu118, _mac) instead of the previous one.
+* If you are using macOS, please install the package from the following file instead:
+
+```bash
+pip install -r requirements_mac.txt
+```
 
 ## Running the application
 
 ```bash
-python ocalm_app.py
+python ollm_app.py
 ```
 
 * Open http://127.0.0.1:7860/ in your browser.
@@ -41,7 +45,7 @@ python ocalm_app.py
 To download the model:
 
 1. Launch this application.
-2. Click on the "Download model" button next to the Open CALM model ID.
+2. Click on the "Download model" button next to the Open LLM model ID.
 3. Wait for the download to complete.
 4. The downloaded model file will be stored in the `.cache/huggingface/hub` directory of your home directory.
 
@@ -51,7 +55,7 @@ To download the model:
 * Adjust the values of Max New Tokens, Temperature, Top k, Top p and Repetition penalty as necessary.
 * Press Enter on your keyboard or click the "Generate" button.
 
-![UI image](images/open-calm-webui_ui_image_1.png)
+![UI image](images/open-ollm-webui_ui_image_1.png)
 
 ## Model Credit
 
