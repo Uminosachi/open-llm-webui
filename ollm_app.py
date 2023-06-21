@@ -9,7 +9,7 @@ from transformers import OpenLlamaModel, OpenLlamaConfig
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import TextIteratorStreamer, StoppingCriteriaList
 from stablelm import StopOnTokens, start_message
-from translator import translate
+from translator import load_translator, translate
 
 _DOWNLOAD_COMPLETED = "Download complete"
 
@@ -310,6 +310,12 @@ def user(message, history, translate_chk):
     else:
         return message, history
 
+def translate_change(translate_chk):
+    if translate_chk:
+        load_translator()
+    
+    return "", "Translation enabled" if translate_chk else "Translation disabled"
+
 def on_ui_tabs():
     ollm_model_ids = get_ollm_model_ids()
     ollm_model_index = ollm_model_ids.index("rinna/japanese-gpt-neox-3.6b-instruction-ppo") if "rinna/japanese-gpt-neox-3.6b-instruction-ppo" in ollm_model_ids else 0
@@ -321,7 +327,7 @@ def on_ui_tabs():
             gr.Markdown("## Open LLM WebUI")
         with gr.Row():
             with gr.Column():
-                chatbot = gr.Chatbot(value=[], elem_id="chatbot").style(height=640)
+                chatbot = gr.Chatbot(value=[], elem_id="chatbot", height=640)
             
             with gr.Column():
                 with gr.Row():
@@ -349,18 +355,19 @@ def on_ui_tabs():
                     repetition_penalty = gr.Slider(minimum=1.0, maximum=10.0, step=0.1, value=1.0, label="Repetition penalty", elem_id="repetition_penalty")
                 
                 generate_btn = gr.Button("Generate", elem_id="generate_btn")
-                translated_output_text = gr.Textbox(label="Translated output text", show_label=True, interactive=False)
+                translated_output_text = gr.Textbox(label="Translated output text", show_label=True, lines=3, interactive=False)
                 clear_btn = gr.Button("Clear text", elem_id="clear_btn")
             
             download_model_btn.click(fn=download_model, inputs=[ollm_model_id], outputs=[status_text])
+            translate_chk.change(fn=translate_change, inputs=[translate_chk], outputs=[input_text_box, status_text])
             
             generate_inputs = [chatbot, ollm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk]
-            generate_btn.click(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot], queue=False).then(
-                fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, translated_output_text], queue=False)
-            input_text_box.submit(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot], queue=False).then(
-                fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, translated_output_text], queue=False)
+            generate_btn.click(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot]).then(
+                fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, translated_output_text])
+            input_text_box.submit(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot]).then(
+                fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, translated_output_text])
             
-            clear_btn.click(lambda: [None, None], None, [input_text_box, chatbot], queue=False)
+            clear_btn.click(lambda: [None, None], None, [input_text_box, chatbot])
             
     return [(ollm_interface, "Open LLM", "open_llm")]
 
