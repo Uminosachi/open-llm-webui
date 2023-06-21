@@ -291,6 +291,8 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     if translate_chk:
         translated_output_text = translate(output, "en", "ja")
         print("Translated output text: " + translated_output_text)
+    else:
+        translated_output_text = ""
 
     output = output.replace("\n", "<br>")
     # chatbot.append((input_text_box, output))
