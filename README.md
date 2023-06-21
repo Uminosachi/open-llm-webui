@@ -54,6 +54,7 @@ To download the model:
 * Enter your message in the Input text box.
 * Adjust the values of Max New Tokens, Temperature, Top k, Top p and Repetition penalty as necessary.
 * Press Enter on your keyboard or click the "Generate" button.
+* When you check the `Translate (ja->en/en->ja)`, Japanese input will be translated into English. Likewise, the responses will be translated back into Japanese.
 
 ![UI image](images/open-ollm-webui_ui_image_1.png)
 

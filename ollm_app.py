@@ -9,6 +9,7 @@ from transformers import OpenLlamaModel, OpenLlamaConfig
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import TextIteratorStreamer, StoppingCriteriaList
 from stablelm import StopOnTokens, start_message
+from translator import translate
 
 _DOWNLOAD_COMPLETED = "Download complete"
 
@@ -194,7 +195,7 @@ def clear_cache():
     gc.collect()
     torch_gc()
 
-def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty):
+def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk):
     """Open LLM inference.
 
     Args:
@@ -222,13 +223,13 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     )
     
     if input_text_box is None or len(input_text_box.strip()) == 0:
-        return "", chatbot, "Input text is empty."
+        return "", chatbot, "Input text is empty.", ""
     
     chatbot = [] if chatbot is None else chatbot
     
     dwonload_result = download_model(ollm_model_id, local_files_only=True)
     if dwonload_result != _DOWNLOAD_COMPLETED:
-        return input_text_box, chatbot, dwonload_result
+        return input_text_box, chatbot, dwonload_result, ""
     
     model_class, tokenizer_class = get_model_and_tokenizer_class(ollm_model_id)
     
@@ -287,15 +288,22 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     print("Generation complete")
     print("Output text: " + output)
     
+    if translate_chk:
+        translated_output_text = translate(output, "en", "ja")
+        print("Translated output text: " + translated_output_text)
+
     output = output.replace("\n", "<br>")
     # chatbot.append((input_text_box, output))
     chatbot[-1][1] = output
     
-    return "", chatbot, f"Generation time: {elapsed_time} seconds"
+    return "", chatbot, f"Generation time: {elapsed_time} seconds", translated_output_text
 
-def user(message, history):
+def user(message, history, translate_chk):
     # Append the user's message to the conversation history
     if len(message.strip()) > 0:
+        if translate_chk:
+            message = translate(message, "ja", "en")
+            print("Translated input text: " + message)
         return message, history + [[message, ""]]
     else:
         return message, history
@@ -318,6 +326,7 @@ def on_ui_tabs():
                     with gr.Column():
                         ollm_model_id = gr.Dropdown(label="LLM model ID", elem_id="ollm_model_id", choices=ollm_model_ids,
                                                          value=ollm_model_ids[ollm_model_index], show_label=True)
+                        translate_chk = gr.Checkbox(label="Translate (ja->en/en->ja)", elem_id="translate_chk", value=False, show_label=True)
                     with gr.Column():
                         with gr.Row():
                             download_model_btn = gr.Button("Download model", elem_id="download_model_btn")
@@ -338,15 +347,16 @@ def on_ui_tabs():
                     repetition_penalty = gr.Slider(minimum=1.0, maximum=10.0, step=0.1, value=1.0, label="Repetition penalty", elem_id="repetition_penalty")
                 
                 generate_btn = gr.Button("Generate", elem_id="generate_btn")
+                translated_output_text = gr.Textbox(label="Translated output text", show_label=True, interactive=False)
                 clear_btn = gr.Button("Clear text", elem_id="clear_btn")
             
             download_model_btn.click(fn=download_model, inputs=[ollm_model_id], outputs=[status_text])
             
-            generate_inputs = [chatbot, ollm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty]
-            generate_btn.click(fn=user, inputs=[input_text_box, chatbot], outputs=[input_text_box, chatbot], queue=False).then(
-                fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text], queue=False)
-            input_text_box.submit(fn=user, inputs=[input_text_box, chatbot], outputs=[input_text_box, chatbot], queue=False).then(
-                fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text], queue=False)
+            generate_inputs = [chatbot, ollm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk]
+            generate_btn.click(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot], queue=False).then(
+                fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, translated_output_text], queue=False)
+            input_text_box.submit(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot], queue=False).then(
+                fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, translated_output_text], queue=False)
             
             clear_btn.click(lambda: [None, None], None, [input_text_box, chatbot], queue=False)
             
