@@ -327,36 +327,42 @@ def on_ui_tabs():
             gr.Markdown("## Open LLM WebUI")
         with gr.Row():
             with gr.Column():
-                chatbot = gr.Chatbot(value=[], elem_id="chatbot", height=640)
+                with gr.Row():
+                    chatbot = gr.Chatbot(value=[], elem_id="chatbot", height=640)
             
             with gr.Column():
                 with gr.Row():
                     with gr.Column():
-                        ollm_model_id = gr.Dropdown(label="LLM model ID", elem_id="ollm_model_id", choices=ollm_model_ids,
-                                                         value=ollm_model_ids[ollm_model_index], show_label=True)
-                        translate_chk = gr.Checkbox(label="Translate (ja->en/en->ja)", elem_id="translate_chk", value=False, show_label=True)
+                        with gr.Row():
+                            ollm_model_id = gr.Dropdown(label="LLM model ID", elem_id="ollm_model_id", choices=ollm_model_ids,
+                                                        value=ollm_model_ids[ollm_model_index], show_label=True)
+                        with gr.Row():
+                            translate_chk = gr.Checkbox(label="Translate (ja->en/en->ja)", elem_id="translate_chk", value=False, show_label=True)
                     with gr.Column():
                         with gr.Row():
                             download_model_btn = gr.Button("Download model", elem_id="download_model_btn")
                         with gr.Row():
                             status_text = gr.Textbox(label="", max_lines=1, show_label=False, interactive=False)
-                
-                input_text_box = gr.Textbox(
-                    label="Input text",
-                    placeholder="Send a message",
-                    show_label=True,
-                )
-                
-                max_new_tokens = gr.Slider(minimum=1, maximum=512, step=1, value=128, label="Max new tokens", elem_id="max_new_tokens")
-                with gr.Accordion("Advanced options", open=False):
-                    temperature = gr.Slider(minimum=0.1, maximum=1.0, step=0.1, value=0.7, label="Temperature", elem_id="temperature")
-                    top_k = gr.Slider(minimum=1, maximum=200, step=1, value=50, label="Top k", elem_id="top_k")
-                    top_p = gr.Slider(minimum=0.1, maximum=1.0, step=0.1, value=1.0, label="Top p", elem_id="top_p")
-                    repetition_penalty = gr.Slider(minimum=1.0, maximum=10.0, step=0.1, value=1.0, label="Repetition penalty", elem_id="repetition_penalty")
-                
-                generate_btn = gr.Button("Generate", elem_id="generate_btn")
-                translated_output_text = gr.Textbox(label="Translated output text", show_label=True, lines=3, interactive=False)
-                clear_btn = gr.Button("Clear text", elem_id="clear_btn")
+                with gr.Row():
+                    input_text_box = gr.Textbox(
+                        label="Input text",
+                        placeholder="Send a message",
+                        show_label=True,
+                    )
+                with gr.Row():
+                    max_new_tokens = gr.Slider(minimum=1, maximum=512, step=1, value=128, label="Max new tokens", elem_id="max_new_tokens")
+                with gr.Row():
+                    with gr.Accordion("Advanced options", open=False):
+                        temperature = gr.Slider(minimum=0.1, maximum=1.0, step=0.1, value=0.7, label="Temperature", elem_id="temperature")
+                        top_k = gr.Slider(minimum=1, maximum=200, step=1, value=50, label="Top k", elem_id="top_k")
+                        top_p = gr.Slider(minimum=0.1, maximum=1.0, step=0.1, value=1.0, label="Top p", elem_id="top_p")
+                        repetition_penalty = gr.Slider(minimum=1.0, maximum=10.0, step=0.1, value=1.0, label="Repetition penalty", elem_id="repetition_penalty")
+                with gr.Row():                
+                    generate_btn = gr.Button("Generate", elem_id="generate_btn")
+                with gr.Row():
+                    translated_output_text = gr.Textbox(label="Translated output text", show_label=True, lines=3, interactive=False)
+                with gr.Row():
+                    clear_btn = gr.Button("Clear text", elem_id="clear_btn")
             
             download_model_btn.click(fn=download_model, inputs=[ollm_model_id], outputs=[status_text])
             translate_chk.change(fn=translate_change, inputs=[translate_chk], outputs=[input_text_box, status_text])
