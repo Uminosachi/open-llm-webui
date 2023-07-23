@@ -1,12 +1,13 @@
-from transformers import pipeline
 import pysbd
 from tqdm import tqdm
+from transformers import pipeline
 
 seg_en = pysbd.Segmenter(language="en", clean=False)
 seg_ja = pysbd.Segmenter(language="ja", clean=False)
 
 translator_en_ja = None
 translator_ja_en = None
+
 
 def load_translator():
     global translator_en_ja, translator_ja_en
@@ -21,6 +22,7 @@ def load_translator():
         # translator_ja_en = pipeline("translation",
         #                             model="facebook/mbart-large-50-one-to-many-mmt",
         #                             src_lang="ja_XX", tgt_lang="en_XX")
+
 
 def translate(text, src_lang, tgt_lang):
     load_translator()

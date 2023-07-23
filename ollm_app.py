@@ -1,13 +1,15 @@
-import gradio as gr
-from huggingface_hub import snapshot_download
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import time
 import gc
 import platform
-from transformers import OpenLlamaModel, OpenLlamaConfig
-from transformers import LlamaTokenizer, LlamaForCausalLM
-from transformers import TextIteratorStreamer, StoppingCriteriaList
+import time
+
+import gradio as gr
+import torch
+from huggingface_hub import snapshot_download
+# from transformers import OpenLlamaModel, OpenLlamaConfig
+from transformers import (AutoModelForCausalLM, AutoTokenizer,
+                          LlamaForCausalLM, LlamaTokenizer,
+                          StoppingCriteriaList, TextIteratorStreamer)
+
 from stablelm import StopOnTokens, start_message
 from translator import load_translator, translate
 
@@ -19,6 +21,7 @@ model_cache = dict(
     preloaded_tokenizer=None,
     preloaded_streamer=None,
 )
+
 
 def get_ollm_model_ids():
     """Get Open LLM and Llama model IDs.
@@ -44,6 +47,7 @@ def get_ollm_model_ids():
         ]
     return ollm_model_ids
 
+
 def download_model(ollm_model_id, local_files_only=False):
     """Download Open LLM and Llama models.
 
@@ -65,6 +69,7 @@ def download_model(ollm_model_id, local_files_only=False):
 
     return _DOWNLOAD_COMPLETED
 
+
 def get_model_and_tokenizer_class(ollm_model_id):
     """Get model and tokenizer class.
 
@@ -75,8 +80,8 @@ def get_model_and_tokenizer_class(ollm_model_id):
         tuple(class, class): Tuple of model and tokenizer class.
     """
     if ("open-calm" in ollm_model_id or
-        "japanese-gpt-neox" in ollm_model_id or
-        "stablelm" in ollm_model_id):
+            "japanese-gpt-neox" in ollm_model_id or
+            "stablelm" in ollm_model_id):
         model_class = AutoModelForCausalLM
         tokenizer_class = AutoTokenizer
     elif "llama" in ollm_model_id:
@@ -85,8 +90,9 @@ def get_model_and_tokenizer_class(ollm_model_id):
     else:
         model_class = AutoModelForCausalLM
         tokenizer_class = AutoTokenizer
-    
+
     return model_class, tokenizer_class
+
 
 def create_prompt(chatbot, ollm_model_id, input_text_box):
     """Create prompt for generate method.
@@ -103,16 +109,17 @@ def create_prompt(chatbot, ollm_model_id, input_text_box):
         sft_input_text = []
         for user_text, system_text in chatbot:
             sft_input_text.append("ユーザー: " + user_text + "<NL>システム: " + system_text)
-        
+
         sft_input_text = "<NL>".join(sft_input_text)
-            
+
         prompt = sft_input_text
     elif "stablelm" in ollm_model_id:
         prompt = start_message + "".join(["".join(["<|USER|>"+item[0], "<|ASSISTANT|>"+item[1]]) for item in chatbot])
     else:
         prompt = input_text_box
-    
+
     return prompt
+
 
 def get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params):
     """Get generate kwargs.
@@ -127,7 +134,7 @@ def get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params):
         dict: Generate kwargs.
     """
     global model_cache
-    
+
     generate_kwargs = dict(
         **inputs,
         do_sample=True,
@@ -135,24 +142,25 @@ def get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params):
         bos_token_id=tokenizer.bos_token_id,
         eos_token_id=tokenizer.eos_token_id,
     )
-    
+
     generate_kwargs.update(generate_params)
-    
+
     if "stablelm" in ollm_model_id:
         stop = StopOnTokens()
         streamer = TextIteratorStreamer(
             tokenizer, timeout=10., skip_prompt=True, skip_special_tokens=True)
 
         model_cache["preloaded_streamer"] = streamer
-        
+
         stablelm_generate_kwargs = dict(
             streamer=streamer,
             stopping_criteria=StoppingCriteriaList([stop]),
         )
-        
+
         generate_kwargs.update(stablelm_generate_kwargs)
-    
+
     return generate_kwargs
+
 
 def retreive_output_text(input_text, output_text, ollm_model_id):
     """Retreive output text from generate method.
@@ -165,7 +173,7 @@ def retreive_output_text(input_text, output_text, ollm_model_id):
         str: Retreived output text.
     """
     global model_cache
-    
+
     if "instruction-sft" in ollm_model_id or "instruction-ppo" in ollm_model_id:
         output_text = output_text.split("<NL>")[-1].replace("システム: ", "")
     elif "stablelm" in ollm_model_id:
@@ -175,7 +183,7 @@ def retreive_output_text(input_text, output_text, ollm_model_id):
             for new_text in streamer:
                 # print(new_text)
                 partial_text += new_text
-            
+
             output_text = partial_text
         else:
             output_text = output_text
@@ -183,17 +191,20 @@ def retreive_output_text(input_text, output_text, ollm_model_id):
         output_text = output_text.lstrip(input_text + "\n")
     else:
         output_text = output_text
-    
+
     return output_text
+
 
 def torch_gc():
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
         torch.cuda.ipc_collect()
 
+
 def clear_cache():
     gc.collect()
     torch_gc()
+
 
 def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk):
     """Open LLM inference.
@@ -213,7 +224,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     """
     clear_cache()
     global model_cache
-    
+
     generate_params = dict(
         max_new_tokens=max_new_tokens,
         temperature=temperature,
@@ -221,39 +232,39 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
         top_p=top_p,
         repetition_penalty=float(repetition_penalty),
     )
-    
+
     if input_text_box is None or len(input_text_box.strip()) == 0:
         return "", chatbot, "Input text is empty.", ""
-    
+
     chatbot = [] if chatbot is None else chatbot
-    
+
     dwonload_result = download_model(ollm_model_id, local_files_only=True)
     if dwonload_result != _DOWNLOAD_COMPLETED:
         return input_text_box, chatbot, dwonload_result, ""
-    
+
     model_class, tokenizer_class = get_model_and_tokenizer_class(ollm_model_id)
-    
+
     print(f"Loading {ollm_model_id}")
-    if (model_cache.get("preloaded_model_id") != ollm_model_id or 
-        model_cache.get("preloaded_model") is None or 
-        model_cache.get("preloaded_tokenizer") is None):
-        
+    if (model_cache.get("preloaded_model_id") != ollm_model_id or
+            model_cache.get("preloaded_model") is None or
+            model_cache.get("preloaded_tokenizer") is None):
+
         for key in model_cache.keys():
             model_cache[key] = None
         clear_cache()
-        
+
         if platform.system() == "Darwin":
             model = model_class.from_pretrained(ollm_model_id, torch_dtype=torch.float32)
         else:
             model = model_class.from_pretrained(ollm_model_id, device_map="auto", torch_dtype=torch.float16)
-        
+
         model.tie_weights()
 
         tokenizer = tokenizer_class.from_pretrained(
             ollm_model_id,
             use_fast=False if "japanese-gpt-neox" in ollm_model_id else True,
         )
-        
+
         model_cache["preloaded_model_id"] = ollm_model_id
         model_cache["preloaded_model"] = model
         model_cache["preloaded_tokenizer"] = tokenizer
@@ -265,7 +276,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     prompt = create_prompt(chatbot, ollm_model_id, input_text_box)
 
     print("Input text: " + prompt)
-    print(f"Generating...")
+    print("Generating...")
     inputs = tokenizer(
         [prompt],
         return_tensors="pt",
@@ -282,12 +293,12 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     print(f"Generation time: {elapsed_time} seconds")
 
     output = tokenizer.decode(tokens[0], skip_special_tokens=True)
-    
+
     output = retreive_output_text(input_text_box, output, ollm_model_id)
-    
+
     print("Generation complete")
     print("Output text: " + output)
-    
+
     if translate_chk:
         translated_output_text = translate(output, "en", "ja")
         print("Translated output text: " + translated_output_text)
@@ -297,8 +308,9 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     output = output.replace("\n", "<br>")
     # chatbot.append((input_text_box, output))
     chatbot[-1][1] = output
-    
+
     return "", chatbot, f"Generation time: {elapsed_time} seconds", translated_output_text
+
 
 def user(message, history, translate_chk):
     # Append the user's message to the conversation history
@@ -310,15 +322,18 @@ def user(message, history, translate_chk):
     else:
         return message, history
 
+
 def translate_change(translate_chk):
     if translate_chk:
         load_translator()
-    
+
     return "", "Translation enabled" if translate_chk else "Translation disabled"
+
 
 def on_ui_tabs():
     ollm_model_ids = get_ollm_model_ids()
-    ollm_model_index = ollm_model_ids.index("rinna/japanese-gpt-neox-3.6b-instruction-ppo") if "rinna/japanese-gpt-neox-3.6b-instruction-ppo" in ollm_model_ids else 0
+    ollm_model_index = ollm_model_ids.index("rinna/japanese-gpt-neox-3.6b-instruction-ppo") \
+        if "rinna/japanese-gpt-neox-3.6b-instruction-ppo" in ollm_model_ids else 0
 
     block = gr.Blocks().queue()
     block.title = "Open LLM WebUI"
@@ -329,7 +344,7 @@ def on_ui_tabs():
             with gr.Column():
                 with gr.Row():
                     chatbot = gr.Chatbot(value=[], elem_id="chatbot", height=640)
-            
+
             with gr.Column():
                 with gr.Row():
                     with gr.Column():
@@ -357,25 +372,26 @@ def on_ui_tabs():
                         top_k = gr.Slider(minimum=1, maximum=200, step=1, value=50, label="Top k", elem_id="top_k")
                         top_p = gr.Slider(minimum=0.1, maximum=1.0, step=0.1, value=1.0, label="Top p", elem_id="top_p")
                         repetition_penalty = gr.Slider(minimum=1.0, maximum=10.0, step=0.1, value=1.0, label="Repetition penalty", elem_id="repetition_penalty")
-                with gr.Row():                
+                with gr.Row():
                     generate_btn = gr.Button("Generate", elem_id="generate_btn")
                 with gr.Row():
                     translated_output_text = gr.Textbox(label="Translated output text", show_label=True, lines=3, interactive=False)
                 with gr.Row():
                     clear_btn = gr.Button("Clear text", elem_id="clear_btn")
-            
+
             download_model_btn.click(fn=download_model, inputs=[ollm_model_id], outputs=[status_text])
             translate_chk.change(fn=translate_change, inputs=[translate_chk], outputs=[input_text_box, status_text])
-            
+
             generate_inputs = [chatbot, ollm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk]
             generate_btn.click(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot]).then(
                 fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, translated_output_text])
             input_text_box.submit(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot]).then(
                 fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, translated_output_text])
-            
+
             clear_btn.click(lambda: [None, None], None, [input_text_box, chatbot])
-            
+
     return [(ollm_interface, "Open LLM", "open_llm")]
+
 
 block, _, _ = on_ui_tabs()[0]
 block.launch()
