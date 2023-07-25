@@ -10,7 +10,8 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer,
                           LlamaForCausalLM, LlamaTokenizer,
                           StoppingCriteriaList, TextIteratorStreamer)
 
-from stablelm import StopOnTokens, start_message
+from stablelm import (StopOnTokens, start_message, system1_prompt,
+                      system2_prompt)
 from translator import load_translator, translate
 
 _DOWNLOAD_COMPLETED = "Download complete"
@@ -34,14 +35,16 @@ def get_ollm_model_ids():
         "rinna/japanese-gpt-neox-3.6b-instruction-sft",
         "rinna/japanese-gpt-neox-3.6b-instruction-sft-v2",
         "rinna/japanese-gpt-neox-3.6b-instruction-ppo",
+        "stabilityai/FreeWilly1-Delta-SafeTensor",
+        "stabilityai/FreeWilly2",
+        "stabilityai/stablelm-tuned-alpha-3b",
+        "stabilityai/stablelm-tuned-alpha-7b",
         "cyberagent/open-calm-small",
         "cyberagent/open-calm-medium",
         "cyberagent/open-calm-large",
         "cyberagent/open-calm-1b",
         "cyberagent/open-calm-3b",
         "cyberagent/open-calm-7b",
-        "stabilityai/stablelm-tuned-alpha-3b",
-        "stabilityai/stablelm-tuned-alpha-7b",
         "decapoda-research/llama-7b-hf",
         "decapoda-research/llama-13b-hf",
         ]
@@ -77,11 +80,12 @@ def get_model_and_tokenizer_class(ollm_model_id):
         ollm_model_id (str): String of Open LLM model ID.
 
     Returns:
-        tuple(class, class): Tuple of model and tokenizer class.
+        tuple(class, class, dict, dict): Tuple of model class, tokenizer class, model kwargs, and tokenizer kwargs.
     """
     if ("open-calm" in ollm_model_id or
             "japanese-gpt-neox" in ollm_model_id or
-            "stablelm" in ollm_model_id):
+            "stablelm" in ollm_model_id or
+            "FreeWilly" in ollm_model_id):
         model_class = AutoModelForCausalLM
         tokenizer_class = AutoTokenizer
     elif "llama" in ollm_model_id:
@@ -91,7 +95,26 @@ def get_model_and_tokenizer_class(ollm_model_id):
         model_class = AutoModelForCausalLM
         tokenizer_class = AutoTokenizer
 
-    return model_class, tokenizer_class
+    if platform.system() == "Darwin":
+        model_kwargs = dict(
+            torch_dtype=torch.float32,
+        )
+    else:
+        model_kwargs = dict(
+            device_map="auto",
+            torch_dtype=torch.float16,
+        )
+    tokenizer_kwargs = dict(
+        use_fast=True,
+    )
+
+    if "japanese-gpt-neox" in ollm_model_id:
+        tokenizer_kwargs["use_fast"] = False
+    elif "FreeWilly" in ollm_model_id:
+        model_kwargs["low_cpu_mem_usage"] = True
+        tokenizer_kwargs["use_fast"] = False
+
+    return model_class, tokenizer_class, model_kwargs, tokenizer_kwargs
 
 
 def create_prompt(chatbot, ollm_model_id, input_text_box):
@@ -115,6 +138,14 @@ def create_prompt(chatbot, ollm_model_id, input_text_box):
         prompt = sft_input_text
     elif "stablelm" in ollm_model_id:
         prompt = start_message + "".join(["".join(["<|USER|>"+item[0], "<|ASSISTANT|>"+item[1]]) for item in chatbot])
+    elif "FreeWilly1" in ollm_model_id:
+        prompt = f"{system1_prompt}### Input: {input_text_box}\n\n### Response:\n"
+    elif "FreeWilly2" in ollm_model_id:
+        prompt = f"{system2_prompt}" + "".join([
+            "\n\n".join(["### User:\n"+item[0],
+                         "### Assistant:\n"+(item[1] if len(item[1]) == 0 else (item[1] + "\n\n"))
+                         ]) for item in chatbot
+            ])
     else:
         prompt = input_text_box
 
@@ -189,6 +220,10 @@ def retreive_output_text(input_text, output_text, ollm_model_id):
             output_text = output_text
     elif "llama" in ollm_model_id:
         output_text = output_text.lstrip(input_text + "\n")
+    elif "FreeWilly1" in ollm_model_id:
+        output_text = output_text.split("### Response:\n")[-1]
+    elif "FreeWilly2" in ollm_model_id:
+        output_text = output_text.split("### Assistant:\n")[-1]
     else:
         output_text = output_text
 
@@ -218,6 +253,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
         top_k (int): Parameter for generate method.
         top_p (float): Parameter for generate method.
         repetition_penalty (float): Parameter for generate method.
+        translate_chk (bool): If True, translate output text.
 
     Returns:
         tuple(str, list, str): Input text, chatbot history, and inference result.
@@ -242,7 +278,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     if dwonload_result != _DOWNLOAD_COMPLETED:
         return input_text_box, chatbot, dwonload_result, ""
 
-    model_class, tokenizer_class = get_model_and_tokenizer_class(ollm_model_id)
+    model_class, tokenizer_class, model_kwargs, tokenizer_kwargs = get_model_and_tokenizer_class(ollm_model_id)
 
     print(f"Loading {ollm_model_id}")
     if (model_cache.get("preloaded_model_id") != ollm_model_id or
@@ -253,16 +289,15 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
             model_cache[key] = None
         clear_cache()
 
-        if platform.system() == "Darwin":
-            model = model_class.from_pretrained(ollm_model_id, torch_dtype=torch.float32)
-        else:
-            model = model_class.from_pretrained(ollm_model_id, device_map="auto", torch_dtype=torch.float16)
-
+        model = model_class.from_pretrained(
+            ollm_model_id,
+            **model_kwargs,
+        )
         model.tie_weights()
 
         tokenizer = tokenizer_class.from_pretrained(
             ollm_model_id,
-            use_fast=False if "japanese-gpt-neox" in ollm_model_id else True,
+            **tokenizer_kwargs,
         )
 
         model_cache["preloaded_model_id"] = ollm_model_id
