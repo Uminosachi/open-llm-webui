@@ -1,4 +1,5 @@
 import gc
+import os
 import platform
 import time
 
@@ -95,6 +96,9 @@ def get_model_and_tokenizer_class(ollm_model_id):
         model_class = AutoModelForCausalLM
         tokenizer_class = AutoTokenizer
 
+    if "FreeWilly" in ollm_model_id:
+        os.environ["SAFETENSORS_FAST_GPU"] = str(1)
+
     if platform.system() == "Darwin":
         model_kwargs = dict(
             torch_dtype=torch.float32,
@@ -111,7 +115,7 @@ def get_model_and_tokenizer_class(ollm_model_id):
     if "japanese-gpt-neox" in ollm_model_id:
         tokenizer_kwargs["use_fast"] = False
     elif "FreeWilly" in ollm_model_id:
-        model_kwargs["low_cpu_mem_usage"] = True
+        # model_kwargs["low_cpu_mem_usage"] = True
         tokenizer_kwargs["use_fast"] = False
 
     return model_class, tokenizer_class, model_kwargs, tokenizer_kwargs
@@ -138,14 +142,17 @@ def create_prompt(chatbot, ollm_model_id, input_text_box):
         prompt = sft_input_text
     elif "stablelm" in ollm_model_id:
         prompt = start_message + "".join(["".join(["<|USER|>"+item[0], "<|ASSISTANT|>"+item[1]]) for item in chatbot])
+
     elif "FreeWilly1" in ollm_model_id:
-        prompt = f"{system1_prompt}### Input: {input_text_box}\n\n### Response:\n"
+        prompt = f"{system1_prompt}### Input:\n{input_text_box}\n\n### Response:\n"
+
     elif "FreeWilly2" in ollm_model_id:
         prompt = f"{system2_prompt}" + "".join([
             "\n\n".join(["### User:\n"+item[0],
                          "### Assistant:\n"+(item[1] if len(item[1]) == 0 else (item[1] + "\n\n"))
                          ]) for item in chatbot
             ])
+
     else:
         prompt = input_text_box
 
@@ -400,7 +407,7 @@ def on_ui_tabs():
                         show_label=True,
                     )
                 with gr.Row():
-                    max_new_tokens = gr.Slider(minimum=1, maximum=512, step=1, value=128, label="Max new tokens", elem_id="max_new_tokens")
+                    max_new_tokens = gr.Slider(minimum=1, maximum=512, step=1, value=64, label="Max new tokens", elem_id="max_new_tokens")
                 with gr.Row():
                     with gr.Accordion("Advanced options", open=False):
                         temperature = gr.Slider(minimum=0.1, maximum=1.0, step=0.1, value=0.7, label="Temperature", elem_id="temperature")
