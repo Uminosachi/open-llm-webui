@@ -1,4 +1,4 @@
-from stablelm import start_message, system1_prompt, system2_prompt
+from start_messages import start_message, system1_prompt, system2_prompt, system3_message
 
 
 def create_prompt(chatbot, ollm_model_id, input_text_box):
@@ -32,6 +32,9 @@ def create_prompt(chatbot, ollm_model_id, input_text_box):
                          "### Assistant:\n"+(item[1] if len(item[1]) == 0 else (item[1] + "\n\n"))
                          ]) for item in chatbot
             ])
+
+    elif "Llama-2" in ollm_model_id:
+        prompt = f"[INST] <<SYS>>\n{system3_message}\n<</SYS>>\n\n{input_text_box} [/INST]\n"
 
     else:
         prompt = input_text_box
