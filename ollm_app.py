@@ -122,21 +122,16 @@ def get_model_and_tokenizer_class(ollm_model_id):
 
     elif "FreeWilly2-GPTQ" in ollm_model_id:
         model_basename = "gptq_model-4bit--1g"
-        # use_triton = False
-
-        model_file = try_to_load_from_cache(ollm_model_id, model_basename + ".safetensors")
-        if not os.path.exists(os.path.join(os.path.dirname(model_file), "model.safetensors")):
-            os.symlink(model_file, os.path.join(os.path.dirname(model_file), "model.safetensors"))
-
+        use_triton = False
+        
         gptq_model_kwargs = dict(
-            pretrained_model_name_or_path=os.path.dirname(model_file) if model_file is not None else ollm_model_id,
             # revision="gptq-4bit-32g-actorder_True",
-            # model_basename=model_basename,
-            # inject_fused_attention=False,  # Required for TheBloke/FreeWilly2-GPTQ model at this time.
+            model_basename=model_basename,
+            inject_fused_attention=False,  # Required for TheBloke/FreeWilly2-GPTQ model at this time.
             use_safetensors=True,
             trust_remote_code=False,
-            # device="cuda:0",
-            # use_triton=use_triton,
+            device="cuda:0",
+            use_triton=use_triton,
             quantize_config=None,
         )
         model_kwargs = gptq_model_kwargs
@@ -246,10 +241,16 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
             model_cache[key] = None
         clear_cache()
 
-        model = model_class.from_pretrained(
-            ollm_model_id if "pretrained_model_name_or_path" not in model_kwargs else model_kwargs.pop("pretrained_model_name_or_path"),
-            **model_kwargs,
-        )
+        if "quantize_config" in model_kwargs:
+            model = model_class.from_quantized(
+                ollm_model_id if "pretrained_model_name_or_path" not in model_kwargs else model_kwargs.pop("pretrained_model_name_or_path"),
+                **model_kwargs,
+            )
+        else:
+            model = model_class.from_pretrained(
+                ollm_model_id if "pretrained_model_name_or_path" not in model_kwargs else model_kwargs.pop("pretrained_model_name_or_path"),
+                **model_kwargs,
+            )
         model.tie_weights()
 
         tokenizer = tokenizer_class.from_pretrained(
