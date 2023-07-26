@@ -26,12 +26,6 @@ cd open-llm-webui
 pip install -r requirements.txt
 ```
 
-* If you are using macOS, please install the package from the following file instead:
-
-```bash
-pip install -r requirements_mac.txt
-```
-
 ## Running the application
 
 ```bash
