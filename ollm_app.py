@@ -5,14 +5,15 @@ import time
 
 import gradio as gr
 import torch
-from huggingface_hub import snapshot_download
+from auto_gptq import AutoGPTQForCausalLM
+from huggingface_hub import snapshot_download, try_to_load_from_cache
 # from transformers import OpenLlamaModel, OpenLlamaConfig
 from transformers import (AutoModelForCausalLM, AutoTokenizer,
                           LlamaForCausalLM, LlamaTokenizer,
                           StoppingCriteriaList, TextIteratorStreamer)
 
-from stablelm import (StopOnTokens, start_message, system1_prompt,
-                      system2_prompt)
+from prompt_processor import create_prompt, retreive_output_text
+from stablelm import StopOnTokens
 from translator import load_translator, translate
 
 _DOWNLOAD_COMPLETED = "Download complete"
@@ -36,16 +37,15 @@ def get_ollm_model_ids():
         "rinna/japanese-gpt-neox-3.6b-instruction-sft",
         "rinna/japanese-gpt-neox-3.6b-instruction-sft-v2",
         "rinna/japanese-gpt-neox-3.6b-instruction-ppo",
-        "stabilityai/FreeWilly1-Delta-SafeTensor",
-        "stabilityai/FreeWilly2",
-        "stabilityai/stablelm-tuned-alpha-3b",
-        "stabilityai/stablelm-tuned-alpha-7b",
         "cyberagent/open-calm-small",
         "cyberagent/open-calm-medium",
         "cyberagent/open-calm-large",
         "cyberagent/open-calm-1b",
         "cyberagent/open-calm-3b",
         "cyberagent/open-calm-7b",
+        "TheBloke/FreeWilly2-GPTQ",
+        "stabilityai/stablelm-tuned-alpha-3b",
+        "stabilityai/stablelm-tuned-alpha-7b",
         "decapoda-research/llama-7b-hf",
         "decapoda-research/llama-13b-hf",
         ]
@@ -85,19 +85,24 @@ def get_model_and_tokenizer_class(ollm_model_id):
     """
     if ("open-calm" in ollm_model_id or
             "japanese-gpt-neox" in ollm_model_id or
-            "stablelm" in ollm_model_id or
-            "FreeWilly" in ollm_model_id):
+            "stablelm" in ollm_model_id):
         model_class = AutoModelForCausalLM
         tokenizer_class = AutoTokenizer
+
     elif "llama" in ollm_model_id:
         model_class = LlamaForCausalLM
         tokenizer_class = LlamaTokenizer
+
+    elif "FreeWilly2-GPTQ" in ollm_model_id:
+        model_class = AutoGPTQForCausalLM
+        tokenizer_class = AutoTokenizer
+
     else:
         model_class = AutoModelForCausalLM
         tokenizer_class = AutoTokenizer
 
-    if "FreeWilly" in ollm_model_id:
-        os.environ["SAFETENSORS_FAST_GPU"] = str(1)
+    # if "FreeWilly" in ollm_model_id:
+    #     os.environ["SAFETENSORS_FAST_GPU"] = str(1)
 
     if platform.system() == "Darwin":
         model_kwargs = dict(
@@ -114,49 +119,31 @@ def get_model_and_tokenizer_class(ollm_model_id):
 
     if "japanese-gpt-neox" in ollm_model_id:
         tokenizer_kwargs["use_fast"] = False
-    elif "FreeWilly" in ollm_model_id:
-        # model_kwargs["low_cpu_mem_usage"] = True
-        tokenizer_kwargs["use_fast"] = False
 
+    elif "FreeWilly2-GPTQ" in ollm_model_id:
+        model_basename = "gptq_model-4bit--1g"
+        # use_triton = False
+
+        model_file = try_to_load_from_cache(ollm_model_id, model_basename + ".safetensors")
+        if not os.path.exists(os.path.join(os.path.dirname(model_file), "model.safetensors")):
+            os.symlink(model_file, os.path.join(os.path.dirname(model_file), "model.safetensors"))
+
+        gptq_model_kwargs = dict(
+            pretrained_model_name_or_path=os.path.dirname(model_file) if model_file is not None else ollm_model_id,
+            # revision="gptq-4bit-32g-actorder_True",
+            # model_basename=model_basename,
+            # inject_fused_attention=False,  # Required for TheBloke/FreeWilly2-GPTQ model at this time.
+            use_safetensors=True,
+            trust_remote_code=False,
+            # device="cuda:0",
+            # use_triton=use_triton,
+            quantize_config=None,
+        )
+        model_kwargs = gptq_model_kwargs
+
+    print("model_class: " + model_class.__name__)
+    print(f"model_kwargs: {model_kwargs}")
     return model_class, tokenizer_class, model_kwargs, tokenizer_kwargs
-
-
-def create_prompt(chatbot, ollm_model_id, input_text_box):
-    """Create prompt for generate method.
-
-    Args:
-        chatbot (list): Chatbot history.
-        ollm_model_id (str): String of Open LLM model ID.
-        input_text_box (str): Input text.
-
-    Returns:
-        str: Prompt for generate method.
-    """
-    if "instruction-sft" in ollm_model_id or "instruction-ppo" in ollm_model_id:
-        sft_input_text = []
-        for user_text, system_text in chatbot:
-            sft_input_text.append("ユーザー: " + user_text + "<NL>システム: " + system_text)
-
-        sft_input_text = "<NL>".join(sft_input_text)
-
-        prompt = sft_input_text
-    elif "stablelm" in ollm_model_id:
-        prompt = start_message + "".join(["".join(["<|USER|>"+item[0], "<|ASSISTANT|>"+item[1]]) for item in chatbot])
-
-    elif "FreeWilly1" in ollm_model_id:
-        prompt = f"{system1_prompt}### Input:\n{input_text_box}\n\n### Response:\n"
-
-    elif "FreeWilly2" in ollm_model_id:
-        prompt = f"{system2_prompt}" + "".join([
-            "\n\n".join(["### User:\n"+item[0],
-                         "### Assistant:\n"+(item[1] if len(item[1]) == 0 else (item[1] + "\n\n"))
-                         ]) for item in chatbot
-            ])
-
-    else:
-        prompt = input_text_box
-
-    return prompt
 
 
 def get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params):
@@ -198,43 +185,6 @@ def get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params):
         generate_kwargs.update(stablelm_generate_kwargs)
 
     return generate_kwargs
-
-
-def retreive_output_text(input_text, output_text, ollm_model_id):
-    """Retreive output text from generate method.
-
-    Args:
-        output_text (str): Output text from generate method.
-        ollm_model_id (str): String of Open LLM model ID.
-
-    Returns:
-        str: Retreived output text.
-    """
-    global model_cache
-
-    if "instruction-sft" in ollm_model_id or "instruction-ppo" in ollm_model_id:
-        output_text = output_text.split("<NL>")[-1].replace("システム: ", "")
-    elif "stablelm" in ollm_model_id:
-        if model_cache.get("preloaded_streamer") is not None:
-            streamer = model_cache.get("preloaded_streamer")
-            partial_text = ""
-            for new_text in streamer:
-                # print(new_text)
-                partial_text += new_text
-
-            output_text = partial_text
-        else:
-            output_text = output_text
-    elif "llama" in ollm_model_id:
-        output_text = output_text.lstrip(input_text + "\n")
-    elif "FreeWilly1" in ollm_model_id:
-        output_text = output_text.split("### Response:\n")[-1]
-    elif "FreeWilly2" in ollm_model_id:
-        output_text = output_text.split("### Assistant:\n")[-1]
-    else:
-        output_text = output_text
-
-    return output_text
 
 
 def torch_gc():
@@ -297,7 +247,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
         clear_cache()
 
         model = model_class.from_pretrained(
-            ollm_model_id,
+            ollm_model_id if "pretrained_model_name_or_path" not in model_kwargs else model_kwargs.pop("pretrained_model_name_or_path"),
             **model_kwargs,
         )
         model.tie_weights()
