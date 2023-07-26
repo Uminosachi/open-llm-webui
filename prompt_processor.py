@@ -34,7 +34,11 @@ def create_prompt(chatbot, ollm_model_id, input_text_box):
             ])
 
     elif "Llama-2" in ollm_model_id:
-        prompt = f"[INST] <<SYS>>\n{system3_message}\n<</SYS>>\n\n{input_text_box} [/INST]\n"
+        if len(chatbot) < 2:
+            prompt = f"[INST] <<SYS>>\n{system3_message}\n<</SYS>>\n\n{input_text_box} [/INST] "
+        else:
+            prompt = f"[INST] <<SYS>>\n{system3_message}\n<</SYS>>\n\n{chatbot[0][0]} [/INST] {chatbot[0][1]}"
+            prompt = prompt + "".join([(" [INST] "+item[0]+" [/INST] "+item[1]) for item in chatbot[1:]])
 
     else:
         prompt = input_text_box
@@ -78,6 +82,10 @@ def retreive_output_text(input_text, output_text, ollm_model_id):
 
     elif "FreeWilly2" in ollm_model_id:
         output_text = output_text.split("### Assistant:\n")[-1]
+
+    elif "-GPTQ" in ollm_model_id:
+        # print(output_text)
+        output_text = output_text.split("[/INST]")[-1].lstrip()
 
     else:
         output_text = output_text

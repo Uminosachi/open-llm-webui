@@ -26,8 +26,8 @@ def get_ollm_model_ids():
         "cyberagent/open-calm-1b",
         "cyberagent/open-calm-3b",
         "cyberagent/open-calm-7b",
-        "TheBloke/Llama-2-70B-chat-GPTQ",
-        "TheBloke/FreeWilly2-GPTQ",
+        "TheBloke/Llama-2-7b-Chat-GPTQ",
+        "TheBloke/Llama-2-13B-chat-GPTQ",
         "stabilityai/stablelm-tuned-alpha-3b",
         "stabilityai/stablelm-tuned-alpha-7b",
         "decapoda-research/llama-7b-hf",
@@ -83,7 +83,7 @@ def get_model_and_tokenizer_class(ollm_model_id):
         tokenizer_kwargs["use_fast"] = False
 
     elif "-GPTQ" in ollm_model_id:
-        model_basename = "gptq_model-4bit--1g"
+        model_basename = "gptq_model-4bit-128g"
         use_triton = False
 
         model_kwargs = dict(
@@ -91,7 +91,7 @@ def get_model_and_tokenizer_class(ollm_model_id):
             model_basename=model_basename,
             inject_fused_attention=False,  # Required for Llama 2 70B model at this time.
             use_safetensors=True,
-            trust_remote_code=False,
+            trust_remote_code=True,
             device="cuda:0" if torch.cuda.is_available() else "cpu",
             use_triton=use_triton,
             quantize_config=None
@@ -140,4 +140,8 @@ def get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params):
 
         generate_kwargs.update(stablelm_generate_kwargs)
 
+    if "-GPTQ" in ollm_model_id:
+        generate_kwargs.pop("token_type_ids", None)
+
+    # print("generate_kwargs: " + str(generate_kwargs))
     return generate_kwargs
