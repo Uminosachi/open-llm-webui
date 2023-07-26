@@ -145,7 +145,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     t1 = time.time()
     with torch.no_grad():
         tokens = model.generate(
-            **get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+            **get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params, model_cache)
         )
     t2 = time.time()
     elapsed_time = t2-t1
@@ -153,7 +153,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
 
     output = tokenizer.decode(tokens[0], skip_special_tokens=True)
 
-    output = retreive_output_text(input_text_box, output, ollm_model_id)
+    output = retreive_output_text(input_text_box, output, ollm_model_id, model_cache)
 
     print("Generation complete")
     print("Output text: " + output)

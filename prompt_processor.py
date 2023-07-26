@@ -46,7 +46,7 @@ def create_prompt(chatbot, ollm_model_id, input_text_box):
     return prompt
 
 
-def retreive_output_text(input_text, output_text, ollm_model_id):
+def retreive_output_text(input_text, output_text, ollm_model_id, model_cache):
     """Retreive output text from generate method.
 
     Args:
@@ -57,8 +57,6 @@ def retreive_output_text(input_text, output_text, ollm_model_id):
     Returns:
         str: Retreived output text.
     """
-    global model_cache
-
     if "instruction-sft" in ollm_model_id or "instruction-ppo" in ollm_model_id:
         output_text = output_text.split("<NL>")[-1].replace("システム: ", "")
 

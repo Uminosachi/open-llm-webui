@@ -102,7 +102,7 @@ def get_model_and_tokenizer_class(ollm_model_id):
     return model_class, tokenizer_class, model_kwargs, tokenizer_kwargs
 
 
-def get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params):
+def get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params, model_cache):
     """Get generate kwargs.
 
     Args:
@@ -114,8 +114,6 @@ def get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params):
     Returns:
         dict: Generate kwargs.
     """
-    global model_cache
-
     generate_kwargs = dict(
         **inputs,
         do_sample=True,
