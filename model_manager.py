@@ -92,7 +92,7 @@ def get_model_and_tokenizer_class(ollm_model_id):
             inject_fused_attention=False,  # Required for Llama 2 70B model at this time.
             use_safetensors=True,
             trust_remote_code=False,
-            device="cuda" if torch.cuda.is_available() else "cpu",
+            device="cuda:0" if torch.cuda.is_available() else "cpu",
             use_triton=use_triton,
             quantize_config=None
         )
