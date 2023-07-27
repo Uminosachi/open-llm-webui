@@ -1,6 +1,10 @@
-from start_messages import start_message, system1_prompt, system2_prompt, system3_message
+from cache_manager import clear_cache_decorator
+from model_manager import model_cache
+from start_messages import (freewilly1_prompt, freewilly2_prompt,
+                            llama2_message, start_message)
 
 
+@clear_cache_decorator
 def create_prompt(chatbot, ollm_model_id, input_text_box):
     """Create prompt for generate method.
 
@@ -24,20 +28,20 @@ def create_prompt(chatbot, ollm_model_id, input_text_box):
         prompt = start_message + "".join(["".join(["<|USER|>"+item[0], "<|ASSISTANT|>"+item[1]]) for item in chatbot])
 
     elif "FreeWilly1" in ollm_model_id:
-        prompt = f"{system1_prompt}### Input:\n{input_text_box}\n\n### Response:\n"
+        prompt = f"{freewilly1_prompt}### Input:\n{input_text_box}\n\n### Response:\n"
 
     elif "FreeWilly2" in ollm_model_id:
-        prompt = f"{system2_prompt}" + "".join([
+        prompt = f"{freewilly2_prompt}" + "".join([
             "\n\n".join(["### User:\n"+item[0],
                          "### Assistant:\n"+(item[1] if len(item[1]) == 0 else (item[1] + "\n\n"))
                          ]) for item in chatbot
             ])
 
-    elif "Llama-2" in ollm_model_id:
+    elif "Llama-2-" in ollm_model_id:
         if len(chatbot) < 2:
-            prompt = f"[INST] <<SYS>>\n{system3_message}\n<</SYS>>\n\n{input_text_box} [/INST] "
+            prompt = f"[INST] <<SYS>>\n{llama2_message}\n<</SYS>>\n\n{input_text_box} [/INST] "
         else:
-            prompt = f"[INST] <<SYS>>\n{system3_message}\n<</SYS>>\n\n{chatbot[0][0]} [/INST] {chatbot[0][1]}"
+            prompt = f"[INST] <<SYS>>\n{llama2_message}\n<</SYS>>\n\n{chatbot[0][0]} [/INST] {chatbot[0][1]}"
             prompt = prompt + "".join([(" [INST] "+item[0]+" [/INST] "+item[1]) for item in chatbot[1:]])
 
     else:
@@ -46,7 +50,8 @@ def create_prompt(chatbot, ollm_model_id, input_text_box):
     return prompt
 
 
-def retreive_output_text(input_text, output_text, ollm_model_id, model_cache):
+@clear_cache_decorator
+def retreive_output_text(input_text, output_text, ollm_model_id):
     """Retreive output text from generate method.
 
     Args:
@@ -72,18 +77,17 @@ def retreive_output_text(input_text, output_text, ollm_model_id, model_cache):
         else:
             output_text = output_text
 
-    elif "llama" in ollm_model_id:
-        output_text = output_text.lstrip(input_text + "\n")
-
     elif "FreeWilly1" in ollm_model_id:
         output_text = output_text.split("### Response:\n")[-1]
 
     elif "FreeWilly2" in ollm_model_id:
         output_text = output_text.split("### Assistant:\n")[-1]
 
-    elif "-GPTQ" in ollm_model_id:
-        # print(output_text)
+    elif "Llama-2-" in ollm_model_id:
         output_text = output_text.split("[/INST]")[-1].lstrip()
+
+    elif "llama-" in ollm_model_id:
+        output_text = output_text.lstrip(input_text + "\n").lstrip()
 
     else:
         output_text = output_text

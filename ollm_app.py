@@ -1,12 +1,10 @@
-import gc
-# import os
-# import platform
 import time
 
 import gradio as gr
 import torch
 from huggingface_hub import snapshot_download
 
+from cache_manager import clear_cache, clear_cache_decorator, model_cache
 from model_manager import (get_generate_kwargs, get_model_and_tokenizer_class,
                            get_ollm_model_ids)
 from prompt_processor import create_prompt, retreive_output_text
@@ -18,14 +16,8 @@ from translator import load_translator, translate
 
 _DOWNLOAD_COMPLETED = "Download complete"
 
-model_cache = dict(
-    preloaded_model_id=None,
-    preloaded_model=None,
-    preloaded_tokenizer=None,
-    preloaded_streamer=None,
-)
 
-
+@clear_cache_decorator
 def download_model(ollm_model_id, local_files_only=False):
     """Download Open LLM and Llama models.
 
@@ -48,17 +40,7 @@ def download_model(ollm_model_id, local_files_only=False):
     return _DOWNLOAD_COMPLETED
 
 
-def torch_gc():
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
-
-
-def clear_cache():
-    gc.collect()
-    torch_gc()
-
-
+@clear_cache_decorator
 def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk):
     """Open LLM inference.
 
@@ -76,9 +58,6 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     Returns:
         tuple(str, list, str): Input text, chatbot history, and inference result.
     """
-    clear_cache()
-    global model_cache
-
     generate_params = dict(
         max_new_tokens=max_new_tokens,
         temperature=temperature,
@@ -105,7 +84,6 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
 
         for key in model_cache.keys():
             model_cache[key] = None
-        clear_cache()
 
         if "quantize_config" in model_kwargs:
             model = model_class.from_quantized(
@@ -127,6 +105,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
         model_cache["preloaded_model_id"] = ollm_model_id
         model_cache["preloaded_model"] = model
         model_cache["preloaded_tokenizer"] = tokenizer
+        clear_cache()
     else:
         print("Using preloaded model")
         model = model_cache["preloaded_model"]
@@ -145,7 +124,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     t1 = time.time()
     with torch.no_grad():
         tokens = model.generate(
-            **get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params, model_cache)
+            **get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
         )
     t2 = time.time()
     elapsed_time = t2-t1
@@ -153,7 +132,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
 
     output = tokenizer.decode(tokens[0], skip_special_tokens=True)
 
-    output = retreive_output_text(input_text_box, output, ollm_model_id, model_cache)
+    output = retreive_output_text(input_text_box, output, ollm_model_id)
 
     print("Generation complete")
     print("Output text: " + output)
@@ -171,6 +150,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     return "", chatbot, f"Generation time: {elapsed_time} seconds", translated_output_text
 
 
+@clear_cache_decorator
 def user(message, history, translate_chk):
     # Append the user's message to the conversation history
     if len(message.strip()) > 0:
@@ -182,6 +162,7 @@ def user(message, history, translate_chk):
         return message, history
 
 
+@clear_cache_decorator
 def translate_change(translate_chk):
     if translate_chk:
         load_translator()
