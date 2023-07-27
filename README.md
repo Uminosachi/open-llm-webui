@@ -44,24 +44,13 @@ To download the model:
 4. The downloaded model file will be stored in the `.cache/huggingface/hub` directory of your home directory.
 
 ### Model List
-| Provider | Model Name |
+| Provider | Model Names |
 | --- | --- |
-| rinna | japanese-gpt-neox-3.6b |
-|  | japanese-gpt-neox-3.6b-instruction-sft |
-|  | japanese-gpt-neox-3.6b-instruction-sft-v2 |
-|  | japanese-gpt-neox-3.6b-instruction-ppo |
-| TheBloke | Llama-2-7b-Chat-GPTQ |
-|  | Llama-2-13B-chat-GPTQ |
-| stabilityai | stablelm-tuned-alpha-3b |
-|  | stablelm-tuned-alpha-7b |
-| cyberagent | open-calm-small |
-|  | open-calm-medium |
-|  | open-calm-large |
-|  | open-calm-1b |
-|  | open-calm-3b |
-|  | open-calm-7b |
-| decapoda-research | llama-7b-hf |
-|  | llama-13b-hf |
+| rinna | japanese-gpt-neox-3.6b, japanese-gpt-neox-3.6b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
+| TheBloke | Llama-2-7b-Chat-GPTQ, Llama-2-13B-chat-GPTQ |
+| stabilityai | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b |
+| cyberagent | open-calm-small, open-calm-medium, open-calm-large, open-calm-1b, open-calm-3b, open-calm-7b |
+| decapoda-research | llama-7b-hf, llama-13b-hf |
 
 ## Usage
 
