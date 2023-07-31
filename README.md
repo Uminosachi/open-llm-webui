@@ -69,7 +69,17 @@ To download the model:
 * **Developed by**: [rinna Co., Ltd.](https://rinna.co.jp/) Copyright (c) 2023 rinna Co., Ltd.
 * **License**: [The MIT license](https://opensource.org/licenses/MIT)
 
+### Llama 2
+
+* **Developed by**: [Meta AI](https://ai.meta.com/) Copyright (c) 2023 Meta Platforms, Inc.
+* **License**: [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE)
+
+### StableLM
+
+* **Developed by**: [Stability AI](https://stability.ai/) Copyright (c) 2023 Stability AI, Ltd.
+* **License**: [Apache License 2.0](https://github.com/Stability-AI/StableLM/blob/main/LICENSE)
+
 ### OpenCALM
 
 * **Developed by**: [CyberAgent, Inc.](https://www.cyberagent.co.jp/) Copyright (c) 2023 CyberAgent, Inc.
-* **License**: OpenCALM is under the Creative Commons Attribution-ShareAlike 4.0 International License ([CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/))
+* **License**: [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) Creative Commons Attribution-ShareAlike 4.0 International License
