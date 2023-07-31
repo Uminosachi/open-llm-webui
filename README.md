@@ -62,17 +62,14 @@ To download the model:
 
 ![UI image](images/open-ollm-webui_ui_image_1.png)
 
-## Credit: rinna
+## Model Credit
 
-* **Developed by**: [rinna株式会社](https://rinna.co.jp/) Copyright (c) 2023 rinna Co., Ltd.
+### rinna
+
+* **Developed by**: [rinna Co., Ltd.](https://rinna.co.jp/) Copyright (c) 2023 rinna Co., Ltd.
 * **License**: [The MIT license](https://opensource.org/licenses/MIT)
 
-## Credit: OpenCALM
+### OpenCALM
 
-* **Developed by**: [CyberAgent, Inc.](https://www.cyberagent.co.jp/)
-* **Model type**: Transformer-based Language Model
-* **Language**: Japanese
-* **Library**: [GPT-NeoX](https://github.com/EleutherAI/gpt-neox)
-* **License**: OpenCALM is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License ([CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)). When using this model, please provide appropriate credit to CyberAgent, Inc.
-  * Example (en): This model is a fine-tuned version of OpenCALM-XX developed by CyberAgent, Inc. The original model is released under the CC BY-SA 4.0 license, and this model is also released under the same CC BY-SA 4.0 license. For more information, please visit: https://creativecommons.org/licenses/by-sa/4.0/
-  * Example (ja): 本モデルは、株式会社サイバーエージェントによるOpenCALM-XXをファインチューニングしたものです。元のモデルはCC BY-SA 4.0ライセンスのもとで公開されており、本モデルも同じくCC BY-SA 4.0ライセンスで公開します。詳しくはこちらをご覧ください: https://creativecommons.org/licenses/by-sa/4.0/
+* **Developed by**: [CyberAgent, Inc.](https://www.cyberagent.co.jp/) Copyright (c) 2023 CyberAgent, Inc.
+* **License**: OpenCALM is under the Creative Commons Attribution-ShareAlike 4.0 International License ([CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/))
