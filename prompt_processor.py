@@ -18,10 +18,11 @@ def create_prompt(chatbot, ollm_model_id, input_text_box):
     """
     if "instruction-sft" in ollm_model_id or "instruction-ppo" in ollm_model_id:
         sft_input_text = []
+        new_line = "\n" if "bilingual-gpt-neox" in ollm_model_id else "<NL>"
         for user_text, system_text in chatbot:
-            sft_input_text.append("ユーザー: " + user_text + "<NL>システム: " + system_text)
+            sft_input_text.append("ユーザー: " + user_text + f"{new_line}システム: " + system_text)
 
-        sft_input_text = "<NL>".join(sft_input_text)
+        sft_input_text = f"{new_line}".join(sft_input_text)
 
         prompt = sft_input_text
     elif "stablelm" in ollm_model_id:
@@ -63,7 +64,8 @@ def retreive_output_text(input_text, output_text, ollm_model_id):
         str: Retreived output text.
     """
     if "instruction-sft" in ollm_model_id or "instruction-ppo" in ollm_model_id:
-        output_text = output_text.split("<NL>")[-1].replace("システム: ", "")
+        new_line = "\n" if "bilingual-gpt-neox" in ollm_model_id else "<NL>"
+        output_text = output_text.split(f"{new_line}")[-1].replace("システム: ", "")
 
     elif "stablelm" in ollm_model_id:
         if model_cache.get("preloaded_streamer") is not None:

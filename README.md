@@ -44,9 +44,10 @@ To download the model:
 4. The downloaded model file will be stored in the `.cache/huggingface/hub` directory of your home directory.
 
 ### Model List
+
 | Provider | Model Names |
 | --- | --- |
-| rinna | japanese-gpt-neox-3.6b, japanese-gpt-neox-3.6b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
+| rinna | bilingual-gpt-neox-4b, bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b, japanese-gpt-neox-3.6b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
 | TheBloke | Llama-2-7b-Chat-GPTQ, Llama-2-13B-chat-GPTQ |
 | stabilityai | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b |
 | cyberagent | open-calm-small, open-calm-medium, open-calm-large, open-calm-1b, open-calm-3b, open-calm-7b |
@@ -61,7 +62,12 @@ To download the model:
 
 ![UI image](images/open-ollm-webui_ui_image_1.png)
 
-## Model Credit
+## Credit: rinna
+
+* **Developed by**: [rinna株式会社](https://rinna.co.jp/) Copyright (c) 2023 rinna Co., Ltd.
+* **License**: [The MIT license](https://opensource.org/licenses/MIT)
+
+## Credit: OpenCALM
 
 * **Developed by**: [CyberAgent, Inc.](https://www.cyberagent.co.jp/)
 * **Model type**: Transformer-based Language Model

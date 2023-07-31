@@ -118,7 +118,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     inputs = tokenizer(
         [prompt],
         return_tensors="pt",
-        add_special_tokens=False if "japanese-gpt-neox" in ollm_model_id else True,
+        add_special_tokens=False if "gpt-neox" in ollm_model_id else True,
     ).to(model.device)
 
     t1 = time.time()
@@ -172,8 +172,8 @@ def translate_change(translate_chk):
 
 def on_ui_tabs():
     ollm_model_ids = get_ollm_model_ids()
-    ollm_model_index = ollm_model_ids.index("rinna/japanese-gpt-neox-3.6b-instruction-ppo") \
-        if "rinna/japanese-gpt-neox-3.6b-instruction-ppo" in ollm_model_ids else 0
+    ollm_model_index = ollm_model_ids.index("rinna/bilingual-gpt-neox-4b-instruction-sft") \
+        if "rinna/bilingual-gpt-neox-4b-instruction-sft" in ollm_model_ids else 0
 
     block = gr.Blocks().queue()
     block.title = "Open LLM WebUI"

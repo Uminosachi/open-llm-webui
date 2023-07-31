@@ -17,6 +17,8 @@ def get_ollm_model_ids():
         list: List of Open LLM model IDs.
     """
     ollm_model_ids = [
+        "rinna/bilingual-gpt-neox-4b",
+        "rinna/bilingual-gpt-neox-4b-instruction-sft",
         "rinna/japanese-gpt-neox-3.6b",
         "rinna/japanese-gpt-neox-3.6b-instruction-sft",
         "rinna/japanese-gpt-neox-3.6b-instruction-sft-v2",
@@ -48,7 +50,7 @@ def get_model_and_tokenizer_class(ollm_model_id):
         tuple(class, class, dict, dict): Tuple of model class, tokenizer class, model kwargs, and tokenizer kwargs.
     """
     if ("open-calm" in ollm_model_id or
-            "japanese-gpt-neox" in ollm_model_id or
+            "gpt-neox" in ollm_model_id or
             "stablelm" in ollm_model_id):
         model_class = AutoModelForCausalLM
         tokenizer_class = AutoTokenizer
@@ -81,7 +83,7 @@ def get_model_and_tokenizer_class(ollm_model_id):
         use_fast=True,
     )
 
-    if "japanese-gpt-neox" in ollm_model_id:
+    if "gpt-neox" in ollm_model_id:
         tokenizer_kwargs["use_fast"] = False
 
     elif "-GPTQ" in ollm_model_id:
