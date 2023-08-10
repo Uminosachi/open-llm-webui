@@ -10,6 +10,7 @@ model_cache = UserDict(
         preloaded_model=None,
         preloaded_tokenizer=None,
         preloaded_streamer=None,
+        preloaded_device=None,
     ))
 
 

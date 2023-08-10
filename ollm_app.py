@@ -40,7 +40,8 @@ def download_model(ollm_model_id, local_files_only=False):
 
 
 @clear_cache_decorator
-def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk):
+def ollm_inference(chatbot, ollm_model_id, input_text_box,
+                   max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk, cpu_execution_chk=False):
     """Open LLM inference.
 
     Args:
@@ -74,7 +75,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     if dwonload_result != _DOWNLOAD_COMPLETED:
         return input_text_box, chatbot, dwonload_result, ""
 
-    model_params = get_model_and_tokenizer_class(ollm_model_id)
+    model_params = get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk)
 
     pmnop = "pretrained_model_name_or_path"
 
@@ -106,9 +107,10 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
         model_cache["preloaded_model_id"] = ollm_model_id
         model_cache["preloaded_model"] = model
         model_cache["preloaded_tokenizer"] = tokenizer
+        model_cache["preloaded_device"] = "cpu device" if cpu_execution_chk else "auto device"
         clear_cache()
     else:
-        print("Using preloaded model")
+        print("Using preloaded model on {}".format(model_cache.get("preloaded_device")))
         model = model_cache["preloaded_model"]
         tokenizer = model_cache["preloaded_tokenizer"]
 
@@ -200,7 +202,7 @@ def on_ui_tabs():
                             ollm_model_id = gr.Dropdown(label="LLM model ID", elem_id="ollm_model_id", choices=ollm_model_ids,
                                                         value=ollm_model_ids[ollm_model_index], show_label=True)
                         with gr.Row():
-                            translate_chk = gr.Checkbox(label="Translate (ja->en/en->ja)", elem_id="translate_chk", value=False, show_label=True)
+                            cpu_execution_chk = gr.Checkbox(label="CPU execution", elem_id="cpu_execution_chk", value=False, show_label=True)
                     with gr.Column():
                         with gr.Row():
                             download_model_btn = gr.Button("Download model", elem_id="download_model_btn")
@@ -216,6 +218,7 @@ def on_ui_tabs():
                     max_new_tokens = gr.Slider(minimum=1, maximum=512, step=1, value=128, label="Max new tokens", elem_id="max_new_tokens")
                 with gr.Row():
                     with gr.Accordion("Advanced options", open=False):
+                        translate_chk = gr.Checkbox(label="Translate (ja->en/en->ja)", elem_id="translate_chk", value=False, show_label=True)
                         temperature = gr.Slider(minimum=0.1, maximum=1.0, step=0.1, value=0.7, label="Temperature", elem_id="temperature")
                         top_k = gr.Slider(minimum=1, maximum=200, step=1, value=50, label="Top k", elem_id="top_k")
                         top_p = gr.Slider(minimum=0.1, maximum=1.0, step=0.1, value=1.0, label="Top p", elem_id="top_p")
@@ -230,7 +233,8 @@ def on_ui_tabs():
             download_model_btn.click(fn=download_model, inputs=[ollm_model_id], outputs=[status_text])
             translate_chk.change(fn=translate_change, inputs=[translate_chk], outputs=[input_text_box, status_text])
 
-            generate_inputs = [chatbot, ollm_model_id, input_text_box, max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk]
+            generate_inputs = [chatbot, ollm_model_id, input_text_box,
+                               max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk, cpu_execution_chk]
             generate_btn.click(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot]).then(
                 fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, translated_output_text])
             input_text_box.submit(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot]).then(

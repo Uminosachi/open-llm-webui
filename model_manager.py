@@ -47,7 +47,7 @@ def get_ollm_model_ids():
 
 
 @clear_cache_decorator
-def get_model_and_tokenizer_class(ollm_model_id):
+def get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk=False):
     """Get model and tokenizer class.
 
     Args:
@@ -87,8 +87,8 @@ def get_model_and_tokenizer_class(ollm_model_id):
         )
     else:
         model_kwargs = dict(
-            device_map="auto",
-            torch_dtype=torch.float16,
+            device_map="auto" if not cpu_execution_chk else "cpu",
+            torch_dtype=torch.float16 if not cpu_execution_chk else torch.float32,
         )
 
     tokenizer_kwargs = dict(
@@ -118,7 +118,7 @@ def get_model_and_tokenizer_class(ollm_model_id):
             # inject_fused_attention=False,  # Required for Llama 2 70B model at this time.
             use_safetensors=True,
             trust_remote_code=True,
-            device="cuda:0" if torch.cuda.is_available() else "cpu",
+            device="cuda:0" if (torch.cuda.is_available() and not cpu_execution_chk) else "cpu",
             use_triton=use_triton,
             quantize_config=None
         )
