@@ -76,6 +76,8 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
 
     model_params = get_model_and_tokenizer_class(ollm_model_id)
 
+    pmnop = "pretrained_model_name_or_path"
+
     print(f"Loading {ollm_model_id}")
     if (model_cache.get("preloaded_model_id") != ollm_model_id or
             model_cache.get("preloaded_model") is None or
@@ -84,7 +86,6 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
         for key in model_cache.keys():
             model_cache[key] = None
 
-        pmnop = "pretrained_model_name_or_path"
         if "quantize_config" in model_params.model_kwargs:
             model = model_params.model_class.from_quantized(
                 ollm_model_id if pmnop not in model_params.model_kwargs else model_params.model_kwargs.pop(pmnop),
@@ -120,14 +121,19 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
         **model_params.tokenizer_input_kwargs,
     ).to(model.device)
 
+    generate_kwargs = get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+    clear_cache()
+
     t1 = time.time()
     with torch.no_grad():
         tokens = model.generate(
-            **get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+            **generate_kwargs
         )
     t2 = time.time()
     elapsed_time = t2-t1
     print(f"Generation time: {elapsed_time} seconds")
+
+    clear_cache()
 
     output = tokenizer.decode(
         tokens[0],

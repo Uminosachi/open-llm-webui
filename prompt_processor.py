@@ -99,6 +99,9 @@ def retreive_output_text(input_text, output_text, ollm_model_id):
         else:
             output_text = output_text
 
+    elif "stablelm-instruct" in ollm_model_id:
+        output_text = output_text.split("### 応答: \n")[-1].rstrip("<|endoftext|>")
+
     elif "FreeWilly1" in ollm_model_id:
         output_text = output_text.split("### Response:\n")[-1]
 
