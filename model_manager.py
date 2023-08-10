@@ -2,12 +2,17 @@ import platform
 
 import torch
 from auto_gptq import AutoGPTQForCausalLM
-from transformers import (AutoModelForCausalLM, AutoTokenizer,
-                          LlamaForCausalLM, LlamaTokenizer,
+from transformers import (AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM, LlamaTokenizer,
                           StoppingCriteriaList, TextIteratorStreamer)
 
 from cache_manager import clear_cache_decorator, model_cache
 from start_messages import StopOnTokens
+
+
+class DictDotNotation(dict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__dict__ = self
 
 
 def get_ollm_model_ids():
@@ -25,6 +30,8 @@ def get_ollm_model_ids():
         "rinna/japanese-gpt-neox-3.6b-instruction-ppo",
         "TheBloke/Llama-2-7b-Chat-GPTQ",
         "TheBloke/Llama-2-13B-chat-GPTQ",
+        "stabilityai/japanese-stablelm-base-alpha-7b",
+        "stabilityai/japanese-stablelm-instruct-alpha-7b",
         "stabilityai/stablelm-tuned-alpha-3b",
         "stabilityai/stablelm-tuned-alpha-7b",
         "cyberagent/open-calm-small",
@@ -51,9 +58,13 @@ def get_model_and_tokenizer_class(ollm_model_id):
     """
     if ("open-calm" in ollm_model_id or
             "gpt-neox" in ollm_model_id or
-            "stablelm" in ollm_model_id):
+            "stablelm-tuned" in ollm_model_id):
         model_class = AutoModelForCausalLM
         tokenizer_class = AutoTokenizer
+
+    elif "japanese-stablelm" in ollm_model_id:
+        model_class = AutoModelForCausalLM
+        tokenizer_class = LlamaTokenizer
 
     elif "-GPTQ" in ollm_model_id:
         model_class = AutoGPTQForCausalLM
@@ -79,12 +90,23 @@ def get_model_and_tokenizer_class(ollm_model_id):
             device_map="auto",
             torch_dtype=torch.float16,
         )
+
     tokenizer_kwargs = dict(
         use_fast=True,
     )
 
+    tokenizer_input_kwargs = dict(
+        return_tensors="pt",
+        add_special_tokens=True,
+    )
+
+    tokenizer_decode_kwargs = dict(
+        skip_special_tokens=True,
+    )
+
     if "gpt-neox" in ollm_model_id:
         tokenizer_kwargs["use_fast"] = False
+        tokenizer_input_kwargs["add_special_tokens"] = False
 
     elif "-GPTQ" in ollm_model_id:
         model_basename = "gptq_model-4bit-128g"
@@ -101,9 +123,27 @@ def get_model_and_tokenizer_class(ollm_model_id):
             quantize_config=None
         )
 
+    elif "japanese-stablelm" in ollm_model_id:
+        model_kwargs.update(dict(
+            trust_remote_code=True,
+        ))
+
+        tokenizer_input_kwargs["add_special_tokens"] = False
+        tokenizer_decode_kwargs["skip_special_tokens"] = False
+
     print("model_class: " + model_class.__name__)
     print(f"model_kwargs: {model_kwargs}")
-    return model_class, tokenizer_class, model_kwargs, tokenizer_kwargs
+
+    model_params = DictDotNotation(
+        model_class=model_class,
+        tokenizer_class=tokenizer_class,
+        model_kwargs=model_kwargs,
+        tokenizer_kwargs=tokenizer_kwargs,
+        tokenizer_input_kwargs=tokenizer_input_kwargs,
+        tokenizer_decode_kwargs=tokenizer_decode_kwargs,
+    )
+
+    return model_params
 
 
 @clear_cache_decorator
@@ -129,7 +169,7 @@ def get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params):
 
     generate_kwargs.update(generate_params)
 
-    if "stablelm" in ollm_model_id:
+    if "stablelm-tuned" in ollm_model_id:
         stop = StopOnTokens()
         streamer = TextIteratorStreamer(
             tokenizer, timeout=10., skip_prompt=True, skip_special_tokens=True)

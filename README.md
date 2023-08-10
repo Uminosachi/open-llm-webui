@@ -49,9 +49,11 @@ To download the model:
 | --- | --- |
 | rinna | bilingual-gpt-neox-4b, bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b, japanese-gpt-neox-3.6b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
 | TheBloke | Llama-2-7b-Chat-GPTQ, Llama-2-13B-chat-GPTQ |
-| stabilityai | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b |
+| stabilityai | japanese-stablelm-base-alpha-7b, japanese-stablelm-instruct-alpha-7b, stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b |
 | cyberagent | open-calm-small, open-calm-medium, open-calm-large, open-calm-1b, open-calm-3b, open-calm-7b |
 | decapoda-research | llama-7b-hf, llama-13b-hf |
+
+* Please check the license in the Model Credit section below.
 
 ## Usage
 
@@ -74,7 +76,12 @@ To download the model:
 * **Developed by**: [Meta AI](https://ai.meta.com/) Copyright (c) 2023 Meta Platforms, Inc.
 * **License**: [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE)
 
-### StableLM
+### Japanese-StableLM-Instruct
+
+* **Developed by**: [Stability AI](https://stability.ai/) Copyright (c) 2023 Stability AI, Ltd.
+* **License**: [Japanese Stablelm Research License Agreement](https://huggingface.co/stabilityai/japanese-stablelm-instruct-alpha-7b/blob/main/LICENSE)
+
+### StableLM & Japanese-StableLM-Base
 
 * **Developed by**: [Stability AI](https://stability.ai/) Copyright (c) 2023 Stability AI, Ltd.
 * **License**: [Apache License 2.0](https://github.com/Stability-AI/StableLM/blob/main/LICENSE)

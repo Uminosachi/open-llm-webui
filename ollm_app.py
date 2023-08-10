@@ -5,8 +5,7 @@ import torch
 from huggingface_hub import snapshot_download
 
 from cache_manager import clear_cache, clear_cache_decorator, model_cache
-from model_manager import (get_generate_kwargs, get_model_and_tokenizer_class,
-                           get_ollm_model_ids)
+from model_manager import get_generate_kwargs, get_model_and_tokenizer_class, get_ollm_model_ids
 from prompt_processor import create_prompt, retreive_output_text
 from translator import load_translator, translate
 
@@ -75,7 +74,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     if dwonload_result != _DOWNLOAD_COMPLETED:
         return input_text_box, chatbot, dwonload_result, ""
 
-    model_class, tokenizer_class, model_kwargs, tokenizer_kwargs = get_model_and_tokenizer_class(ollm_model_id)
+    model_params = get_model_and_tokenizer_class(ollm_model_id)
 
     print(f"Loading {ollm_model_id}")
     if (model_cache.get("preloaded_model_id") != ollm_model_id or
@@ -85,21 +84,22 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
         for key in model_cache.keys():
             model_cache[key] = None
 
-        if "quantize_config" in model_kwargs:
-            model = model_class.from_quantized(
-                ollm_model_id if "pretrained_model_name_or_path" not in model_kwargs else model_kwargs.pop("pretrained_model_name_or_path"),
-                **model_kwargs,
+        pmnop = "pretrained_model_name_or_path"
+        if "quantize_config" in model_params.model_kwargs:
+            model = model_params.model_class.from_quantized(
+                ollm_model_id if pmnop not in model_params.model_kwargs else model_params.model_kwargs.pop(pmnop),
+                **model_params.model_kwargs,
             )
         else:
-            model = model_class.from_pretrained(
-                ollm_model_id if "pretrained_model_name_or_path" not in model_kwargs else model_kwargs.pop("pretrained_model_name_or_path"),
-                **model_kwargs,
+            model = model_params.model_class.from_pretrained(
+                ollm_model_id if pmnop not in model_params.model_kwargs else model_params.model_kwargs.pop(pmnop),
+                **model_params.model_kwargs,
             )
         model.tie_weights()
 
-        tokenizer = tokenizer_class.from_pretrained(
+        tokenizer = model_params.tokenizer_class.from_pretrained(
             ollm_model_id,
-            **tokenizer_kwargs,
+            **model_params.tokenizer_kwargs,
         )
 
         model_cache["preloaded_model_id"] = ollm_model_id
@@ -117,8 +117,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     print("Generating...")
     inputs = tokenizer(
         [prompt],
-        return_tensors="pt",
-        add_special_tokens=False if "gpt-neox" in ollm_model_id else True,
+        **model_params.tokenizer_input_kwargs,
     ).to(model.device)
 
     t1 = time.time()
@@ -130,7 +129,10 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
     elapsed_time = t2-t1
     print(f"Generation time: {elapsed_time} seconds")
 
-    output = tokenizer.decode(tokens[0], skip_special_tokens=True)
+    output = tokenizer.decode(
+        tokens[0],
+        **model_params.tokenizer_decode_kwargs,
+    )
 
     output = retreive_output_text(input_text_box, output, ollm_model_id)
 
