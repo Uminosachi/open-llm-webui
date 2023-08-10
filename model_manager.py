@@ -30,10 +30,10 @@ def get_ollm_model_ids():
         "rinna/japanese-gpt-neox-3.6b-instruction-ppo",
         "TheBloke/Llama-2-7b-Chat-GPTQ",
         "TheBloke/Llama-2-13B-chat-GPTQ",
-        "stabilityai/japanese-stablelm-base-alpha-7b",
-        "stabilityai/japanese-stablelm-instruct-alpha-7b",
         "stabilityai/stablelm-tuned-alpha-3b",
         "stabilityai/stablelm-tuned-alpha-7b",
+        "stabilityai/japanese-stablelm-base-alpha-7b",
+        "stabilityai/japanese-stablelm-instruct-alpha-7b",
         "cyberagent/open-calm-small",
         "cyberagent/open-calm-medium",
         "cyberagent/open-calm-large",
@@ -127,7 +127,9 @@ def get_model_and_tokenizer_class(ollm_model_id):
         model_kwargs.update(dict(
             trust_remote_code=True,
         ))
-
+        tokenizer_kwargs.update(dict(
+            pretrained_model_name_or_path="novelai/nerdstash-tokenizer-v1",
+        ))
         tokenizer_input_kwargs["add_special_tokens"] = False
         tokenizer_decode_kwargs["skip_special_tokens"] = False
 

@@ -12,3 +12,4 @@ protobuf==3.20.3
 pysbd
 sacremoses
 auto-gptq
+einops

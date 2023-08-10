@@ -98,7 +98,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, max_new_tokens, tempe
         model.tie_weights()
 
         tokenizer = model_params.tokenizer_class.from_pretrained(
-            ollm_model_id,
+            ollm_model_id if pmnop not in model_params.tokenizer_kwargs else model_params.tokenizer_kwargs.pop(pmnop),
             **model_params.tokenizer_kwargs,
         )
 
