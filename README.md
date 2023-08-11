@@ -37,11 +37,10 @@ python ollm_app.py
 ## Downloading the Model
 
 To download the model:
-
-1. Launch this application.
-2. Click on the "Download model" button next to the Open LLM model ID.
-3. Wait for the download to complete.
-4. The downloaded model file will be stored in the `.cache/huggingface/hub` directory of your home directory.
+* Launch this application.
+* Click on the "Download model" button next to the LLM model ID.
+* Wait for the download to complete.
+* 🔍 Note: The downloaded model file will be stored in the `.cache/huggingface/hub` directory of your home directory.
 
 ### Model List
 
@@ -57,10 +56,15 @@ To download the model:
 
 ## Usage
 
-* Enter your message in the Input text box.
-* Adjust the values of Max New Tokens, Temperature, Top k, Top p and Repetition penalty as necessary.
-* Press Enter on your keyboard or click the "Generate" button.
-* When you check the `Translate (ja->en/en->ja)`, Japanese input will be translated into English. Likewise, the responses will be translated back into Japanese (Please note that it may take some time to download the model for the first time).
+* Enter your message into the "Input text" box.
+* Under "Advanced options", adjust the values for "Max New Tokens", "Temperature", "Top k", "Top p", and "Repetition Penalty" as necessary.
+* Press "Enter" on your keyboard or click the "Generate" button.
+   - ⚠️ Note: If the cloud-based model has been updated, it might be downloaded upon execution.
+* If you enable the `CPU execution` checkbox, the model will utilize the argument `device_map="cpu"`.
+* When you enable the `Translate (ja->en/en->ja)` checkbox:
+   - Any input in Japanese will be translated to English.
+   - Responses in English will be translated back into Japanese.
+   - ⚠️ Note: Downloading the translation model for the first time may take some time.
 
 ![UI image](images/open-ollm-webui_ui_image_1.png)
 
@@ -69,7 +73,7 @@ To download the model:
 ### rinna
 
 * **Developed by**: [rinna Co., Ltd.](https://rinna.co.jp/) Copyright (c) 2023 rinna Co., Ltd.
-* **License**: [The MIT license](https://opensource.org/licenses/MIT)
+* **License**: [The MIT License](https://opensource.org/licenses/MIT)
 
 ### Llama 2
 

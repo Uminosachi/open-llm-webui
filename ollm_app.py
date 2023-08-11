@@ -54,6 +54,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box,
         top_p (float): Parameter for generate method.
         repetition_penalty (float): Parameter for generate method.
         translate_chk (bool): If True, translate output text.
+        cpu_execution_chk (bool, optional): If True, use CPU. Defaults to False.
 
     Returns:
         tuple(str, list, str): Input text, chatbot history, and inference result.
@@ -109,6 +110,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box,
         model_cache["preloaded_tokenizer"] = tokenizer
         model_cache["preloaded_device"] = "cpu device" if cpu_execution_chk else "auto device"
         clear_cache()
+
     else:
         print("Using preloaded model on {}".format(model_cache.get("preloaded_device")))
         model = model_cache["preloaded_model"]
