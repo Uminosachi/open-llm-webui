@@ -1,4 +1,5 @@
 import platform
+from dataclasses import dataclass, field
 
 import torch
 from auto_gptq import AutoGPTQForCausalLM
@@ -6,13 +7,204 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM,
                           StoppingCriteriaList, TextIteratorStreamer)
 
 from cache_manager import clear_cache_decorator, model_cache
+from registry import MODEL_REGISTRY, register_model
 from start_messages import StopOnTokens
 
 
-class DictDotNotation(dict):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.__dict__ = self
+@dataclass
+class LLMData:
+    model_class: object
+    tokenizer_class: object
+    model_kwargs: dict = field(default_factory=dict)
+    tokenizer_kwargs: dict = field(default_factory=dict)
+    tokenizer_input_kwargs: dict = field(default_factory=dict)
+    tokenizer_decode_kwargs: dict = field(default_factory=dict)
+
+    def cpu_execution(self, cpu_execution_chk=False):
+        if cpu_execution_chk:
+            self.model_kwargs.update({"device": "cpu"})
+
+
+@register_model("default")
+class DefaultModel(LLMData):
+    include_name: str = "default"
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoModelForCausalLM,
+            tokenizer_class=AutoTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype="auto",
+            ),
+            tokenizer_kwargs=dict(
+                use_fast=True,
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=True,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+        )
+
+
+@register_model("open-calm")
+class OpenCalmModel(LLMData):
+    include_name: str = "open-calm"
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoModelForCausalLM,
+            tokenizer_class=AutoTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype="auto",
+            ),
+            tokenizer_kwargs=dict(
+                use_fast=True,
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=True,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+        )
+
+
+@register_model("gpt-neox")
+class GPTNeoXModel(LLMData):
+    include_name: str = "gpt-neox"
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoModelForCausalLM,
+            tokenizer_class=AutoTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype="auto",
+            ),
+            tokenizer_kwargs=dict(
+                use_fast=False,
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=False,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+        )
+
+
+@register_model("stablelm-tuned")
+class StableLMTunedModel(LLMData):
+    include_name: str = "stablelm-tuned"
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoModelForCausalLM,
+            tokenizer_class=AutoTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype="auto",
+            ),
+            tokenizer_kwargs=dict(
+                use_fast=True,
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=True,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+        )
+
+
+@register_model("japanese-stablelm")
+class JapaneseStableLMModel(LLMData):
+    include_name: str = "japanese-stablelm"
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoModelForCausalLM,
+            tokenizer_class=LlamaTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype="auto",
+                trust_remote_code=True,
+            ),
+            tokenizer_kwargs=dict(
+                use_fast=True,
+                pretrained_model_name_or_path="novelai/nerdstash-tokenizer-v1",
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=False,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=False,
+            ),
+        )
+
+
+@register_model("llama")
+class LlamaModel(LLMData):
+    include_name: str = "llama-"
+
+    def __init__(self):
+        super().__init__(
+            model_class=LlamaForCausalLM,
+            tokenizer_class=LlamaTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype="auto",
+            ),
+            tokenizer_kwargs=dict(
+                use_fast=True,
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=True,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+        )
+
+
+@register_model("gptq")
+class GPTQModel(LLMData):
+    include_name: str = "-gptq"
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoGPTQForCausalLM,
+            tokenizer_class=AutoTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype="auto",
+                model_basename="gptq_model-4bit-128g",
+                use_safetensors=True,
+                trust_remote_code=True,
+                use_triton=False,
+                quantize_config=None,
+            ),
+            tokenizer_kwargs=dict(
+                use_fast=True,
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=True,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+        )
 
 
 def get_ollm_model_ids():
@@ -56,27 +248,15 @@ def get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk=False):
     Returns:
         tuple(class, class, dict, dict): Tuple of model class, tokenizer class, model kwargs, and tokenizer kwargs.
     """
-    if ("open-calm" in ollm_model_id or
-            "gpt-neox" in ollm_model_id or
-            "stablelm-tuned" in ollm_model_id):
-        model_class = AutoModelForCausalLM
-        tokenizer_class = AutoTokenizer
+    llm = None
+    for _, model_class in MODEL_REGISTRY.items():
+        if model_class.include_name in ollm_model_id.lower():
+            llm = model_class()
 
-    elif "japanese-stablelm" in ollm_model_id:
-        model_class = AutoModelForCausalLM
-        tokenizer_class = LlamaTokenizer
+    if llm is None:
+        llm = DefaultModel()
 
-    elif "-GPTQ" in ollm_model_id:
-        model_class = AutoGPTQForCausalLM
-        tokenizer_class = AutoTokenizer
-
-    elif "llama-" in ollm_model_id:
-        model_class = LlamaForCausalLM
-        tokenizer_class = LlamaTokenizer
-
-    else:
-        model_class = AutoModelForCausalLM
-        tokenizer_class = AutoTokenizer
+    llm.cpu_execution(cpu_execution_chk)
 
     # if "FreeWilly" in ollm_model_id:
     #     os.environ["SAFETENSORS_FAST_GPU"] = str(1)
@@ -85,67 +265,12 @@ def get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk=False):
         model_kwargs = dict(
             torch_dtype=torch.float32,
         )
-    else:
-        model_kwargs = dict(
-            device_map="auto" if not cpu_execution_chk else "cpu",
-            torch_dtype=torch.float16 if not cpu_execution_chk else torch.float32,
-        )
+        llm.model_kwargs.update(model_kwargs)
 
-    tokenizer_kwargs = dict(
-        use_fast=True,
-    )
+    print("model_class:", llm.model_class)
+    print(f"model_kwargs: {llm.model_kwargs}")
 
-    tokenizer_input_kwargs = dict(
-        return_tensors="pt",
-        add_special_tokens=True,
-    )
-
-    tokenizer_decode_kwargs = dict(
-        skip_special_tokens=True,
-    )
-
-    if "gpt-neox" in ollm_model_id:
-        tokenizer_kwargs["use_fast"] = False
-        tokenizer_input_kwargs["add_special_tokens"] = False
-
-    elif "-GPTQ" in ollm_model_id:
-        model_basename = "gptq_model-4bit-128g"
-        use_triton = False
-
-        model_kwargs = dict(
-            # revision="gptq-4bit-32g-actorder_True",
-            model_basename=model_basename,
-            # inject_fused_attention=False,  # Required for Llama 2 70B model at this time.
-            use_safetensors=True,
-            trust_remote_code=True,
-            device="cuda:0" if (torch.cuda.is_available() and not cpu_execution_chk) else "cpu",
-            use_triton=use_triton,
-            quantize_config=None
-        )
-
-    elif "japanese-stablelm" in ollm_model_id:
-        model_kwargs.update(dict(
-            trust_remote_code=True,
-        ))
-        tokenizer_kwargs.update(dict(
-            pretrained_model_name_or_path="novelai/nerdstash-tokenizer-v1",
-        ))
-        tokenizer_input_kwargs["add_special_tokens"] = False
-        tokenizer_decode_kwargs["skip_special_tokens"] = False
-
-    print("model_class: " + model_class.__name__)
-    print(f"model_kwargs: {model_kwargs}")
-
-    model_params = DictDotNotation(
-        model_class=model_class,
-        tokenizer_class=tokenizer_class,
-        model_kwargs=model_kwargs,
-        tokenizer_kwargs=tokenizer_kwargs,
-        tokenizer_input_kwargs=tokenizer_input_kwargs,
-        tokenizer_decode_kwargs=tokenizer_decode_kwargs,
-    )
-
-    return model_params
+    return llm
 
 
 @clear_cache_decorator
