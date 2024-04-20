@@ -12,7 +12,7 @@ from start_messages import StopOnTokens
 
 
 @dataclass
-class LLMData:
+class LLMConfig:
     model_class: object
     tokenizer_class: object
     model_kwargs: dict = field(default_factory=dict)
@@ -22,11 +22,11 @@ class LLMData:
 
     def cpu_execution(self, cpu_execution_chk=False):
         if cpu_execution_chk:
-            self.model_kwargs.update({"device": "cpu"})
+            self.model_kwargs.update({"device_map": "cpu"})
 
 
 @register_model("default")
-class DefaultModel(LLMData):
+class DefaultModel(LLMConfig):
     include_name: str = "default"
 
     def __init__(self):
@@ -51,7 +51,7 @@ class DefaultModel(LLMData):
 
 
 @register_model("open-calm")
-class OpenCalmModel(LLMData):
+class OpenCalmModel(LLMConfig):
     include_name: str = "open-calm"
 
     def __init__(self):
@@ -76,7 +76,7 @@ class OpenCalmModel(LLMData):
 
 
 @register_model("gpt-neox")
-class GPTNeoXModel(LLMData):
+class GPTNeoXModel(LLMConfig):
     include_name: str = "gpt-neox"
 
     def __init__(self):
@@ -101,7 +101,7 @@ class GPTNeoXModel(LLMData):
 
 
 @register_model("stablelm-tuned")
-class StableLMTunedModel(LLMData):
+class StableLMTunedModel(LLMConfig):
     include_name: str = "stablelm-tuned"
 
     def __init__(self):
@@ -126,7 +126,7 @@ class StableLMTunedModel(LLMData):
 
 
 @register_model("japanese-stablelm")
-class JapaneseStableLMModel(LLMData):
+class JapaneseStableLMModel(LLMConfig):
     include_name: str = "japanese-stablelm"
 
     def __init__(self):
@@ -153,7 +153,7 @@ class JapaneseStableLMModel(LLMData):
 
 
 @register_model("llama")
-class LlamaModel(LLMData):
+class LlamaModel(LLMConfig):
     include_name: str = "llama-"
 
     def __init__(self):
@@ -178,7 +178,7 @@ class LlamaModel(LLMData):
 
 
 @register_model("gptq")
-class GPTQModel(LLMData):
+class GPTQModel(LLMConfig):
     include_name: str = "-gptq"
 
     def __init__(self):
@@ -187,8 +187,7 @@ class GPTQModel(LLMData):
             tokenizer_class=AutoTokenizer,
             model_kwargs=dict(
                 device_map="auto",
-                torch_dtype="auto",
-                model_basename="gptq_model-4bit-128g",
+                torch_dtype=torch.float16,
                 use_safetensors=True,
                 trust_remote_code=True,
                 use_triton=False,
@@ -232,8 +231,6 @@ def get_ollm_model_ids():
         "cyberagent/open-calm-1b",
         "cyberagent/open-calm-3b",
         "cyberagent/open-calm-7b",
-        "decapoda-research/llama-7b-hf",
-        "decapoda-research/llama-13b-hf",
         ]
     return ollm_model_ids
 
@@ -262,12 +259,8 @@ def get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk=False):
     #     os.environ["SAFETENSORS_FAST_GPU"] = str(1)
 
     if platform.system() == "Darwin":
-        model_kwargs = dict(
-            torch_dtype=torch.float32,
-        )
-        llm.model_kwargs.update(model_kwargs)
+        llm.model_kwargs.update(dict(torch_dtype=torch.float32))
 
-    print("model_class:", llm.model_class)
     print(f"model_kwargs: {llm.model_kwargs}")
 
     return llm
