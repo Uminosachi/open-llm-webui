@@ -132,22 +132,20 @@ class JapaneseStableLMModel(LLMConfig):
     def __init__(self):
         super().__init__(
             model_class=AutoModelForCausalLM,
-            tokenizer_class=LlamaTokenizer,
+            tokenizer_class=AutoTokenizer,
             model_kwargs=dict(
                 device_map="auto",
-                torch_dtype="auto",
-                trust_remote_code=True,
+                torch_dtype=torch.float16,
+                low_cpu_mem_usage=True,
             ),
             tokenizer_kwargs=dict(
-                use_fast=True,
-                pretrained_model_name_or_path="novelai/nerdstash-tokenizer-v1",
             ),
             tokenizer_input_kwargs=dict(
                 return_tensors="pt",
                 add_special_tokens=False,
             ),
             tokenizer_decode_kwargs=dict(
-                skip_special_tokens=False,
+                skip_special_tokens=True,
             ),
         )
 
@@ -223,8 +221,8 @@ def get_ollm_model_ids():
         "TheBloke/Llama-2-13B-chat-GPTQ",
         "stabilityai/stablelm-tuned-alpha-3b",
         "stabilityai/stablelm-tuned-alpha-7b",
-        "stabilityai/japanese-stablelm-base-alpha-7b",
-        "stabilityai/japanese-stablelm-instruct-alpha-7b",
+        "stabilityai/japanese-stablelm-base-beta-7b",
+        "stabilityai/japanese-stablelm-instruct-beta-7b",
         "cyberagent/open-calm-small",
         "cyberagent/open-calm-medium",
         "cyberagent/open-calm-large",

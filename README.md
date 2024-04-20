@@ -48,9 +48,8 @@ To download the model:
 | --- | --- |
 | rinna | bilingual-gpt-neox-4b, bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b, japanese-gpt-neox-3.6b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
 | TheBloke | Llama-2-7b-Chat-GPTQ, Llama-2-13B-chat-GPTQ |
-| stabilityai | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-base-alpha-7b, japanese-stablelm-instruct-alpha-7b |
+| stabilityai | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-base-beta-7b, japanese-stablelm-instruct-beta-7b |
 | cyberagent | open-calm-small, open-calm-medium, open-calm-large, open-calm-1b, open-calm-3b, open-calm-7b |
-| decapoda-research | llama-7b-hf, llama-13b-hf |
 
 * Please check the license in the Model Credit section below.
 
