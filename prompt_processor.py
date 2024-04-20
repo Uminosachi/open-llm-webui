@@ -30,21 +30,26 @@ def create_prompt(chatbot, ollm_model_id, input_text_box):
         prompt = start_message + "".join(["".join(["<|USER|>"+item[0], "<|ASSISTANT|>"+item[1]]) for item in chatbot])
 
     elif "stablelm-instruct" in ollm_model_id:
-        def build_prompt(user_query, inputs="", sep="\n\n### "):
-            sys_msg = "以下は、タスクを説明する指示と、文脈のある入力の組み合わせです。要求を適切に満たす応答を書きなさい。"
-            p = sys_msg
-            roles = ["指示", "応答"]
-            msgs = [": \n" + user_query, ": "]
-            if inputs:
-                roles.insert(1, "入力")
-                msgs.insert(1, ": \n" + inputs)
-            for role, msg in zip(roles, msgs):
-                p += sep + role + msg
+        # def build_prompt(user_query, inputs="", sep="\n\n### "):
+        #     sys_msg = "以下は、タスクを説明する指示と、文脈のある入力の組み合わせです。要求を適切に満たす応答を書きなさい。"
+        #     p = sys_msg
+        #     roles = ["指示", "応答"]
+        #     msgs = [": \n" + user_query, ": "]
+        #     if inputs:
+        #         roles.insert(1, "入力")
+        #         msgs.insert(1, ": \n" + inputs)
+        #     for role, msg in zip(roles, msgs):
+        #         p += sep + role + msg
+        #     return p
+
+        def build_prompt(user_query, inputs):
+            sys_msg = "<s>[INST] <<SYS>>\nあなたは役立つアシスタントです。\n<<SYS>>\n\n"
+            p = sys_msg + user_query + "\n\n" + inputs + " [/INST] "
             return p
 
         user_inputs = {
-            "user_query": input_text_box,
-            "inputs": ""
+            "user_query": "チャットボットとして応答に答えてください。",
+            "inputs": input_text_box,
         }
         prompt = build_prompt(**user_inputs)
 
@@ -100,7 +105,8 @@ def retreive_output_text(input_text, output_text, ollm_model_id):
             output_text = output_text
 
     elif "stablelm-instruct" in ollm_model_id:
-        output_text = output_text.split("### 応答: \n")[-1].rstrip("<|endoftext|>")
+        # output_text = output_text.split("### 応答: \n")[-1].rstrip("<|endoftext|>")
+        output_text = output_text.split("[/INST]")[-1].lstrip()
 
     elif "FreeWilly1" in ollm_model_id:
         output_text = output_text.split("### Response:\n")[-1]

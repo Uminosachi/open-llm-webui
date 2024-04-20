@@ -22,7 +22,8 @@ class LLMConfig:
 
     def cpu_execution(self, cpu_execution_chk=False):
         if cpu_execution_chk:
-            self.model_kwargs.update({"device_map": "cpu"})
+            update_dict = dict(device_map="cpu", torch_dtype=torch.float32)
+            self.model_kwargs.update(update_dict)
 
 
 @register_model("default")
