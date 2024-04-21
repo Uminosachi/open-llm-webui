@@ -6,7 +6,6 @@ from huggingface_hub import snapshot_download
 
 from cache_manager import clear_cache, clear_cache_decorator, model_cache
 from model_manager import get_generate_kwargs, get_model_and_tokenizer_class, get_ollm_model_ids
-from prompt_processor import retreive_output_text
 from translator import load_translator, translate
 
 # from huggingface_hub import try_to_load_from_cache
@@ -144,7 +143,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box,
         **model_params.tokenizer_decode_kwargs,
     )
 
-    output = retreive_output_text(input_text_box, output, ollm_model_id)
+    output = model_params.retreive_output_text(input_text_box, output, ollm_model_id)
 
     print("Generation complete")
     print("Output text: " + output)

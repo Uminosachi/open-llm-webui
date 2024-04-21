@@ -8,7 +8,7 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM,
 
 from cache_manager import clear_cache_decorator, model_cache
 from registry import MODEL_REGISTRY, register_model
-from start_messages import StopOnTokens, start_message, llama2_message
+from start_messages import StopOnTokens, llama2_message, start_message
 
 
 @dataclass
@@ -56,6 +56,10 @@ class DefaultModel(LLMConfig):
 
         return prompt
 
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+        return output_text
+
 
 @register_model("open-calm")
 class OpenCalmModel(LLMConfig):
@@ -86,6 +90,10 @@ class OpenCalmModel(LLMConfig):
         prompt = input_text_box
 
         return prompt
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+        return output_text
 
 
 @register_model("gpt-neox")
@@ -128,6 +136,14 @@ class GPTNeoXModel(LLMConfig):
 
         return prompt
 
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+        if "instruction-sft" in ollm_model_id or "instruction-ppo" in ollm_model_id:
+            new_line = "\n" if "bilingual-gpt-neox" in ollm_model_id else "<NL>"
+            output_text = output_text.split(f"{new_line}")[-1].replace("システム: ", "")
+
+        return output_text
+
 
 @register_model("stablelm-tuned")
 class StableLMTunedModel(LLMConfig):
@@ -158,6 +174,19 @@ class StableLMTunedModel(LLMConfig):
         prompt = start_message + "".join(["".join(["<|USER|>"+item[0], "<|ASSISTANT|>"+item[1]]) for item in chatbot])
 
         return prompt
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+        if model_cache.get("preloaded_streamer") is not None:
+            streamer = model_cache.get("preloaded_streamer")
+            partial_text = ""
+            for new_text in streamer:
+                # print(new_text)
+                partial_text += new_text
+
+            output_text = partial_text
+
+        return output_text
 
 
 @register_model("japanese-stablelm")
@@ -202,6 +231,13 @@ class JapaneseStableLMModel(LLMConfig):
 
         return prompt
 
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+        if "stablelm-instruct" in ollm_model_id:
+            output_text = output_text.split("[/INST]")[-1].lstrip()
+
+        return output_text
+
 
 @register_model("llama")
 class LlamaModel(LLMConfig):
@@ -237,6 +273,15 @@ class LlamaModel(LLMConfig):
 
         return prompt
 
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+        if "Llama-2-" in ollm_model_id:
+            output_text = output_text.split("[/INST]")[-1].lstrip()
+        elif "llama-" in ollm_model_id:
+            output_text = output_text.lstrip(input_text + "\n").lstrip()
+
+        return output_text
+
 
 @register_model("gptq")
 class GPTQModel(LLMConfig):
@@ -271,6 +316,10 @@ class GPTQModel(LLMConfig):
         prompt = input_text_box
 
         return prompt
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+        return output_text
 
 
 def get_ollm_model_ids():
