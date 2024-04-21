@@ -6,7 +6,7 @@ from huggingface_hub import snapshot_download
 
 from cache_manager import clear_cache, clear_cache_decorator, model_cache
 from model_manager import get_generate_kwargs, get_model_and_tokenizer_class, get_ollm_model_ids
-from prompt_processor import create_prompt, retreive_output_text
+from prompt_processor import retreive_output_text
 from translator import load_translator, translate
 
 # from huggingface_hub import try_to_load_from_cache
@@ -116,7 +116,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box,
         model = model_cache["preloaded_model"]
         tokenizer = model_cache["preloaded_tokenizer"]
 
-    prompt = create_prompt(chatbot, ollm_model_id, input_text_box)
+    prompt = model_params.create_prompt(chatbot, ollm_model_id, input_text_box)
 
     print("Input text: " + prompt)
     print("Generating...")

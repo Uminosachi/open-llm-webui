@@ -8,7 +8,7 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM,
 
 from cache_manager import clear_cache_decorator, model_cache
 from registry import MODEL_REGISTRY, register_model
-from start_messages import StopOnTokens
+from start_messages import StopOnTokens, start_message, llama2_message
 
 
 @dataclass
@@ -50,6 +50,12 @@ class DefaultModel(LLMConfig):
             ),
         )
 
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box):
+        prompt = input_text_box
+
+        return prompt
+
 
 @register_model("open-calm")
 class OpenCalmModel(LLMConfig):
@@ -74,6 +80,12 @@ class OpenCalmModel(LLMConfig):
                 skip_special_tokens=True,
             ),
         )
+
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box):
+        prompt = input_text_box
+
+        return prompt
 
 
 @register_model("gpt-neox")
@@ -100,6 +112,22 @@ class GPTNeoXModel(LLMConfig):
             ),
         )
 
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box):
+        if "instruction-sft" in ollm_model_id or "instruction-ppo" in ollm_model_id:
+            sft_input_text = []
+            new_line = "\n" if "bilingual-gpt-neox" in ollm_model_id else "<NL>"
+            for user_text, system_text in chatbot:
+                sft_input_text.append(f"ユーザー: {user_text}{new_line}システム: {system_text}")
+
+            sft_input_text = f"{new_line}".join(sft_input_text)
+
+            prompt = sft_input_text
+        else:
+            prompt = input_text_box
+
+        return prompt
+
 
 @register_model("stablelm-tuned")
 class StableLMTunedModel(LLMConfig):
@@ -124,6 +152,12 @@ class StableLMTunedModel(LLMConfig):
                 skip_special_tokens=True,
             ),
         )
+
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box):
+        prompt = start_message + "".join(["".join(["<|USER|>"+item[0], "<|ASSISTANT|>"+item[1]]) for item in chatbot])
+
+        return prompt
 
 
 @register_model("japanese-stablelm")
@@ -150,6 +184,24 @@ class JapaneseStableLMModel(LLMConfig):
             ),
         )
 
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box):
+        if "stablelm-instruct" in ollm_model_id:
+            def build_prompt(user_query, inputs):
+                sys_msg = "<s>[INST] <<SYS>>\nあなたは役立つアシスタントです。\n<<SYS>>\n\n"
+                p = sys_msg + user_query + "\n\n" + inputs + " [/INST] "
+                return p
+
+            user_inputs = {
+                "user_query": "チャットボットとして応答に答えてください。",
+                "inputs": input_text_box,
+            }
+            prompt = build_prompt(**user_inputs)
+        else:
+            prompt = input_text_box
+
+        return prompt
+
 
 @register_model("llama")
 class LlamaModel(LLMConfig):
@@ -174,6 +226,16 @@ class LlamaModel(LLMConfig):
                 skip_special_tokens=True,
             ),
         )
+
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box):
+        if len(chatbot) < 2:
+            prompt = f"[INST] <<SYS>>\n{llama2_message}\n<</SYS>>\n\n{input_text_box} [/INST] "
+        else:
+            prompt = f"[INST] <<SYS>>\n{llama2_message}\n<</SYS>>\n\n{chatbot[0][0]} [/INST] {chatbot[0][1]}"
+            prompt = prompt + "".join([(" [INST] "+item[0]+" [/INST] "+item[1]) for item in chatbot[1:]])
+
+        return prompt
 
 
 @register_model("gptq")
@@ -203,6 +265,12 @@ class GPTQModel(LLMConfig):
                 skip_special_tokens=True,
             ),
         )
+
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box):
+        prompt = input_text_box
+
+        return prompt
 
 
 def get_ollm_model_ids():

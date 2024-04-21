@@ -1,7 +1,6 @@
 from cache_manager import clear_cache_decorator
 from model_manager import model_cache
-from start_messages import (freewilly1_prompt, freewilly2_prompt,
-                            llama2_message, start_message)
+from start_messages import freewilly1_prompt, freewilly2_prompt, llama2_message, start_message
 
 
 @clear_cache_decorator
