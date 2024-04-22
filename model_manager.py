@@ -298,6 +298,8 @@ class GPTQModel(LLMConfig):
                 trust_remote_code=True,
                 use_triton=False,
                 quantize_config=None,
+                offload_buffers=True,
+                use_marlin=True,
             ),
             tokenizer_kwargs=dict(
                 use_fast=True,
@@ -395,17 +397,19 @@ def get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params):
     Returns:
         dict: Generate kwargs.
     """
+    pad_to_eos = [GPTQModel.include_name]
+    pad_token_id = tokenizer.eos_token_id if any([name in ollm_model_id.lower() for name in pad_to_eos]) else tokenizer.pad_token_id
     generate_kwargs = dict(
         **inputs,
         do_sample=True,
-        pad_token_id=tokenizer.pad_token_id,
+        pad_token_id=pad_token_id,
         bos_token_id=tokenizer.bos_token_id,
         eos_token_id=tokenizer.eos_token_id,
     )
 
     generate_kwargs.update(generate_params)
 
-    if "stablelm-tuned" in ollm_model_id:
+    if StableLMTunedModel.include_name in ollm_model_id.lower():
         stop = StopOnTokens()
         streamer = TextIteratorStreamer(
             tokenizer, timeout=10., skip_prompt=True, skip_special_tokens=True)
@@ -419,7 +423,7 @@ def get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params):
 
         generate_kwargs.update(stablelm_generate_kwargs)
 
-    if "-GPTQ" in ollm_model_id:
+    if GPTQModel.include_name in ollm_model_id.lower():
         generate_kwargs.pop("token_type_ids", None)
 
     # print("generate_kwargs: " + str(generate_kwargs))
