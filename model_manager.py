@@ -494,6 +494,8 @@ class PHI3Model(LLMConfig):
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id):
+        output_text = output_text.split(input_text, 1)[-1].lstrip()
+
         return output_text
 
 
