@@ -457,7 +457,7 @@ class PHI3Model(LLMConfig):
                 add_special_tokens=True,
             ),
             tokenizer_decode_kwargs=dict(
-                skip_special_tokens=True,
+                skip_special_tokens=False,
             ),
         )
 
@@ -494,7 +494,8 @@ class PHI3Model(LLMConfig):
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id):
-        output_text = output_text.split(input_text, 1)[-1].lstrip()
+        output_text = output_text.split("<|user|>")[-1].split("<|end|>")[1].split("<|assistant|>")
+        output_text = "".join([text.replace("<|end|>", "\n") for text in output_text if len(text) > 0])
 
         return output_text
 
