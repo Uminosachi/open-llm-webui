@@ -4,7 +4,7 @@ accelerate
 gradio
 gradio-client
 huggingface-hub
-transformers>=4.31.0
+transformers>=4.40.0
 safetensors
 sentencepiece
 xformers

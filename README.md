@@ -46,6 +46,7 @@ To download the model:
 
 | Provider | Model Names |
 | --- | --- |
+| microsoft | Phi-3-mini-4k-instruct, Phi-3-mini-128k-instruct |
 | rinna | bilingual-gpt-neox-4b, bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b, japanese-gpt-neox-3.6b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
 | TheBloke | Llama-2-7b-Chat-GPTQ, Llama-2-13B-chat-GPTQ |
 | stabilityai | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-base-beta-7b, japanese-stablelm-instruct-beta-7b |
@@ -68,6 +69,11 @@ To download the model:
 ![UI image](images/open-ollm-webui_ui_image_1.png)
 
 ## Model Credit
+
+### Phi-3
+
+* **Developed by**: [Microsoft](https://azure.microsoft.com/en-us/blog/introducing-phi-3-redefining-whats-possible-with-slms/) Copyright (c) 2024 Microsoft Corp.
+* **License**: [The MIT License](https://opensource.org/licenses/MIT)
 
 ### rinna
 

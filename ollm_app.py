@@ -5,7 +5,7 @@ import torch
 from huggingface_hub import snapshot_download
 
 from cache_manager import clear_cache, clear_cache_decorator, model_cache
-from model_manager import get_generate_kwargs, get_model_and_tokenizer_class, get_ollm_model_ids
+from model_manager import get_model_and_tokenizer_class, get_ollm_model_ids
 from translator import load_translator, translate
 
 # from huggingface_hub import try_to_load_from_cache
@@ -115,7 +115,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box,
         model = model_cache["preloaded_model"]
         tokenizer = model_cache["preloaded_tokenizer"]
 
-    prompt = model_params.create_prompt(chatbot, ollm_model_id, input_text_box)
+    prompt = model_params.create_prompt(chatbot, ollm_model_id, input_text_box, tokenizer)
 
     print("Input text: " + prompt)
     print("Generating...")
@@ -124,7 +124,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box,
         **model_params.tokenizer_input_kwargs,
     ).to(model.device)
 
-    generate_kwargs = get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+    generate_kwargs = model_params.get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
     clear_cache()
 
     t1 = time.time()
@@ -183,8 +183,8 @@ def translate_change(translate_chk):
 
 def on_ui_tabs():
     ollm_model_ids = get_ollm_model_ids()
-    ollm_model_index = ollm_model_ids.index("rinna/bilingual-gpt-neox-4b-instruction-sft") \
-        if "rinna/bilingual-gpt-neox-4b-instruction-sft" in ollm_model_ids else 0
+    ollm_model_index = ollm_model_ids.index("microsoft/Phi-3-mini-4k-instruct") \
+        if "microsoft/Phi-3-mini-4k-instruct" in ollm_model_ids else 0
 
     block = gr.Blocks().queue()
     block.title = "Open LLM WebUI"

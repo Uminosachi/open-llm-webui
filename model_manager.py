@@ -57,6 +57,20 @@ class DefaultModel(LLMConfig):
         return prompt
 
     @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = dict(
+            **inputs,
+            do_sample=True,
+            pad_token_id=tokenizer.pad_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+
+        generate_kwargs.update(generate_params)
+
+        return generate_kwargs
+
+    @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id):
         return output_text
 
@@ -90,6 +104,20 @@ class OpenCalmModel(LLMConfig):
         prompt = input_text_box
 
         return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = dict(
+            **inputs,
+            do_sample=True,
+            pad_token_id=tokenizer.pad_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+
+        generate_kwargs.update(generate_params)
+
+        return generate_kwargs
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id):
@@ -137,6 +165,20 @@ class GPTNeoXModel(LLMConfig):
         return prompt
 
     @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = dict(
+            **inputs,
+            do_sample=True,
+            pad_token_id=tokenizer.pad_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+
+        generate_kwargs.update(generate_params)
+
+        return generate_kwargs
+
+    @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id):
         if "instruction-sft" in ollm_model_id or "instruction-ppo" in ollm_model_id:
             new_line = "\n" if "bilingual-gpt-neox" in ollm_model_id else "<NL>"
@@ -174,6 +216,32 @@ class StableLMTunedModel(LLMConfig):
         prompt = start_message + "".join(["".join(["<|USER|>"+item[0], "<|ASSISTANT|>"+item[1]]) for item in chatbot])
 
         return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = dict(
+            **inputs,
+            do_sample=True,
+            pad_token_id=tokenizer.pad_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+
+        generate_kwargs.update(generate_params)
+
+        stop = StopOnTokens()
+        streamer = TextIteratorStreamer(tokenizer, timeout=10., skip_prompt=True, skip_special_tokens=True)
+
+        model_cache["preloaded_streamer"] = streamer
+
+        stablelm_generate_kwargs = dict(
+            streamer=streamer,
+            stopping_criteria=StoppingCriteriaList([stop]),
+        )
+
+        generate_kwargs.update(stablelm_generate_kwargs)
+
+        return generate_kwargs
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id):
@@ -232,6 +300,20 @@ class JapaneseStableLMModel(LLMConfig):
         return prompt
 
     @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = dict(
+            **inputs,
+            do_sample=True,
+            pad_token_id=tokenizer.pad_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+
+        generate_kwargs.update(generate_params)
+
+        return generate_kwargs
+
+    @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id):
         if "stablelm-instruct" in ollm_model_id:
             output_text = output_text.split("[/INST]")[-1].lstrip()
@@ -272,6 +354,20 @@ class LlamaModel(LLMConfig):
             prompt = prompt + "".join([(" [INST] "+item[0]+" [/INST] "+item[1]) for item in chatbot[1:]])
 
         return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = dict(
+            **inputs,
+            do_sample=True,
+            pad_token_id=tokenizer.pad_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+
+        generate_kwargs.update(generate_params)
+
+        return generate_kwargs
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id):
@@ -320,6 +416,83 @@ class GPTQModel(LLMConfig):
         return prompt
 
     @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = dict(
+            **inputs,
+            do_sample=True,
+            pad_token_id=tokenizer.eos_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+
+        generate_kwargs.update(generate_params)
+
+        generate_kwargs.pop("token_type_ids", None)
+
+        return generate_kwargs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+        return output_text
+
+
+@register_model("phi-3")
+class PHI3Model(LLMConfig):
+    include_name: str = "phi-3"
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoModelForCausalLM,
+            tokenizer_class=AutoTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype="auto",
+                trust_remote_code=True,
+            ),
+            tokenizer_kwargs=dict(
+                use_fast=True,
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=True,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+        )
+
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+        messages = [
+            {"role": "system", "content": "You are a helpful digital assistant. Please provide safe, ethical and accurate information to the user."},
+        ]
+        for user_text, assistant_text in chatbot:
+            if len(user_text) > 0:
+                messages.append({"role": "user", "content": user_text})
+            if len(assistant_text) > 0:
+                messages.append({"role": "assistant", "content": assistant_text})
+        prompt = tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+        )
+        return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = dict(
+            **inputs,
+            do_sample=True,
+            pad_token_id=tokenizer.pad_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+
+        generate_kwargs.update(generate_params)
+
+        return generate_kwargs
+
+    @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id):
         return output_text
 
@@ -331,6 +504,8 @@ def get_ollm_model_ids():
         list: List of Open LLM model IDs.
     """
     ollm_model_ids = [
+        "microsoft/Phi-3-mini-4k-instruct",
+        "microsoft/Phi-3-mini-128k-instruct",
         "rinna/bilingual-gpt-neox-4b",
         "rinna/bilingual-gpt-neox-4b-instruction-sft",
         "rinna/japanese-gpt-neox-3.6b",
@@ -382,49 +557,3 @@ def get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk=False):
     print(f"model_kwargs: {llm.model_kwargs}")
 
     return llm
-
-
-@clear_cache_decorator
-def get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params):
-    """Get generate kwargs.
-
-    Args:
-        tokenizer (class): Tokenizer class.
-        inputs (dict): Inputs for generate method.
-        ollm_model_id (str): String of Open LLM model ID.
-        generate_params (dict): Generate parameters.
-
-    Returns:
-        dict: Generate kwargs.
-    """
-    pad_to_eos = [GPTQModel.include_name]
-    pad_token_id = tokenizer.eos_token_id if any([name in ollm_model_id.lower() for name in pad_to_eos]) else tokenizer.pad_token_id
-    generate_kwargs = dict(
-        **inputs,
-        do_sample=True,
-        pad_token_id=pad_token_id,
-        bos_token_id=tokenizer.bos_token_id,
-        eos_token_id=tokenizer.eos_token_id,
-    )
-
-    generate_kwargs.update(generate_params)
-
-    if StableLMTunedModel.include_name in ollm_model_id.lower():
-        stop = StopOnTokens()
-        streamer = TextIteratorStreamer(
-            tokenizer, timeout=10., skip_prompt=True, skip_special_tokens=True)
-
-        model_cache["preloaded_streamer"] = streamer
-
-        stablelm_generate_kwargs = dict(
-            streamer=streamer,
-            stopping_criteria=StoppingCriteriaList([stop]),
-        )
-
-        generate_kwargs.update(stablelm_generate_kwargs)
-
-    if GPTQModel.include_name in ollm_model_id.lower():
-        generate_kwargs.pop("token_type_ids", None)
-
-    # print("generate_kwargs: " + str(generate_kwargs))
-    return generate_kwargs
