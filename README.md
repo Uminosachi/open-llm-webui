@@ -72,8 +72,13 @@ To download the model:
 
 ### Phi-3
 
-* **Developed by**: [Microsoft](https://azure.microsoft.com/en-us/blog/introducing-phi-3-redefining-whats-possible-with-slms/) Copyright (c) 2024 Microsoft Corp.
+* **Developed by**: [Microsoft](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) Copyright (c) 2024 Microsoft Corp.
 * **License**: [The MIT License](https://opensource.org/licenses/MIT)
+
+### OpenELM
+
+* **Developed by**: [Apple](https://huggingface.co/apple/OpenELM) Copyright (c) 2024 Apple Inc.
+* **License**: [Apple sample code license](https://huggingface.co/apple/OpenELM-1_1B-Instruct/blob/main/LICENSE)
 
 ### rinna
 

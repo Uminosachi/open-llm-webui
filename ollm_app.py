@@ -1,4 +1,5 @@
 import time
+from collections import UserDict
 
 import gradio as gr
 import torch
@@ -122,7 +123,11 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box,
     inputs = tokenizer(
         [prompt],
         **model_params.tokenizer_input_kwargs,
-    ).to(model.device)
+    )
+    if isinstance(inputs, UserDict):
+        inputs = {k: v.to(model.device) for k, v in inputs.items()}
+    else:
+        inputs = inputs.to(model.device)
 
     generate_kwargs = model_params.get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
     clear_cache()

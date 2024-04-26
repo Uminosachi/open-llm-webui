@@ -492,11 +492,66 @@ class PHI3Model(LLMConfig):
 
         return generate_kwargs
 
+
+@register_model("openelm")
+class OpenELMModel(LLMConfig):
+    include_name: str = "openelm"
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoModelForCausalLM,
+            tokenizer_class=AutoTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype="auto",
+                trust_remote_code=True,
+            ),
+            tokenizer_kwargs=dict(
+                pretrained_model_name_or_path="meta-llama/Llama-2-7b-hf",
+                use_fast=True,
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=True,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+        )
+
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+        messages = [
+            {"role": "system", "content": "Let's chat"},
+        ]
+        for user_text, assistant_text in chatbot:
+            if len(user_text) > 0:
+                messages.append({"role": "user", "content": user_text})
+            if len(assistant_text) > 0:
+                messages.append({"role": "assistant", "content": assistant_text})
+        prompt = tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+        )
+        return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = dict(
+            **inputs,
+            do_sample=True,
+            pad_token_id=0,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+
+        generate_kwargs.update(generate_params)
+
+        return generate_kwargs
+
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id):
-        output_text = output_text.split("<|user|>")[-1].split("<|end|>")[1].split("<|assistant|>")
-        output_text = "".join([text.replace("<|end|>", "\n") for text in output_text if len(text) > 0])
-
         return output_text
 
 
@@ -509,6 +564,8 @@ def get_ollm_model_ids():
     ollm_model_ids = [
         "microsoft/Phi-3-mini-4k-instruct",
         "microsoft/Phi-3-mini-128k-instruct",
+        "apple/OpenELM-1_1B-Instruct",
+        "apple/OpenELM-3B-Instruct",
         "rinna/bilingual-gpt-neox-4b",
         "rinna/bilingual-gpt-neox-4b-instruction-sft",
         "rinna/japanese-gpt-neox-3.6b",
