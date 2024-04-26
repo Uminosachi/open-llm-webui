@@ -492,6 +492,13 @@ class PHI3Model(LLMConfig):
 
         return generate_kwargs
 
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+        output_text = output_text.split("<|user|>")[-1].split("<|end|>")[1].split("<|assistant|>")
+        output_text = "".join([text.replace("<|end|>", "\n") for text in output_text if len(text) > 0])
+
+        return output_text
+
 
 @register_model("openelm")
 class OpenELMModel(LLMConfig):
