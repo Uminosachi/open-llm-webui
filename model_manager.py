@@ -552,6 +552,7 @@ class OpenELMModel(LLMConfig):
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id):
+        output_text = output_text.split("[/INST]")[-1].lstrip()
         return output_text
 
 

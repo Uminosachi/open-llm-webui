@@ -1,3 +1,4 @@
+import os
 import time
 from collections import UserDict
 
@@ -12,6 +13,8 @@ from translator import load_translator, translate
 # from huggingface_hub import try_to_load_from_cache
 # from transformers import OpenLlamaModel, OpenLlamaConfig
 
+if torch.cuda.is_available():
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
 
 _DOWNLOAD_COMPLETED = "Download complete"
 
