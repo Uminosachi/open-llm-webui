@@ -1,4 +1,5 @@
 import platform
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
 import torch
@@ -12,7 +13,7 @@ from start_messages import StopOnTokens, llama2_message, start_message
 
 
 @dataclass
-class LLMConfig:
+class LLMConfig(ABC):
     model_class: object
     tokenizer_class: object
     model_kwargs: dict = field(default_factory=dict)
@@ -24,6 +25,18 @@ class LLMConfig:
         if cpu_execution_chk:
             update_dict = dict(device_map="cpu", torch_dtype=torch.float32)
             self.model_kwargs.update(update_dict)
+
+    @abstractmethod
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+        pass
+
+    @abstractmethod
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        pass
+
+    @abstractmethod
+    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+        pass
 
 
 @register_model("default")
