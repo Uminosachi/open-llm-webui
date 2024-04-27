@@ -12,6 +12,13 @@ from registry import MODEL_REGISTRY, register_model
 from start_messages import StopOnTokens, llama2_message, start_message
 
 
+def replace_br(func):
+    def wrapper(self, chatbot, *args, **kwargs):
+        chatbot = [[item.replace("<br>", "\n") for item in sublist] for sublist in chatbot]
+        return func(self, chatbot, *args, **kwargs)
+    return wrapper
+
+
 @dataclass
 class LLMConfig(ABC):
     model_class: object
@@ -63,8 +70,9 @@ class DefaultModel(LLMConfig):
             ),
         )
 
+    @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
         prompt = input_text_box
 
         return prompt
@@ -112,8 +120,9 @@ class OpenCalmModel(LLMConfig):
             ),
         )
 
+    @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
         prompt = input_text_box
 
         return prompt
@@ -161,8 +170,9 @@ class GPTNeoXModel(LLMConfig):
             ),
         )
 
+    @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
         if "instruction-sft" in ollm_model_id or "instruction-ppo" in ollm_model_id:
             sft_input_text = []
             new_line = "\n" if "bilingual-gpt-neox" in ollm_model_id else "<NL>"
@@ -224,8 +234,9 @@ class StableLMTunedModel(LLMConfig):
             ),
         )
 
+    @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
         prompt = start_message + "".join(["".join(["<|USER|>"+item[0], "<|ASSISTANT|>"+item[1]]) for item in chatbot])
 
         return prompt
@@ -235,7 +246,7 @@ class StableLMTunedModel(LLMConfig):
         generate_kwargs = dict(
             **inputs,
             do_sample=True,
-            pad_token_id=tokenizer.pad_token_id,
+            pad_token_id=tokenizer.eos_token_id,
             bos_token_id=tokenizer.bos_token_id,
             eos_token_id=tokenizer.eos_token_id,
         )
@@ -294,8 +305,9 @@ class JapaneseStableLMModel(LLMConfig):
             ),
         )
 
+    @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
         if "stablelm-instruct" in ollm_model_id:
             def build_prompt(user_query, inputs):
                 sys_msg = "<s>[INST] <<SYS>>\nあなたは役立つアシスタントです。\n<<SYS>>\n\n"
@@ -317,7 +329,7 @@ class JapaneseStableLMModel(LLMConfig):
         generate_kwargs = dict(
             **inputs,
             do_sample=True,
-            pad_token_id=tokenizer.pad_token_id,
+            pad_token_id=tokenizer.eos_token_id,
             bos_token_id=tokenizer.bos_token_id,
             eos_token_id=tokenizer.eos_token_id,
         )
@@ -358,8 +370,9 @@ class LlamaModel(LLMConfig):
             ),
         )
 
+    @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
         if len(chatbot) < 2:
             prompt = f"[INST] <<SYS>>\n{llama2_message}\n<</SYS>>\n\n{input_text_box} [/INST] "
         else:
@@ -422,8 +435,9 @@ class GPTQModel(LLMConfig):
             ),
         )
 
+    @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
         prompt = input_text_box
 
         return prompt
@@ -474,6 +488,7 @@ class PHI3Model(LLMConfig):
             ),
         )
 
+    @replace_br
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
         messages = [
@@ -508,7 +523,7 @@ class PHI3Model(LLMConfig):
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id):
         output_text = output_text.split("<|user|>")[-1].split("<|end|>")[1].split("<|assistant|>")
-        output_text = "".join([text.replace("<|end|>", "\n") for text in output_text if len(text) > 0])
+        output_text = "\n".join([text.replace("<|end|>", "") for text in output_text if len(text) > 0]).lstrip()
 
         return output_text
 
@@ -539,6 +554,7 @@ class OpenELMModel(LLMConfig):
             ),
         )
 
+    @replace_br
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
         messages = [

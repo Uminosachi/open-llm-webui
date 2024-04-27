@@ -146,25 +146,25 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box,
 
     clear_cache()
 
-    output = tokenizer.decode(
+    output_text = tokenizer.decode(
         tokens[0],
         **model_params.tokenizer_decode_kwargs,
     )
 
-    output = model_params.retreive_output_text(input_text_box, output, ollm_model_id)
+    output_text = model_params.retreive_output_text(input_text_box, output_text, ollm_model_id)
 
     print("Generation complete")
-    print("Output text: " + output)
+    print("Output text: " + output_text)
 
     if translate_chk:
-        translated_output_text = translate(output, "en", "ja")
+        translated_output_text = translate(output_text, "en", "ja")
         print("Translated output text: " + translated_output_text)
     else:
         translated_output_text = ""
 
-    output = output.replace("\n", "<br>")
-    # chatbot.append((input_text_box, output))
-    chatbot[-1][1] = output
+    output_text = output_text.replace("\n", "<br>")
+    # chatbot.append((input_text_box, output_text))
+    chatbot[-1][1] = output_text
 
     return "", chatbot, f"Generation time: {elapsed_time} seconds", translated_output_text
 
