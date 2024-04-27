@@ -42,7 +42,7 @@ class LLMConfig(ABC):
         pass
 
     @abstractmethod
-    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         pass
 
 
@@ -92,7 +92,7 @@ class DefaultModel(LLMConfig):
         return generate_kwargs
 
     @clear_cache_decorator
-    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         return output_text
 
 
@@ -142,7 +142,7 @@ class OpenCalmModel(LLMConfig):
         return generate_kwargs
 
     @clear_cache_decorator
-    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         return output_text
 
 
@@ -202,7 +202,7 @@ class GPTNeoXModel(LLMConfig):
         return generate_kwargs
 
     @clear_cache_decorator
-    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         if "instruction-sft" in ollm_model_id or "instruction-ppo" in ollm_model_id:
             new_line = "\n" if "bilingual-gpt-neox" in ollm_model_id else "<NL>"
             output_text = output_text.split(f"{new_line}")[-1].replace("システム: ", "")
@@ -268,7 +268,7 @@ class StableLMTunedModel(LLMConfig):
         return generate_kwargs
 
     @clear_cache_decorator
-    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         if model_cache.get("preloaded_streamer") is not None:
             streamer = model_cache.get("preloaded_streamer")
             partial_text = ""
@@ -339,7 +339,7 @@ class JapaneseStableLMModel(LLMConfig):
         return generate_kwargs
 
     @clear_cache_decorator
-    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         if "stablelm-instruct" in ollm_model_id:
             output_text = output_text.split("[/INST]")[-1].lstrip()
 
@@ -396,11 +396,11 @@ class LlamaModel(LLMConfig):
         return generate_kwargs
 
     @clear_cache_decorator
-    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         if "Llama-2-" in ollm_model_id:
             output_text = output_text.split("[/INST]")[-1].lstrip()
         elif "llama-" in ollm_model_id:
-            output_text = output_text.lstrip(input_text + "\n").lstrip()
+            output_text = output_text.lstrip(input_text).lstrip()
 
         return output_text
 
@@ -459,7 +459,7 @@ class GPTQModel(LLMConfig):
         return generate_kwargs
 
     @clear_cache_decorator
-    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         return output_text
 
 
@@ -521,7 +521,7 @@ class PHI3Model(LLMConfig):
         return generate_kwargs
 
     @clear_cache_decorator
-    def retreive_output_text(self, input_text, output_text, ollm_model_id):
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         output_text = output_text.split("<|user|>")[-1].split("<|end|>")[1].split("<|assistant|>")
         output_text = "\n".join([text.replace("<|end|>", "") for text in output_text if len(text) > 0]).lstrip()
 
@@ -557,14 +557,22 @@ class OpenELMModel(LLMConfig):
     @replace_br
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+        chat_template = ("{% for message in messages %}"
+                         "{% if message['role'] == 'user' %}"
+                         "{{ message['content'] + '\\n' }}"
+                         "{% elif message['role'] == 'system' %}"
+                         "{{ message['content'] + '\\n' }}"
+                         "{% elif message['role'] == 'assistant' %}"
+                         "{{ message['content'] + '\\n' }}"
+                         "{% endif %}{% endfor %}")
+        tokenizer.chat_template = chat_template
+
         messages = [
             {"role": "system", "content": "Let's chat"},
         ]
         for user_text, assistant_text in chatbot:
-            if len(user_text) > 0:
-                messages.append({"role": "user", "content": user_text})
-            if len(assistant_text) > 0:
-                messages.append({"role": "assistant", "content": assistant_text})
+            messages.append({"role": "user", "content": user_text})
+            messages.append({"role": "assistant", "content": assistant_text})
         prompt = tokenizer.apply_chat_template(
                 messages,
                 tokenize=False,
@@ -587,8 +595,8 @@ class OpenELMModel(LLMConfig):
         return generate_kwargs
 
     @clear_cache_decorator
-    def retreive_output_text(self, input_text, output_text, ollm_model_id):
-        output_text = output_text.split("[/INST]")[-1].lstrip()
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        output_text = output_text.lstrip(input_text).lstrip()
         return output_text
 
 

@@ -151,7 +151,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box,
         **model_params.tokenizer_decode_kwargs,
     )
 
-    output_text = model_params.retreive_output_text(input_text_box, output_text, ollm_model_id)
+    output_text = model_params.retreive_output_text(prompt, output_text, ollm_model_id, tokenizer)
 
     print("Generation complete")
     print("Output text: " + output_text)
