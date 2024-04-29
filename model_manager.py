@@ -534,8 +534,7 @@ class PHI3Model(LLMConfig):
             {"role": "system", "content": "You are a helpful digital assistant. Please provide safe, ethical and accurate information to the user."},
         ]
         for user_text, assistant_text in chatbot:
-            if len(user_text) > 0:
-                messages.append({"role": "user", "content": user_text})
+            messages.append({"role": "user", "content": user_text})
             if len(assistant_text) > 0:
                 messages.append({"role": "assistant", "content": assistant_text})
         prompt = tokenizer.apply_chat_template(
@@ -612,7 +611,8 @@ class OpenELMModel(LLMConfig):
         ]
         for user_text, assistant_text in chatbot:
             messages.append({"role": "user", "content": user_text})
-            messages.append({"role": "assistant", "content": assistant_text})
+            if len(assistant_text) > 0:
+                messages.append({"role": "assistant", "content": assistant_text})
         prompt = tokenizer.apply_chat_template(
                 messages,
                 tokenize=False,
@@ -640,6 +640,65 @@ class OpenELMModel(LLMConfig):
         return output_text
 
 
+@register_model("gemma")
+class GemmaModel(LLMConfig):
+    include_name: str = "gemma"
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoModelForCausalLM,
+            tokenizer_class=AutoTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype=torch.bfloat16,
+                trust_remote_code=True,
+            ),
+            tokenizer_kwargs=dict(
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=False,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=False,
+            ),
+        )
+
+    @replace_br
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+        messages = []
+        for user_text, assistant_text in chatbot:
+            messages.append({"role": "user", "content": user_text})
+            if len(assistant_text) > 0:
+                messages.append({"role": "assistant", "content": assistant_text})
+        prompt = tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+        )
+        return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = dict(
+            **inputs,
+            do_sample=True,
+            pad_token_id=tokenizer.pad_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+
+        generate_kwargs.update(generate_params)
+
+        return generate_kwargs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        output_text = output_text.split("<start_of_turn>model\n")[-1].split("<end_of_turn>\n")[0].rstrip("<eos>")
+        return output_text
+
+
 def get_ollm_model_ids():
     """Get Open LLM and Llama model IDs.
 
@@ -649,10 +708,11 @@ def get_ollm_model_ids():
     ollm_model_ids = [
         "microsoft/Phi-3-mini-4k-instruct",
         "microsoft/Phi-3-mini-128k-instruct",
+        "google/gemma-2b-it",
+        "google/gemma-1.1-2b-it",
         "apple/OpenELM-1_1B-Instruct",
         "apple/OpenELM-3B-Instruct",
         "rinna/bilingual-gpt-neox-4b-instruction-sft",
-        "rinna/japanese-gpt-neox-3.6b-instruction-sft",
         "rinna/japanese-gpt-neox-3.6b-instruction-sft-v2",
         "rinna/japanese-gpt-neox-3.6b-instruction-ppo",
         "TheBloke/Llama-2-7b-Chat-GPTQ",
@@ -661,9 +721,6 @@ def get_ollm_model_ids():
         "stabilityai/stablelm-tuned-alpha-7b",
         "stabilityai/japanese-stablelm-base-beta-7b",
         "stabilityai/japanese-stablelm-instruct-beta-7b",
-        "cyberagent/open-calm-small",
-        "cyberagent/open-calm-medium",
-        "cyberagent/open-calm-large",
         "cyberagent/open-calm-1b",
         "cyberagent/open-calm-3b",
         "cyberagent/open-calm-7b",

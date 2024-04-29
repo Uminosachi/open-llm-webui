@@ -47,11 +47,12 @@ To download the model:
 | Provider | Model Names |
 | --- | --- |
 | microsoft | Phi-3-mini-4k-instruct, Phi-3-mini-128k-instruct |
+| google | gemma-2b-it, gemma-1.1-2b-it |
 | apple | OpenELM-1_1B-Instruct, OpenELM-3B-Instruct |
-| rinna | bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
+| rinna | bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
 | TheBloke | Llama-2-7b-Chat-GPTQ, Llama-2-13B-chat-GPTQ |
 | stabilityai | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-base-beta-7b, japanese-stablelm-instruct-beta-7b |
-| cyberagent | open-calm-small, open-calm-medium, open-calm-large, open-calm-1b, open-calm-3b, open-calm-7b |
+| cyberagent | open-calm-1b, open-calm-3b, open-calm-7b |
 
 * Please check the license in the Model Credit section below.
 
@@ -75,6 +76,11 @@ To download the model:
 
 * **Developed by**: [Microsoft](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) Copyright (c) 2024 Microsoft Corp.
 * **License**: [The MIT License](https://opensource.org/licenses/MIT)
+
+### Gemma
+
+* **Developed by**: [Google](https://huggingface.co/google/gemma-2b-it) Copyright (c) 2024 Google LLC
+* **License**: [Gemma Terms of Use](https://ai.google.dev/gemma/terms)
 
 ### OpenELM
 
