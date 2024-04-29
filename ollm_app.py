@@ -224,7 +224,7 @@ def on_ui_tabs():
                         show_label=True,
                     )
                 with gr.Row():
-                    max_new_tokens = gr.Slider(minimum=1, maximum=512, step=1, value=128, label="Max new tokens", elem_id="max_new_tokens")
+                    max_new_tokens = gr.Slider(minimum=1, maximum=4096, step=1, value=256, label="Max new tokens", elem_id="max_new_tokens")
                 with gr.Row():
                     with gr.Accordion("Advanced options", open=False):
                         translate_chk = gr.Checkbox(label="Translate (ja->en/en->ja)", elem_id="translate_chk", value=False, show_label=True)
