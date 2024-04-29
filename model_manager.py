@@ -719,11 +719,7 @@ def get_ollm_model_ids():
         "TheBloke/Llama-2-13B-chat-GPTQ",
         "stabilityai/stablelm-tuned-alpha-3b",
         "stabilityai/stablelm-tuned-alpha-7b",
-        "stabilityai/japanese-stablelm-base-beta-7b",
         "stabilityai/japanese-stablelm-instruct-beta-7b",
-        "cyberagent/open-calm-1b",
-        "cyberagent/open-calm-3b",
-        "cyberagent/open-calm-7b",
         ]
     return ollm_model_ids
 
