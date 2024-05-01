@@ -27,6 +27,7 @@ class LLMConfig(ABC):
     tokenizer_kwargs: dict = field(default_factory=dict)
     tokenizer_input_kwargs: dict = field(default_factory=dict)
     tokenizer_decode_kwargs: dict = field(default_factory=dict)
+    output_text_only: bool = True
 
     def cpu_execution(self, cpu_execution_chk=False):
         if cpu_execution_chk:
@@ -68,6 +69,7 @@ class DefaultModel(LLMConfig):
             tokenizer_decode_kwargs=dict(
                 skip_special_tokens=True,
             ),
+            output_text_only=True,
         )
 
     @replace_br
@@ -118,6 +120,7 @@ class OpenCalmModel(LLMConfig):
             tokenizer_decode_kwargs=dict(
                 skip_special_tokens=True,
             ),
+            output_text_only=False,
         )
 
     @replace_br
@@ -188,6 +191,7 @@ class GPTNeoXModel(LLMConfig):
             tokenizer_decode_kwargs=dict(
                 skip_special_tokens=True,
             ),
+            output_text_only=True,
         )
 
     @replace_br
@@ -225,10 +229,9 @@ class GPTNeoXModel(LLMConfig):
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
-        if "instruction-sft" in ollm_model_id or "instruction-ppo" in ollm_model_id:
-            output_text = output_text.split("ユーザー: ")[-1].split("システム: ")[-1]
-            output_text = output_text.replace("<NL>", "\n").lstrip()
-
+        # if "instruction-sft" in ollm_model_id or "instruction-ppo" in ollm_model_id:
+        #     output_text = output_text.split("ユーザー: ")[-1].split("システム: ")[-1]
+        #     output_text = output_text.replace("<NL>", "\n").lstrip()
         return output_text
 
 
@@ -261,6 +264,7 @@ class StableLMTunedModel(LLMConfig):
             tokenizer_decode_kwargs=dict(
                 skip_special_tokens=True,
             ),
+            output_text_only=False,
         )
 
     @replace_br
@@ -342,6 +346,7 @@ class JapaneseStableLMModel(LLMConfig):
             tokenizer_decode_kwargs=dict(
                 skip_special_tokens=True,
             ),
+            output_text_only=True,
         )
 
     @replace_br
@@ -379,9 +384,8 @@ class JapaneseStableLMModel(LLMConfig):
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
-        if "stablelm-instruct" in ollm_model_id:
-            output_text = output_text.split("[/INST]")[-1].lstrip()
-
+        # if "stablelm-instruct" in ollm_model_id:
+        #     output_text = output_text.split("[/INST]")[-1].lstrip()
         return output_text
 
 
@@ -407,6 +411,7 @@ class LlamaModel(LLMConfig):
             tokenizer_decode_kwargs=dict(
                 skip_special_tokens=True,
             ),
+            output_text_only=False,
         )
 
     @replace_br
@@ -472,6 +477,7 @@ class GPTQModel(LLMConfig):
             tokenizer_decode_kwargs=dict(
                 skip_special_tokens=True,
             ),
+            output_text_only=False,
         )
 
     @replace_br
@@ -523,8 +529,9 @@ class PHI3Model(LLMConfig):
                 add_special_tokens=False,
             ),
             tokenizer_decode_kwargs=dict(
-                skip_special_tokens=False,
+                skip_special_tokens=True,
             ),
+            output_text_only=True,
         )
 
     @replace_br
@@ -560,9 +567,8 @@ class PHI3Model(LLMConfig):
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
-        output_text = output_text.split("<|user|>")[-1].split("<|end|>")[1].split("<|assistant|>")
-        output_text = "\n".join([text.replace("<|end|>", "").lstrip() for text in output_text if len(text.strip()) > 0])
-
+        # output_text = output_text.split("<|user|>")[-1].split("<|end|>")[1].split("<|assistant|>")
+        # output_text = "\n".join([text.replace("<|end|>", "").lstrip() for text in output_text if len(text.strip()) > 0])
         return output_text
 
 
@@ -599,6 +605,7 @@ class OpenELMModel(LLMConfig):
             tokenizer_decode_kwargs=dict(
                 skip_special_tokens=True,
             ),
+            output_text_only=True,
         )
 
     @replace_br
@@ -636,7 +643,7 @@ class OpenELMModel(LLMConfig):
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
-        output_text = output_text.lstrip(input_text).lstrip()
+        # output_text = output_text.lstrip(input_text).lstrip()
         return output_text
 
 
@@ -660,8 +667,9 @@ class GemmaModel(LLMConfig):
                 add_special_tokens=False,
             ),
             tokenizer_decode_kwargs=dict(
-                skip_special_tokens=False,
+                skip_special_tokens=True,
             ),
+            output_text_only=True,
         )
 
     @replace_br
@@ -695,7 +703,7 @@ class GemmaModel(LLMConfig):
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
-        output_text = output_text.split("<start_of_turn>model\n")[-1].split("<end_of_turn>\n")[0].rstrip("<eos>")
+        # output_text = output_text.split("<start_of_turn>model\n")[-1].split("<end_of_turn>\n")[0].rstrip("<eos>")
         return output_text
 
 

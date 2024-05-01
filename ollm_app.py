@@ -143,11 +143,11 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box,
     t2 = time.time()
     elapsed_time = t2-t1
     print(f"Generation time: {elapsed_time} seconds")
-
     clear_cache()
 
+    input_ids = generate_kwargs["input_ids"]
     output_text = tokenizer.decode(
-        tokens[0],
+        tokens[0] if not model_params.output_text_only else tokens[0][len(input_ids[0]):],
         **model_params.tokenizer_decode_kwargs,
     )
 
