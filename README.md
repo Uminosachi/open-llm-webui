@@ -51,7 +51,7 @@ To download the model:
 | Apple         | OpenELM-1_1B-Instruct, OpenELM-3B-Instruct                                                 |
 | Rakuten       | RakutenAI-7B-chat, RakutenAI-7B-instruct                                                   |
 | rinna         | bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
-| TheBloke      | Llama-2-7b-Chat-GPTQ, Llama-2-13B-chat-GPTQ                                                |
+| TheBloke      | Llama-2-7b-Chat-GPTQ                                                                       |
 | stability.ai  | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-instruct-beta-7b       |
 
 * Please check the license in the Model Credit section below.

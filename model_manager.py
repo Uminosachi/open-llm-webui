@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 import torch
 from auto_gptq import AutoGPTQForCausalLM
-from transformers import (AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM, LlamaTokenizer,
+from transformers import (AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM, LlamaTokenizer,  # noqa: F401
                           StoppingCriteriaList, TextIteratorStreamer)
 
 from cache_manager import clear_cache_decorator, model_cache
@@ -389,69 +389,13 @@ class JapaneseStableLMModel(LLMConfig):
         return output_text
 
 
-@register_model("llama")
-class LlamaModel(LLMConfig):
-    include_name: str = "llama-"
-
-    def __init__(self):
-        super().__init__(
-            model_class=LlamaForCausalLM,
-            tokenizer_class=LlamaTokenizer,
-            model_kwargs=dict(
-                device_map="auto",
-                torch_dtype="auto",
-            ),
-            tokenizer_kwargs=dict(
-                use_fast=True,
-            ),
-            tokenizer_input_kwargs=dict(
-                return_tensors="pt",
-                add_special_tokens=True,
-            ),
-            tokenizer_decode_kwargs=dict(
-                skip_special_tokens=True,
-            ),
-            output_text_only=False,
-        )
-
-    @replace_br
-    @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
-        if len(chatbot) < 2:
-            prompt = f"[INST] <<SYS>>\n{llama2_message}\n<</SYS>>\n\n{input_text_box} [/INST] "
-        else:
-            prompt = f"[INST] <<SYS>>\n{llama2_message}\n<</SYS>>\n\n{chatbot[0][0]} [/INST] {chatbot[0][1]}"
-            prompt = prompt + "".join([(" [INST] "+item[0]+" [/INST] "+item[1]) for item in chatbot[1:]])
-
-        return prompt
-
-    @clear_cache_decorator
-    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        generate_kwargs = dict(
-            **inputs,
-            do_sample=True,
-            pad_token_id=tokenizer.pad_token_id,
-            bos_token_id=tokenizer.bos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-
-        generate_kwargs.update(generate_params)
-
-        return generate_kwargs
-
-    @clear_cache_decorator
-    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
-        if "Llama-2-" in ollm_model_id:
-            output_text = output_text.split("[/INST]")[-1].lstrip()
-        elif "llama-" in ollm_model_id:
-            output_text = output_text.lstrip(input_text).lstrip()
-
-        return output_text
-
-
 @register_model("gptq")
 class GPTQModel(LLMConfig):
     include_name: str = "-gptq"
+
+    system_message = llama2_message
+
+    prompt_template = "[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{prompt} [/INST] "
 
     def __init__(self):
         super().__init__(
@@ -461,7 +405,8 @@ class GPTQModel(LLMConfig):
                 device_map="auto",
                 torch_dtype=torch.float16,
                 use_safetensors=True,
-                trust_remote_code=True,
+                trust_remote_code=False,
+                revision="main",
                 use_triton=False,
                 quantize_config=None,
                 offload_buffers=True,
@@ -475,16 +420,15 @@ class GPTQModel(LLMConfig):
                 add_special_tokens=True,
             ),
             tokenizer_decode_kwargs=dict(
-                skip_special_tokens=True,
+                skip_special_tokens=False,
             ),
-            output_text_only=False,
+            output_text_only=True,
         )
 
     @replace_br
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
-        prompt = input_text_box
-
+        prompt = self.prompt_template.format(system=self.system_message, prompt=input_text_box)
         return prompt
 
     @clear_cache_decorator
@@ -505,6 +449,7 @@ class GPTQModel(LLMConfig):
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        output_text = output_text.rstrip("</s>")
         return output_text
 
 
@@ -804,7 +749,6 @@ def get_ollm_model_ids():
         "rinna/japanese-gpt-neox-3.6b-instruction-sft-v2",
         "rinna/japanese-gpt-neox-3.6b-instruction-ppo",
         "TheBloke/Llama-2-7b-Chat-GPTQ",
-        "TheBloke/Llama-2-13B-chat-GPTQ",
         "stabilityai/stablelm-tuned-alpha-3b",
         "stabilityai/stablelm-tuned-alpha-7b",
         "stabilityai/japanese-stablelm-instruct-beta-7b",
