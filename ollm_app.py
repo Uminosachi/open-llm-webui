@@ -89,8 +89,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box,
 
     print(f"Loading {ollm_model_id}")
     if (model_cache.get("preloaded_model_id") != ollm_model_id or
-            model_cache.get("preloaded_model") is None or
-            model_cache.get("preloaded_tokenizer") is None):
+            model_cache.get("preloaded_model") is None or model_cache.get("preloaded_tokenizer") is None):
 
         for key in model_cache.keys():
             model_cache[key] = None
@@ -105,6 +104,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box,
                 ollm_model_id if pmnop not in model_params.model_kwargs else model_params.model_kwargs.pop(pmnop),
                 **model_params.model_kwargs,
             )
+        model.eval()
         model.tie_weights()
 
         tokenizer = model_params.tokenizer_class.from_pretrained(
