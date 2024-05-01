@@ -44,15 +44,15 @@ To download the model:
 
 ### Model List
 
-| Provider | Model Names |
-| --- | --- |
-| microsoft | Phi-3-mini-4k-instruct, Phi-3-mini-128k-instruct |
-| google | gemma-2b-it, gemma-1.1-2b-it |
-| apple | OpenELM-1_1B-Instruct, OpenELM-3B-Instruct |
-| Rakuten | RakutenAI-7B-chat, RakutenAI-7B-instruct |
-| rinna | bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
-| TheBloke | Llama-2-7b-Chat-GPTQ, Llama-2-13B-chat-GPTQ |
-| stabilityai | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-instruct-beta-7b |
+| Provider      | Model Names                                                                                |
+|---------------|--------------------------------------------------------------------------------------------|
+| Microsoft     | Phi-3-mini-4k-instruct, Phi-3-mini-128k-instruct                                           |
+| Google        | gemma-2b-it, gemma-1.1-2b-it                                                               |
+| Apple         | OpenELM-1_1B-Instruct, OpenELM-3B-Instruct                                                 |
+| Rakuten       | RakutenAI-7B-chat, RakutenAI-7B-instruct                                                   |
+| rinna         | bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
+| TheBloke      | Llama-2-7b-Chat-GPTQ, Llama-2-13B-chat-GPTQ                                                |
+| stability.ai  | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-instruct-beta-7b       |
 
 * Please check the license in the Model Credit section below.
 
@@ -72,34 +72,13 @@ To download the model:
 
 ## Model Credit
 
-### Phi-3
-
-* **Developed by**: [Microsoft](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) **License**: [The MIT License](https://opensource.org/licenses/MIT)
-
-### Gemma
-
-* **Developed by**: [Google](https://huggingface.co/google/gemma-2b-it) **License**: [Gemma Terms of Use](https://ai.google.dev/gemma/terms)
-
-### OpenELM
-
-* **Developed by**: [Apple](https://huggingface.co/apple/OpenELM) **License**: [Apple sample code license](https://huggingface.co/apple/OpenELM-1_1B-Instruct/blob/main/LICENSE)
-
-### RakutenAI
-
-* **Developed by**: [Rakuten](https://huggingface.co/Rakuten/RakutenAI-7B-chat) **License**: [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md)
-
-### rinna
-
-* **Developed by**: [rinna Co., Ltd.](https://rinna.co.jp/) **License**: [The MIT License](https://opensource.org/licenses/MIT)
-
-### Llama 2
-
-* **Developed by**: [Meta AI](https://ai.meta.com/) **License**: [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE)
-
-### StableLM
-
-* **Developed by**: [Stability AI](https://stability.ai/) **License**: [Apache License 2.0](https://github.com/Stability-AI/StableLM/blob/main/LICENSE)
-
-### Japanese-StableLM-Instruct
-
-* **Developed by**: [Stability AI](https://stability.ai/) **License**: [Japanese Stablelm Research License Agreement](https://huggingface.co/stabilityai/japanese-stablelm-instruct-alpha-7b/blob/main/LICENSE)
+| Model                        | Developer           | License                                                        |
+|------------------------------|---------------------|----------------------------------------------------------------|
+| Phi-3                        | Microsoft           | [The MIT License](https://opensource.org/licenses/MIT)         |
+| Gemma                        | Google              | [Gemma Terms of Use](https://ai.google.dev/gemma/terms)        |
+| OpenELM                      | Apple               | [Apple sample code license](https://huggingface.co/apple/OpenELM-1_1B-Instruct/blob/main/LICENSE) |
+| RakutenAI                    | Rakuten             | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
+| rinna                        | rinna               | [The MIT License](https://opensource.org/licenses/MIT)         |
+| Llama 2                      | Meta AI             | [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE) |
+| StableLM                     | Stability AI        | [Apache License 2.0](https://github.com/Stability-AI/StableLM/blob/main/LICENSE) |
+| Japanese-StableLM-Instruct   | Stability AI        | [Japanese Stablelm Research License Agreement](https://huggingface.co/stabilityai/japanese-stablelm-instruct-alpha-7b/blob/main/LICENSE) |
