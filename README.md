@@ -49,6 +49,7 @@ To download the model:
 | microsoft | Phi-3-mini-4k-instruct, Phi-3-mini-128k-instruct |
 | google | gemma-2b-it, gemma-1.1-2b-it |
 | apple | OpenELM-1_1B-Instruct, OpenELM-3B-Instruct |
+| Rakuten | RakutenAI-7B-chat, RakutenAI-7B-instruct |
 | rinna | bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
 | TheBloke | Llama-2-7b-Chat-GPTQ, Llama-2-13B-chat-GPTQ |
 | stabilityai | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-instruct-beta-7b |
@@ -73,35 +74,32 @@ To download the model:
 
 ### Phi-3
 
-* **Developed by**: [Microsoft](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) Copyright (c) 2024 Microsoft Corp.
-* **License**: [The MIT License](https://opensource.org/licenses/MIT)
+* **Developed by**: [Microsoft](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) **License**: [The MIT License](https://opensource.org/licenses/MIT)
 
 ### Gemma
 
-* **Developed by**: [Google](https://huggingface.co/google/gemma-2b-it) Copyright (c) 2024 Google LLC
-* **License**: [Gemma Terms of Use](https://ai.google.dev/gemma/terms)
+* **Developed by**: [Google](https://huggingface.co/google/gemma-2b-it) **License**: [Gemma Terms of Use](https://ai.google.dev/gemma/terms)
 
 ### OpenELM
 
-* **Developed by**: [Apple](https://huggingface.co/apple/OpenELM) Copyright (c) 2024 Apple Inc.
-* **License**: [Apple sample code license](https://huggingface.co/apple/OpenELM-1_1B-Instruct/blob/main/LICENSE)
+* **Developed by**: [Apple](https://huggingface.co/apple/OpenELM) **License**: [Apple sample code license](https://huggingface.co/apple/OpenELM-1_1B-Instruct/blob/main/LICENSE)
+
+### RakutenAI
+
+* **Developed by**: [Rakuten](https://huggingface.co/Rakuten/RakutenAI-7B-chat) **License**: [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md)
 
 ### rinna
 
-* **Developed by**: [rinna Co., Ltd.](https://rinna.co.jp/) Copyright (c) 2023 rinna Co., Ltd.
-* **License**: [The MIT License](https://opensource.org/licenses/MIT)
+* **Developed by**: [rinna Co., Ltd.](https://rinna.co.jp/) **License**: [The MIT License](https://opensource.org/licenses/MIT)
 
 ### Llama 2
 
-* **Developed by**: [Meta AI](https://ai.meta.com/) Copyright (c) 2023 Meta Platforms, Inc.
-* **License**: [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE)
+* **Developed by**: [Meta AI](https://ai.meta.com/) **License**: [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE)
 
 ### StableLM
 
-* **Developed by**: [Stability AI](https://stability.ai/) Copyright (c) 2023 Stability AI, Ltd.
-* **License**: [Apache License 2.0](https://github.com/Stability-AI/StableLM/blob/main/LICENSE)
+* **Developed by**: [Stability AI](https://stability.ai/) **License**: [Apache License 2.0](https://github.com/Stability-AI/StableLM/blob/main/LICENSE)
 
 ### Japanese-StableLM-Instruct
 
-* **Developed by**: [Stability AI](https://stability.ai/) Copyright (c) 2023 Stability AI, Ltd.
-* **License**: [Japanese Stablelm Research License Agreement](https://huggingface.co/stabilityai/japanese-stablelm-instruct-alpha-7b/blob/main/LICENSE)
+* **Developed by**: [Stability AI](https://stability.ai/) **License**: [Japanese Stablelm Research License Agreement](https://huggingface.co/stabilityai/japanese-stablelm-instruct-alpha-7b/blob/main/LICENSE)

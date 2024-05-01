@@ -7,7 +7,7 @@ import torch
 from huggingface_hub import snapshot_download
 
 from cache_manager import clear_cache, clear_cache_decorator, model_cache
-from model_manager import get_model_and_tokenizer_class, get_ollm_model_ids
+from model_manager import get_llm_class, get_model_and_tokenizer_class, get_ollm_model_ids
 from translator import load_translator, translate
 
 # from huggingface_hub import try_to_load_from_cache
@@ -33,7 +33,11 @@ def download_model(ollm_model_id, local_files_only=False):
     if not local_files_only:
         print(f"Downloading {ollm_model_id}")
     try:
-        snapshot_download(repo_id=ollm_model_id, local_files_only=local_files_only)
+        llm_class = get_llm_class(ollm_model_id)
+        if hasattr(llm_class, "download_kwargs") and isinstance(llm_class.download_kwargs, dict):
+            snapshot_download(repo_id=ollm_model_id, local_files_only=local_files_only, **llm_class.download_kwargs)
+        else:
+            snapshot_download(repo_id=ollm_model_id, local_files_only=local_files_only)
     except FileNotFoundError:
         return "Model not found. Please click Download model button."
     except Exception as e:

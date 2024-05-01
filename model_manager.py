@@ -651,6 +651,8 @@ class OpenELMModel(LLMConfig):
 class GemmaModel(LLMConfig):
     include_name: str = "gemma"
 
+    download_kwargs = dict(ignore_patterns=["*.gguf"])
+
     def __init__(self):
         super().__init__(
             model_class=AutoModelForCausalLM,
@@ -707,6 +709,82 @@ class GemmaModel(LLMConfig):
         return output_text
 
 
+@register_model("rakuten")
+class RakutenAIModel(LLMConfig):
+    include_name: str = "rakuten"
+
+    download_kwargs = dict(ignore_patterns=["pytorch_model*"])
+
+    system_message = ("A chat between a curious user and an artificial intelligence assistant. "
+                      "The assistant gives helpful, detailed, and polite answers to the user's questions.")
+
+    chat_template = ("{% for message in messages %}"
+                     "{% if message['role'] == 'user' %}"
+                     "{{ 'USER: ' + message['content'] + ' '}}"
+                     "{% elif message['role'] == 'system' %}"
+                     "{{ message['content'] + ' '}}"
+                     "{% elif message['role'] == 'assistant' %}"
+                     "{% if message['content'] %}"
+                     "{{ 'ASSISTANT: ' + message['content'] + ' '}}"
+                     "{% else %}"
+                     "{{ 'ASSISTANT: ' }}"
+                     "{% endif %}"
+                     "{% endif %}{% endfor %}")
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoModelForCausalLM,
+            tokenizer_class=AutoTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype=torch.bfloat16,
+            ),
+            tokenizer_kwargs=dict(
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=False,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+            output_text_only=True,
+        )
+
+    @replace_br
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+        tokenizer.chat_template = self.chat_template
+        messages = [{"role": "system", "content": self.system_message}]
+        for user_text, assistant_text in chatbot:
+            messages.append({"role": "user", "content": user_text})
+            messages.append({"role": "assistant", "content": assistant_text})
+        prompt = tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+        )
+        return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = dict(
+            **inputs,
+            do_sample=True,
+            pad_token_id=tokenizer.eos_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+
+        generate_kwargs.update(generate_params)
+
+        return generate_kwargs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        return output_text
+
+
 def get_ollm_model_ids():
     """Get Open LLM and Llama model IDs.
 
@@ -720,6 +798,8 @@ def get_ollm_model_ids():
         "google/gemma-1.1-2b-it",
         "apple/OpenELM-1_1B-Instruct",
         "apple/OpenELM-3B-Instruct",
+        "Rakuten/RakutenAI-7B-chat",
+        "Rakuten/RakutenAI-7B-instruct",
         "rinna/bilingual-gpt-neox-4b-instruction-sft",
         "rinna/japanese-gpt-neox-3.6b-instruction-sft-v2",
         "rinna/japanese-gpt-neox-3.6b-instruction-ppo",
@@ -732,6 +812,25 @@ def get_ollm_model_ids():
     return ollm_model_ids
 
 
+def get_llm_class(ollm_model_id):
+    """Get LLM class.
+
+    Args:
+        ollm_model_id (str): String of LLM model ID.
+
+    Returns:
+        class: LLM class.
+    """
+    llm_class = None
+    for _, model_class in MODEL_REGISTRY.items():
+        if model_class.include_name in ollm_model_id.lower():
+            llm_class = model_class
+    if llm_class is None:
+        llm_class = DefaultModel
+
+    return llm_class
+
+
 @clear_cache_decorator
 def get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk=False):
     """Get model and tokenizer class.
@@ -742,13 +841,7 @@ def get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk=False):
     Returns:
         tuple(class, class, dict, dict): Tuple of model class, tokenizer class, model kwargs, and tokenizer kwargs.
     """
-    llm = None
-    for _, model_class in MODEL_REGISTRY.items():
-        if model_class.include_name in ollm_model_id.lower():
-            llm = model_class()
-
-    if llm is None:
-        llm = DefaultModel()
+    llm = get_llm_class(ollm_model_id)()
 
     llm.cpu_execution(cpu_execution_chk)
 
