@@ -7,11 +7,9 @@ import torch
 from huggingface_hub import snapshot_download
 
 from cache_manager import clear_cache, clear_cache_decorator, model_cache
-from model_manager import get_llm_class, get_model_and_tokenizer_class, get_ollm_model_ids
+from model_manager import get_model_and_tokenizer_class, get_ollm_model_ids
+from registry import get_llm_class
 from translator import load_translator, translate
-
-# from huggingface_hub import try_to_load_from_cache
-# from transformers import OpenLlamaModel, OpenLlamaConfig
 
 if torch.cuda.is_available():
     os.environ["CUDA_VISIBLE_DEVICES"] = str(0)

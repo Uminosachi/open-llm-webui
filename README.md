@@ -50,7 +50,7 @@ To download the model:
 | Google        | gemma-2b-it, gemma-1.1-2b-it                                                               |
 | Apple         | OpenELM-1_1B-Instruct, OpenELM-3B-Instruct                                                 |
 | Rakuten       | RakutenAI-7B-chat, RakutenAI-7B-instruct                                                   |
-| rinna         | bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
+| rinna         | youri-7b-chat, bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
 | TheBloke      | Llama-2-7b-Chat-GPTQ                                                                       |
 | stability.ai  | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-instruct-beta-7b       |
 
@@ -78,7 +78,8 @@ To download the model:
 | Gemma                        | Google              | [Gemma Terms of Use](https://ai.google.dev/gemma/terms)        |
 | OpenELM                      | Apple               | [Apple sample code license](https://huggingface.co/apple/OpenELM-1_1B-Instruct/blob/main/LICENSE) |
 | RakutenAI                    | Rakuten             | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
-| rinna                        | rinna               | [The MIT License](https://opensource.org/licenses/MIT)         |
+| Youri                        | rinna               | [Llama 2 Community License](https://ai.meta.com/llama/license/) |
+| Japanese GPT-NeoX            | rinna               | [The MIT License](https://opensource.org/licenses/MIT)         |
 | Llama 2                      | Meta AI             | [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE) |
 | StableLM                     | Stability AI        | [Apache License 2.0](https://github.com/Stability-AI/StableLM/blob/main/LICENSE) |
 | Japanese-StableLM-Instruct   | Stability AI        | [Japanese Stablelm Research License Agreement](https://huggingface.co/stabilityai/japanese-stablelm-instruct-alpha-7b/blob/main/LICENSE) |
