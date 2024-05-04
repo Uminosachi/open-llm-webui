@@ -47,12 +47,13 @@ To download the model:
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
 | Microsoft     | Phi-3-mini-4k-instruct, Phi-3-mini-128k-instruct                                           |
-| Google        | gemma-2b-it, gemma-1.1-2b-it                                                               |
+| Google        | gemma-1.1-2b-it, gemma-1.1-7b-it                                                           |
+| NVIDIA        | Llama3-ChatQA-1.5-8B                                                                       |
 | Apple         | OpenELM-1_1B-Instruct, OpenELM-3B-Instruct                                                 |
 | Rakuten       | RakutenAI-7B-chat, RakutenAI-7B-instruct                                                   |
 | rinna         | youri-7b-chat, bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
 | TheBloke      | Llama-2-7b-Chat-GPTQ                                                                       |
-| stability.ai  | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-instruct-beta-7b       |
+| Stability AI  | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-instruct-beta-7b       |
 
 * Please check the license in the Model Credit section below.
 
@@ -76,6 +77,7 @@ To download the model:
 |------------------------------|---------------------|----------------------------------------------------------------|
 | Phi-3                        | Microsoft           | [The MIT License](https://opensource.org/licenses/MIT)         |
 | Gemma                        | Google              | [Gemma Terms of Use](https://ai.google.dev/gemma/terms)        |
+| Llama3-ChatQA                | NVIDIA              | [Llama 3 Community License](https://huggingface.co/meta-llama/Meta-Llama-3-8B/blob/main/LICENSE) |
 | OpenELM                      | Apple               | [Apple sample code license](https://huggingface.co/apple/OpenELM-1_1B-Instruct/blob/main/LICENSE) |
 | RakutenAI                    | Rakuten             | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Youri                        | rinna               | [Llama 2 Community License](https://ai.meta.com/llama/license/) |

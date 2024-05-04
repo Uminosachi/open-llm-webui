@@ -33,3 +33,7 @@ llama2_message = ("You are a helpful, respectful and honest assistant. Always an
 
 rakuten_message = ("A chat between a curious user and an artificial intelligence assistant. "
                    "The assistant gives helpful, detailed, and polite answers to the user's questions.")
+
+chatqa_message = ("This is a chat between a user and an artificial intelligence assistant. "
+                  "The assistant gives helpful, detailed, and polite answers to the user's questions based on the context. "
+                  "The assistant should also indicate when the answer cannot be found in the context.")

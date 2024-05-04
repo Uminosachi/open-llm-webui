@@ -9,7 +9,8 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM,
 
 from cache_manager import clear_cache_decorator, model_cache
 from registry import get_llm_class, register_model
-from start_messages import StopOnTokens, llama2_message, rakuten_message, stablelm_message
+from start_messages import (StopOnTokens, chatqa_message, llama2_message, rakuten_message,
+                            stablelm_message)
 
 
 def replace_br(func):
@@ -28,6 +29,7 @@ class LLMConfig(ABC):
     tokenizer_input_kwargs: dict = field(default_factory=dict)
     tokenizer_decode_kwargs: dict = field(default_factory=dict)
     output_text_only: bool = True
+    enable_rag_text: bool = False
 
     def cpu_execution(self, cpu_execution_chk=False):
         if cpu_execution_chk:
@@ -35,7 +37,7 @@ class LLMConfig(ABC):
             self.model_kwargs.update(update_dict)
 
     @abstractmethod
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         pass
 
     @abstractmethod
@@ -74,7 +76,7 @@ class DefaultModel(LLMConfig):
 
     @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         prompt = input_text_box
 
         return prompt
@@ -125,7 +127,7 @@ class OpenCalmModel(LLMConfig):
 
     @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         prompt = input_text_box
 
         return prompt
@@ -196,7 +198,7 @@ class GPTNeoXModel(LLMConfig):
 
     @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         if "instruction-sft" in ollm_model_id or "instruction-ppo" in ollm_model_id:
             tokenizer.chat_template = self.chat_template1 if "bilingual-gpt-neox" in ollm_model_id else self.chat_template2
             messages = []
@@ -273,7 +275,7 @@ class StableLMTunedModel(LLMConfig):
 
     @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template
         messages = [{"role": "system", "content": self.system_message}]
         for user_text, assistant_text in chatbot:
@@ -359,7 +361,7 @@ class JapaneseStableLMModel(LLMConfig):
 
     @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         prompt = self.prompt_template.format(system=self.system_message, user_query=self.user_query, prompt=input_text_box)
         return prompt
 
@@ -422,7 +424,7 @@ class GPTQModel(LLMConfig):
 
     @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         prompt = self.prompt_template.format(system=self.system_message, prompt=input_text_box)
         return prompt
 
@@ -476,7 +478,7 @@ class PHI3Model(LLMConfig):
 
     @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         messages = [
             {"role": "system", "content": "You are a helpful digital assistant. Please provide safe, ethical and accurate information to the user."},
         ]
@@ -550,7 +552,7 @@ class OpenELMModel(LLMConfig):
 
     @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template
 
         messages = [
@@ -616,7 +618,7 @@ class GemmaModel(LLMConfig):
 
     @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         messages = []
         for user_text, assistant_text in chatbot:
             messages.append({"role": "user", "content": user_text})
@@ -692,7 +694,7 @@ class RakutenAIModel(LLMConfig):
 
     @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template
         messages = [{"role": "system", "content": self.system_message}]
         for user_text, assistant_text in chatbot:
@@ -767,7 +769,7 @@ class RinnaYouriModel(LLMConfig):
 
     @replace_br
     @clear_cache_decorator
-    def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template
         messages = [{"role": "system", "content": self.system_message}]
         for user_text, assistant_text in chatbot:
@@ -799,6 +801,88 @@ class RinnaYouriModel(LLMConfig):
         return output_text
 
 
+@register_model("chatqa")
+class ChatQAModel(LLMConfig):
+    include_name: str = "chatqa"
+
+    system_message = chatqa_message
+    instruction = "Please give a full and complete answer for the question."
+
+    chat_template = ("{% for message in messages %}"
+                     "{% if message['role'] == 'system' %}"
+                     "{{ 'System: ' + message['content'] + '\\n\\n' }}"
+                     "{% elif message['role'] == 'user' %}"
+                     "{{ 'User: ' + message['content'] + '\\n\\n' }}"
+                     "{% elif message['role'] == 'assistant' %}"
+                     "{% if message['content'] %}"
+                     "{{ 'Assistant: ' + message['content'] + '\\n\\n' }}"
+                     "{% else %}"
+                     "{{ 'Assistant: ' }}"
+                     "{% endif %}"
+                     "{% endif %}{% endfor %}")
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoModelForCausalLM,
+            tokenizer_class=AutoTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype=torch.float16,
+            ),
+            tokenizer_kwargs=dict(
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=False,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+            output_text_only=True,
+            enable_rag_text=True,
+        )
+
+    @replace_br
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
+        tokenizer.chat_template = self.chat_template
+        messages = [{"role": "system", "content": self.system_message + "\n\n" + rag_text_box}]
+        for i, (user_text, assistant_text) in enumerate(chatbot):
+            user_text = user_text if i > 0 else (self.instruction + " " + user_text)
+            messages.append({"role": "user", "content": user_text})
+            messages.append({"role": "assistant", "content": assistant_text})
+        prompt = tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+        )
+        return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = dict(
+            **inputs,
+            do_sample=True,
+            pad_token_id=tokenizer.eos_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+
+        generate_kwargs.update(generate_params)
+
+        terminators = [
+            tokenizer.eos_token_id,
+            tokenizer.convert_tokens_to_ids("<|eot_id|>")
+        ]
+        generate_kwargs["eos_token_id"] = terminators
+
+        return generate_kwargs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        return output_text
+
+
 def get_ollm_model_ids():
     """Get Open LLM and Llama model IDs.
 
@@ -808,8 +892,9 @@ def get_ollm_model_ids():
     ollm_model_ids = [
         "microsoft/Phi-3-mini-4k-instruct",
         "microsoft/Phi-3-mini-128k-instruct",
-        "google/gemma-2b-it",
         "google/gemma-1.1-2b-it",
+        "google/gemma-1.1-7b-it",
+        "nvidia/Llama3-ChatQA-1.5-8B",
         "apple/OpenELM-1_1B-Instruct",
         "apple/OpenELM-3B-Instruct",
         "Rakuten/RakutenAI-7B-chat",

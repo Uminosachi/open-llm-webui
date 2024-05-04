@@ -45,7 +45,7 @@ def download_model(ollm_model_id, local_files_only=False):
 
 
 @clear_cache_decorator
-def ollm_inference(chatbot, ollm_model_id, input_text_box,
+def ollm_inference(chatbot, ollm_model_id, input_text_box, rag_text_box,
                    max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk, cpu_execution_chk=False):
     """Open LLM inference.
 
@@ -121,7 +121,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box,
         model = model_cache["preloaded_model"]
         tokenizer = model_cache["preloaded_tokenizer"]
 
-    prompt = model_params.create_prompt(chatbot, ollm_model_id, input_text_box, tokenizer)
+    prompt = model_params.create_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer)
 
     print("Input text: " + prompt)
     print("Generating...")
@@ -191,6 +191,14 @@ def translate_change(translate_chk):
     return "", "Translation enabled" if translate_chk else "Translation disabled"
 
 
+@clear_cache_decorator
+def change_model(ollm_model_id):
+    if get_llm_class(ollm_model_id)().enable_rag_text:
+        return gr.update(visible=True)
+    else:
+        return gr.update(visible=False)
+
+
 def on_ui_tabs():
     ollm_model_ids = get_ollm_model_ids()
     ollm_model_index = ollm_model_ids.index("microsoft/Phi-3-mini-4k-instruct") \
@@ -226,6 +234,13 @@ def on_ui_tabs():
                         show_label=True,
                     )
                 with gr.Row():
+                    rag_text_box = gr.Textbox(
+                        label="Context document for ChatQA model",
+                        placeholder="Context document",
+                        show_label=True,
+                        visible=False,
+                    )
+                with gr.Row():
                     max_new_tokens = gr.Slider(minimum=1, maximum=4096, step=1, value=256, label="Max new tokens", elem_id="max_new_tokens")
                 with gr.Row():
                     with gr.Accordion("Advanced options", open=False):
@@ -243,8 +258,9 @@ def on_ui_tabs():
 
             download_model_btn.click(fn=download_model, inputs=[ollm_model_id], outputs=[status_text])
             translate_chk.change(fn=translate_change, inputs=[translate_chk], outputs=[input_text_box, status_text])
+            ollm_model_id.change(fn=change_model, inputs=[ollm_model_id], outputs=[rag_text_box])
 
-            generate_inputs = [chatbot, ollm_model_id, input_text_box,
+            generate_inputs = [chatbot, ollm_model_id, input_text_box, rag_text_box,
                                max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk, cpu_execution_chk]
             generate_btn.click(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot]).then(
                 fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, translated_output_text])
