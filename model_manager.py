@@ -9,7 +9,7 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM,
 
 from cache_manager import clear_cache_decorator, model_cache
 from registry import get_llm_class, register_model
-from start_messages import StopOnTokens, llama2_message, start_message
+from start_messages import StopOnTokens, llama2_message, rakuten_message, stablelm_message
 
 
 def replace_br(func):
@@ -239,8 +239,12 @@ class GPTNeoXModel(LLMConfig):
 class StableLMTunedModel(LLMConfig):
     include_name: str = "stablelm-tuned"
 
+    system_message = stablelm_message
+
     chat_template = ("{% for message in messages %}"
-                     "{% if message['role'] == 'user' %}"
+                     "{% if message['role'] == 'system' %}"
+                     "{{ message['content'] }}"
+                     "{% elif message['role'] == 'user' %}"
                      "{{ '<|USER|>' + message['content'] }}"
                      "{% elif message['role'] == 'assistant' %}"
                      "{{ '<|ASSISTANT|>' + message['content'] }}"
@@ -271,7 +275,7 @@ class StableLMTunedModel(LLMConfig):
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template
-        messages = []
+        messages = [{"role": "system", "content": self.system_message}]
         for user_text, assistant_text in chatbot:
             messages.append({"role": "user", "content": user_text})
             messages.append({"role": "assistant", "content": assistant_text})
@@ -280,7 +284,6 @@ class StableLMTunedModel(LLMConfig):
                 tokenize=False,
                 add_generation_prompt=True,
         )
-        prompt = start_message + prompt
 
         return prompt
 
@@ -328,6 +331,11 @@ class StableLMTunedModel(LLMConfig):
 class JapaneseStableLMModel(LLMConfig):
     include_name: str = "japanese-stablelm"
 
+    system_message = "あなたは役立つアシスタントです。"
+    user_query = "チャットボットとして応答に答えてください。"
+
+    prompt_template = "[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{user_query}\n\n{prompt} [/INST] "
+
     def __init__(self):
         super().__init__(
             model_class=AutoModelForCausalLM,
@@ -341,7 +349,7 @@ class JapaneseStableLMModel(LLMConfig):
             ),
             tokenizer_input_kwargs=dict(
                 return_tensors="pt",
-                add_special_tokens=False,
+                add_special_tokens=True,
             ),
             tokenizer_decode_kwargs=dict(
                 skip_special_tokens=True,
@@ -352,20 +360,7 @@ class JapaneseStableLMModel(LLMConfig):
     @replace_br
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, tokenizer=None):
-        if "stablelm-instruct" in ollm_model_id:
-            def build_prompt(user_query, inputs):
-                sys_msg = "[INST] <<SYS>>\nあなたは役立つアシスタントです。\n<<SYS>>\n\n"
-                p = sys_msg + user_query + "\n\n" + inputs + " [/INST] "
-                return p
-
-            user_inputs = {
-                "user_query": "チャットボットとして応答に答えてください。",
-                "inputs": input_text_box,
-            }
-            prompt = build_prompt(**user_inputs)
-        else:
-            prompt = input_text_box
-
+        prompt = self.prompt_template.format(system=self.system_message, user_query=self.user_query, prompt=input_text_box)
         return prompt
 
     @clear_cache_decorator
@@ -420,7 +415,7 @@ class GPTQModel(LLMConfig):
                 add_special_tokens=True,
             ),
             tokenizer_decode_kwargs=dict(
-                skip_special_tokens=False,
+                skip_special_tokens=True,
             ),
             output_text_only=True,
         )
@@ -449,7 +444,7 @@ class GPTQModel(LLMConfig):
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
-        output_text = output_text.rstrip("</s>")
+        # output_text = output_text.rstrip("</s>")
         return output_text
 
 
@@ -559,7 +554,7 @@ class OpenELMModel(LLMConfig):
         tokenizer.chat_template = self.chat_template
 
         messages = [
-            {"role": "system", "content": "Let's chat"},
+            {"role": "system", "content": "Let's chat."},
         ]
         for user_text, assistant_text in chatbot:
             messages.append({"role": "user", "content": user_text})
@@ -660,8 +655,7 @@ class RakutenAIModel(LLMConfig):
 
     download_kwargs = dict(ignore_patterns=["pytorch_model*"])
 
-    system_message = ("A chat between a curious user and an artificial intelligence assistant. "
-                      "The assistant gives helpful, detailed, and polite answers to the user's questions.")
+    system_message = rakuten_message
 
     chat_template = ("{% for message in messages %}"
                      "{% if message['role'] == 'user' %}"
@@ -845,9 +839,6 @@ def get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk=False):
     llm = get_llm_class(ollm_model_id)()
 
     llm.cpu_execution(cpu_execution_chk)
-
-    # if "FreeWilly" in ollm_model_id:
-    #     os.environ["SAFETENSORS_FAST_GPU"] = str(1)
 
     if platform.system() == "Darwin":
         llm.model_kwargs.update(dict(torch_dtype=torch.float32))
