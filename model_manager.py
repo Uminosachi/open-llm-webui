@@ -1,6 +1,7 @@
 import platform
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from functools import wraps
 
 import torch
 from auto_gptq import AutoGPTQForCausalLM
@@ -14,10 +15,22 @@ from start_messages import (StopOnTokens, chatqa_message, llama2_message, rakute
 
 
 def replace_br(func):
+    @wraps(func)
     def wrapper(self, chatbot, *args, **kwargs):
         chatbot = [[item.replace("<br>", "\n") for item in sublist] for sublist in chatbot]
         return func(self, chatbot, *args, **kwargs)
     return wrapper
+
+
+def print_return(name):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            ret = func(self, *args, **kwargs)
+            print(f"{name}: {ret}")
+            return ret
+        return wrapper
+    return decorator
 
 
 @dataclass
@@ -40,9 +53,16 @@ class LLMConfig(ABC):
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         pass
 
-    @abstractmethod
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        pass
+        generate_kwargs = dict(
+            **inputs,
+            do_sample=True,
+            pad_token_id=tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+        generate_kwargs.update(generate_params)
+        return generate_kwargs
 
     @abstractmethod
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
@@ -83,16 +103,7 @@ class DefaultModel(LLMConfig):
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        generate_kwargs = dict(
-            **inputs,
-            do_sample=True,
-            pad_token_id=tokenizer.pad_token_id,
-            bos_token_id=tokenizer.bos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-
-        generate_kwargs.update(generate_params)
-
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
         return generate_kwargs
 
     @clear_cache_decorator
@@ -134,16 +145,7 @@ class OpenCalmModel(LLMConfig):
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        generate_kwargs = dict(
-            **inputs,
-            do_sample=True,
-            pad_token_id=tokenizer.pad_token_id,
-            bos_token_id=tokenizer.bos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-
-        generate_kwargs.update(generate_params)
-
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
         return generate_kwargs
 
     @clear_cache_decorator
@@ -217,16 +219,7 @@ class GPTNeoXModel(LLMConfig):
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        generate_kwargs = dict(
-            **inputs,
-            do_sample=True,
-            pad_token_id=tokenizer.pad_token_id,
-            bos_token_id=tokenizer.bos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-
-        generate_kwargs.update(generate_params)
-
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
         return generate_kwargs
 
     @clear_cache_decorator
@@ -291,15 +284,7 @@ class StableLMTunedModel(LLMConfig):
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        generate_kwargs = dict(
-            **inputs,
-            do_sample=True,
-            pad_token_id=tokenizer.eos_token_id,
-            bos_token_id=tokenizer.bos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-
-        generate_kwargs.update(generate_params)
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
 
         stop = StopOnTokens()
         streamer = TextIteratorStreamer(tokenizer, timeout=10., skip_prompt=True, skip_special_tokens=True)
@@ -367,16 +352,7 @@ class JapaneseStableLMModel(LLMConfig):
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        generate_kwargs = dict(
-            **inputs,
-            do_sample=True,
-            pad_token_id=tokenizer.eos_token_id,
-            bos_token_id=tokenizer.bos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-
-        generate_kwargs.update(generate_params)
-
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
         return generate_kwargs
 
     @clear_cache_decorator
@@ -430,18 +406,8 @@ class GPTQModel(LLMConfig):
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        generate_kwargs = dict(
-            **inputs,
-            do_sample=True,
-            pad_token_id=tokenizer.eos_token_id,
-            bos_token_id=tokenizer.bos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-
-        generate_kwargs.update(generate_params)
-
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
         generate_kwargs.pop("token_type_ids", None)
-
         return generate_kwargs
 
     @clear_cache_decorator
@@ -495,16 +461,7 @@ class PHI3Model(LLMConfig):
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        generate_kwargs = dict(
-            **inputs,
-            do_sample=True,
-            pad_token_id=tokenizer.pad_token_id,
-            bos_token_id=tokenizer.bos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-
-        generate_kwargs.update(generate_params)
-
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
         return generate_kwargs
 
     @clear_cache_decorator
@@ -571,16 +528,8 @@ class OpenELMModel(LLMConfig):
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        generate_kwargs = dict(
-            **inputs,
-            do_sample=True,
-            pad_token_id=0,
-            bos_token_id=tokenizer.bos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-
-        generate_kwargs.update(generate_params)
-
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        generate_kwargs["pad_token_id"] = 0
         return generate_kwargs
 
     @clear_cache_decorator
@@ -633,16 +582,7 @@ class GemmaModel(LLMConfig):
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        generate_kwargs = dict(
-            **inputs,
-            do_sample=True,
-            pad_token_id=tokenizer.pad_token_id,
-            bos_token_id=tokenizer.bos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-
-        generate_kwargs.update(generate_params)
-
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
         return generate_kwargs
 
     @clear_cache_decorator
@@ -709,16 +649,7 @@ class RakutenAIModel(LLMConfig):
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        generate_kwargs = dict(
-            **inputs,
-            do_sample=True,
-            pad_token_id=tokenizer.eos_token_id,
-            bos_token_id=tokenizer.bos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-
-        generate_kwargs.update(generate_params)
-
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
         return generate_kwargs
 
     @clear_cache_decorator
@@ -784,16 +715,7 @@ class RinnaYouriModel(LLMConfig):
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        generate_kwargs = dict(
-            **inputs,
-            do_sample=True,
-            pad_token_id=tokenizer.eos_token_id,
-            bos_token_id=tokenizer.bos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-
-        generate_kwargs.update(generate_params)
-
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
         return generate_kwargs
 
     @clear_cache_decorator
@@ -860,22 +782,12 @@ class ChatQAModel(LLMConfig):
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        generate_kwargs = dict(
-            **inputs,
-            do_sample=True,
-            pad_token_id=tokenizer.eos_token_id,
-            bos_token_id=tokenizer.bos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-
-        generate_kwargs.update(generate_params)
-
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
         terminators = [
             tokenizer.eos_token_id,
             tokenizer.convert_tokens_to_ids("<|eot_id|>")
         ]
         generate_kwargs["eos_token_id"] = terminators
-
         return generate_kwargs
 
     @clear_cache_decorator

@@ -1,5 +1,6 @@
 import gc
 from collections import UserDict
+from contextlib import ContextDecorator
 from functools import wraps
 
 import torch
@@ -33,3 +34,13 @@ def clear_cache_decorator(func):
         clear_cache()
         return res
     return wrapper
+
+
+class ClearCacheContext(ContextDecorator):
+    def __enter__(self):
+        clear_cache()
+        return self
+
+    def __exit__(self, *exc):
+        clear_cache()
+        return False

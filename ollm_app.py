@@ -6,7 +6,7 @@ import gradio as gr
 import torch
 from huggingface_hub import snapshot_download
 
-from cache_manager import clear_cache, clear_cache_decorator, model_cache
+from cache_manager import ClearCacheContext, clear_cache, clear_cache_decorator, model_cache
 from model_manager import get_model_and_tokenizer_class, get_ollm_model_ids
 from registry import get_llm_class
 from translator import load_translator, translate
@@ -91,6 +91,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, rag_text_box,
 
         for key in model_cache.keys():
             model_cache[key] = None
+        clear_cache()
 
         if "quantize_config" in model_params.model_kwargs:
             model = model_params.model_class.from_quantized(
@@ -114,7 +115,6 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, rag_text_box,
         model_cache["preloaded_model"] = model
         model_cache["preloaded_tokenizer"] = tokenizer
         model_cache["preloaded_device"] = "cpu device" if cpu_execution_chk else "auto device"
-        clear_cache()
 
     else:
         print("Using preloaded model on {}".format(model_cache.get("preloaded_device")))
@@ -125,33 +125,33 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, rag_text_box,
 
     print("Input text: " + prompt)
     print("Generating...")
-    inputs = tokenizer(
-        [prompt],
-        **model_params.tokenizer_input_kwargs,
-    )
+    with ClearCacheContext():
+        inputs = tokenizer(
+            [prompt],
+            **model_params.tokenizer_input_kwargs,
+        )
     if isinstance(inputs, UserDict):
         inputs = {k: v.to(model.device) for k, v in inputs.items()}
     else:
         inputs = inputs.to(model.device)
 
     generate_kwargs = model_params.get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
-    clear_cache()
 
     t1 = time.time()
-    with torch.no_grad():
+    with ClearCacheContext(), torch.no_grad():
         tokens = model.generate(
             **generate_kwargs
         )
     t2 = time.time()
     elapsed_time = t2-t1
     print(f"Generation time: {elapsed_time} seconds")
-    clear_cache()
 
     input_ids = generate_kwargs["input_ids"]
-    output_text = tokenizer.decode(
-        tokens[0] if not model_params.output_text_only else tokens[0][len(input_ids[0]):],
-        **model_params.tokenizer_decode_kwargs,
-    )
+    with ClearCacheContext():
+        output_text = tokenizer.decode(
+            tokens[0] if not model_params.output_text_only else tokens[0][len(input_ids[0]):],
+            **model_params.tokenizer_decode_kwargs,
+        )
 
     output_text = model_params.retreive_output_text(prompt, output_text, ollm_model_id, tokenizer)
 
