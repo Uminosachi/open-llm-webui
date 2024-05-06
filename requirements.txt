@@ -1,5 +1,6 @@
---extra-index-url https://download.pytorch.org/whl/cu121
-torch
+--extra-index-url https://download.pytorch.org/whl/cu118
+--extra-index-url https://huggingface.github.io/autogptq-index/whl/cu118
+torch==2.2.2
 accelerate
 gradio
 gradio-client

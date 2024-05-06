@@ -353,9 +353,9 @@ class JapaneseStableLMModel(LLMConfig):
         return output_text
 
 
-@register_model("gptq")
-class GPTQModel(LLMConfig):
-    include_name: str = "-gptq"
+@register_model("chat-gptq")
+class ChatGPTQModel(LLMConfig):
+    include_name: str = "chat-gptq"
 
     system_message = llama2_message
 
@@ -402,7 +402,58 @@ class GPTQModel(LLMConfig):
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
-        # output_text = output_text.rstrip("</s>")
+        return output_text
+
+
+@register_model("kunoichi")
+class KunoichiGPTQModel(LLMConfig):
+    include_name: str = "kunoichi"
+
+    system_message = "Below is an instruction that describes a task. Write a response that appropriately completes the request."
+
+    prompt_template = "{system}\n\n### Instruction:\n{prompt}\n\n### Response:\n"
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoGPTQForCausalLM,
+            tokenizer_class=AutoTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype=torch.float16,
+                use_safetensors=True,
+                trust_remote_code=False,
+                revision="main",
+                use_triton=False,
+                quantize_config=None,
+                offload_buffers=True,
+            ),
+            tokenizer_kwargs=dict(
+                use_fast=True,
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=True,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+            output_text_only=True,
+        )
+
+    @replace_br
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
+        prompt = self.prompt_template.format(system=self.system_message, prompt=input_text_box)
+        return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        generate_kwargs.pop("token_type_ids", None)
+        return generate_kwargs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         return output_text
 
 
@@ -766,6 +817,7 @@ def get_ollm_model_ids():
         "rinna/japanese-gpt-neox-3.6b-instruction-sft-v2",
         "rinna/japanese-gpt-neox-3.6b-instruction-ppo",
         "TheBloke/Llama-2-7b-Chat-GPTQ",
+        "TheBloke/Kunoichi-7B-GPTQ",
         "stabilityai/stablelm-tuned-alpha-3b",
         "stabilityai/stablelm-tuned-alpha-7b",
         "stabilityai/japanese-stablelm-instruct-beta-7b",

@@ -52,7 +52,7 @@ To download the model:
 | Apple         | OpenELM-1_1B-Instruct, OpenELM-3B-Instruct                                                 |
 | Rakuten       | RakutenAI-7B-chat, RakutenAI-7B-instruct                                                   |
 | rinna         | youri-7b-chat, bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
-| TheBloke      | Llama-2-7b-Chat-GPTQ                                                                       |
+| TheBloke      | Llama-2-7b-Chat-GPTQ, Kunoichi-7B-GPTQ                                                     |
 | Stability AI  | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-instruct-beta-7b       |
 
 * To download Google's Gemma model, please ensure you have obtained the necessary access rights beforehand via the [Hugging Face page](https://huggingface.co/google/gemma-1.1-2b-it).
@@ -85,5 +85,6 @@ To download the model:
 | rinna               | Youri                        | [Llama 2 Community License](https://ai.meta.com/llama/license/) |
 | rinna               | Japanese GPT-NeoX            | [The MIT License](https://opensource.org/licenses/MIT)         |
 | Meta AI             | Llama 2                      | [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE) |
+| Sanji Watsuki       | Kunoichi-7B                  | [CC-BY-NC-4.0](https://spdx.org/licenses/CC-BY-NC-4.0)         |
 | Stability AI        | StableLM                     | [Apache License 2.0](https://github.com/Stability-AI/StableLM/blob/main/LICENSE) |
 | Stability AI        | Japanese-StableLM-Instruct   | [Japanese Stablelm Research License Agreement](https://huggingface.co/stabilityai/japanese-stablelm-instruct-alpha-7b/blob/main/LICENSE) |
