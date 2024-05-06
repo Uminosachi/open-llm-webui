@@ -56,6 +56,10 @@ To download the model:
 | Stability AI  | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-instruct-beta-7b       |
 
 * To download Google's Gemma model, please ensure you have obtained the necessary access rights beforehand via the [Hugging Face page](https://huggingface.co/google/gemma-1.1-2b-it).
+  - Before downloading the model, you need to log in to Hugging Face via the command line. Please use the following command:
+```
+huggingface-cli login
+```
 * To download Apple's OpenELM or models based on Llama 2, please ensure you have obtained the necessary access rights beforehand via the [Hugging Face page](https://huggingface.co/meta-llama/Llama-2-7b-hf).
 * Please check the license in the Model Credit section below.
 
