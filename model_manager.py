@@ -374,7 +374,6 @@ class GPTQModel(LLMConfig):
                 use_triton=False,
                 quantize_config=None,
                 offload_buffers=True,
-                use_marlin=True,
             ),
             tokenizer_kwargs=dict(
                 use_fast=True,
