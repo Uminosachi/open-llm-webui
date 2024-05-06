@@ -55,6 +55,7 @@ To download the model:
 | TheBloke      | Llama-2-7b-Chat-GPTQ                                                                       |
 | Stability AI  | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-instruct-beta-7b       |
 
+* To download Google's Gemma model, please ensure you have obtained the access rights beforehand via the [Hugging Face page](https://huggingface.co/google/gemma-1.1-2b-it).
 * Please check the license in the Model Credit section below.
 
 ## Usage
