@@ -87,7 +87,8 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, rag_text_box,
 
     print(f"Loading {ollm_model_id}")
     if (model_cache.get("preloaded_model_id") != ollm_model_id or
-            model_cache.get("preloaded_model") is None or model_cache.get("preloaded_tokenizer") is None):
+            model_cache.get("preloaded_model") is None or model_cache.get("preloaded_tokenizer") is None or
+            model_cache.get("preloaded_device") != ("cpu device" if cpu_execution_chk else "auto device")):
 
         for key in model_cache.keys():
             model_cache[key] = None
