@@ -1,6 +1,6 @@
 # Open LLM WebUI
 
-This repository contains a web application designed to execute Large Language Models (LLMs).
+This repository contains a web application designed to execute relatively compact, locally-operated Large Language Models (LLMs).
 
 ## Installation
 
