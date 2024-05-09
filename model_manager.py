@@ -177,6 +177,8 @@ class OpenCalmModel(LLMConfig):
 class GPTNeoXModel(LLMConfig):
     include_name: str = "gpt-neox"
 
+    download_kwargs = dict(ignore_patterns=["pytorch_model*"])
+
     chat_template1 = ("{% for message in messages %}"
                       "{% if message['role'] == 'user' %}"
                       "{{ 'ユーザー: ' + message['content'] + '\\n' }}"
