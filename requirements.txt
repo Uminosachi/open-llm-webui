@@ -9,7 +9,7 @@ transformers>=4.40.0
 safetensors
 sentencepiece
 xformers
-flash-attn
+# flash-attn
 protobuf==3.20.3
 pysbd
 sacremoses
