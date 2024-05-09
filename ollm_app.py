@@ -8,6 +8,7 @@ from huggingface_hub import snapshot_download
 
 from cache_manager import ClearCacheContext, clear_cache, clear_cache_decorator, model_cache
 from model_manager import get_model_and_tokenizer_class, get_ollm_model_ids
+from custom_logging import ollm_logging
 from registry import get_llm_class
 from translator import load_translator, translate
 
@@ -29,7 +30,7 @@ def download_model(ollm_model_id, local_files_only=False):
         str: string of download result.
     """
     if not local_files_only:
-        print(f"Downloading {ollm_model_id}")
+        ollm_logging.info(f"Downloading {ollm_model_id}")
     try:
         llm_class = get_llm_class(ollm_model_id)
         if hasattr(llm_class, "download_kwargs") and isinstance(llm_class.download_kwargs, dict):
@@ -85,7 +86,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, rag_text_box,
 
     pmnop = "pretrained_model_name_or_path"
 
-    print(f"Loading {ollm_model_id}")
+    ollm_logging.info(f"Loading {ollm_model_id}")
     if (model_cache.get("preloaded_model_id") != ollm_model_id or
             model_cache.get("preloaded_model") is None or model_cache.get("preloaded_tokenizer") is None or
             model_cache.get("preloaded_device") != ("cpu device" if cpu_execution_chk else "auto device")):
@@ -118,14 +119,14 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, rag_text_box,
         model_cache["preloaded_device"] = "cpu device" if cpu_execution_chk else "auto device"
 
     else:
-        print("Using preloaded model on {}".format(model_cache.get("preloaded_device")))
+        ollm_logging.info("Using preloaded model on {}".format(model_cache.get("preloaded_device")))
         model = model_cache["preloaded_model"]
         tokenizer = model_cache["preloaded_tokenizer"]
 
     prompt = model_params.create_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer)
 
-    print("Input text: " + prompt)
-    print("Generating...")
+    ollm_logging.info("Input text: " + prompt)
+    ollm_logging.info("Generating...")
     with ClearCacheContext():
         inputs = tokenizer(
             [prompt],
@@ -145,7 +146,7 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, rag_text_box,
         )
     t2 = time.time()
     elapsed_time = t2-t1
-    print(f"Generation time: {elapsed_time} seconds")
+    ollm_logging.info(f"Generation time: {elapsed_time} seconds")
 
     input_ids = generate_kwargs["input_ids"]
     with ClearCacheContext():
@@ -156,12 +157,12 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, rag_text_box,
 
     output_text = model_params.retreive_output_text(prompt, output_text, ollm_model_id, tokenizer)
 
-    print("Generation complete")
-    print("Output text: " + output_text)
+    ollm_logging.info("Generation complete")
+    ollm_logging.info("Output text: " + output_text)
 
     if translate_chk:
         translated_output_text = translate(output_text, "en", "ja")
-        print("Translated output text: " + translated_output_text)
+        ollm_logging.info("Translated output text: " + translated_output_text)
     else:
         translated_output_text = ""
 
@@ -178,7 +179,7 @@ def user(message, history, translate_chk):
     if len(message.strip()) > 0:
         if translate_chk:
             message = translate(message, "ja", "en")
-            print("Translated input text: " + message)
+            ollm_logging.info("Translated input text: " + message)
         return message, history + [[message, ""]]
     else:
         return message, history

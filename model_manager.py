@@ -9,6 +9,7 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM,
                           LlamaTokenizer, StoppingCriteriaList, TextIteratorStreamer)
 
 from cache_manager import clear_cache_decorator, model_cache
+from custom_logging import ollm_logging
 from registry import get_llm_class, register_model
 from start_messages import (StopOnTokens, chatqa_message, llama2_message, rakuten_message,
                             stablelm_message)
@@ -27,7 +28,7 @@ def print_return(name):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             ret = func(self, *args, **kwargs)
-            print(f"{name}: {ret}")
+            ollm_logging.info(f"{name}: {ret}")
             return ret
         return wrapper
     return decorator
@@ -297,7 +298,7 @@ class StableLMTunedModel(LLMConfig):
             streamer = model_cache.get("preloaded_streamer")
             partial_text = ""
             for new_text in streamer:
-                # print(new_text)
+                ollm_logging.debug(new_text)
                 partial_text += new_text
 
             output_text = partial_text
@@ -842,6 +843,6 @@ def get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk=False):
     if platform.system() == "Darwin":
         llm.model_kwargs.update(dict(torch_dtype=torch.float32))
 
-    print(f"model_kwargs: {llm.model_kwargs}")
+    ollm_logging.info(f"model_kwargs: {llm.model_kwargs}")
 
     return llm
