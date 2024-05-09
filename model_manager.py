@@ -59,11 +59,12 @@ class LLMConfig(ABC):
             messages = [{"role": "system", "content": self.system_message}]
         else:
             messages = []
-        for user_text, assistant_text in chatbot:
+        len_chat = len(chatbot)
+        for i, (user_text, assistant_text) in enumerate(chatbot):
             messages.append({"role": "user", "content": user_text})
             if not check_assistant:
                 messages.append({"role": "assistant", "content": assistant_text})
-            elif len(assistant_text) > 0:
+            elif i < (len_chat - 1) or len(assistant_text) > 0:
                 messages.append({"role": "assistant", "content": assistant_text})
         prompt = tokenizer.apply_chat_template(
                 messages,
@@ -180,7 +181,7 @@ class GPTNeoXModel(LLMConfig):
                       "{% if message['role'] == 'user' %}"
                       "{{ 'ユーザー: ' + message['content'] + '\\n' }}"
                       "{% elif message['role'] == 'assistant' %}"
-                      "{% if message['content'] %}"
+                      "{% if not loop.last or message['content'] %}"
                       "{{ 'システム: '  + message['content'] + '\\n' }}"
                       "{% else %}"
                       "{{ 'システム: ' }}"
@@ -516,7 +517,7 @@ class OpenELMModel(LLMConfig):
                      "{% elif message['role'] == 'user' %}"
                      "{{ 'User: ' + message['content'] + '\\n' }}"
                      "{% elif message['role'] == 'assistant' %}"
-                     "{% if message['content'] %}"
+                     "{% if not loop.last or message['content'] %}"
                      "{{ 'Assistant: ' + message['content'] + '\\n' }}"
                      "{% else %}"
                      "{{ 'Assistant: ' }}"
@@ -623,7 +624,7 @@ class RakutenAIModel(LLMConfig):
                      "{% elif message['role'] == 'user' %}"
                      "{{ 'USER: ' + message['content'] + ' '}}"
                      "{% elif message['role'] == 'assistant' %}"
-                     "{% if message['content'] %}"
+                     "{% if not loop.last or message['content'] %}"
                      "{{ 'ASSISTANT: ' + message['content'] + ' '}}"
                      "{% else %}"
                      "{{ 'ASSISTANT: ' }}"
@@ -681,7 +682,7 @@ class RinnaYouriModel(LLMConfig):
                      "{% elif message['role'] == 'user' %}"
                      "{{ 'ユーザー: ' + message['content'] + '\\n' }}"
                      "{% elif message['role'] == 'assistant' %}"
-                     "{% if message['content'] %}"
+                     "{% if not loop.last or message['content'] %}"
                      "{{ 'システム: ' + message['content'] + '\\n' }}"
                      "{% else %}"
                      "{{ 'システム: ' }}"
@@ -738,7 +739,7 @@ class ChatQAModel(LLMConfig):
                      "{% elif message['role'] == 'user' %}"
                      "{{ 'User: ' + message['content'] + '\\n\\n' }}"
                      "{% elif message['role'] == 'assistant' %}"
-                     "{% if message['content'] %}"
+                     "{% if not loop.last or message['content'] %}"
                      "{{ 'Assistant: ' + message['content'] + '\\n\\n' }}"
                      "{% else %}"
                      "{{ 'Assistant: ' }}"
