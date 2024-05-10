@@ -8,7 +8,7 @@ huggingface-hub
 transformers>=4.40.0
 safetensors
 sentencepiece
-xformers
+# xformers
 # flash-attn
 protobuf==3.20.3
 pysbd
