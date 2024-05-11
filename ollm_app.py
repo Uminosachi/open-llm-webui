@@ -1,5 +1,6 @@
 import os
 import time
+import types  # noqa: F401
 from collections import UserDict
 
 import gradio as gr
@@ -63,8 +64,10 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, input_text_box, ra
         repetition_penalty=float(repetition_penalty),
     )
 
+    return_status = ["", ""]
     if input_text_box is None or len(input_text_box.strip()) == 0:
-        return "", chatbot, "Input text is empty.", ""
+        return_status[methods_tabs.index(selected_tab)] = "Input text is empty."
+        return ("", chatbot, *return_status, "")
 
     chatbot = [] if chatbot is None else chatbot
 
@@ -77,11 +80,12 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, input_text_box, ra
     dwonload_result = method_class.download_model(ollm_model_id, local_files_only=True)
     ollm_logging.debug(f"Download result: {dwonload_result}")
     if dwonload_result != LLMConfig.DOWNLOAD_COMPLETE:
-        return input_text_box, chatbot, dwonload_result, ""
+        return_status[methods_tabs.index(selected_tab)] = dwonload_result
+        return (input_text_box, chatbot, *return_status, "")
 
     model_params = method_class.get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk)
 
-    pmnop = "pretrained_model_name_or_path"
+    # pmnop = "pretrained_model_name_or_path"
 
     ollm_logging.info(f"Loading {ollm_model_id}")
     if (model_cache.get("preloaded_model_id") != ollm_model_id or
@@ -92,23 +96,9 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, input_text_box, ra
             model_cache[key] = None
         clear_cache()
 
-        if "quantize_config" in model_params.model_kwargs:
-            model = model_params.model_class.from_quantized(
-                ollm_model_id if pmnop not in model_params.model_kwargs else model_params.model_kwargs.pop(pmnop),
-                **model_params.model_kwargs,
-            )
-        else:
-            model = model_params.model_class.from_pretrained(
-                ollm_model_id if pmnop not in model_params.model_kwargs else model_params.model_kwargs.pop(pmnop),
-                **model_params.model_kwargs,
-            )
-        model.eval()
-        model.tie_weights()
+        model = method_class.get_model(ollm_model_id, model_params, generate_params)
 
-        tokenizer = model_params.tokenizer_class.from_pretrained(
-            ollm_model_id if pmnop not in model_params.tokenizer_kwargs else model_params.tokenizer_kwargs.pop(pmnop),
-            **model_params.tokenizer_kwargs,
-        )
+        tokenizer = method_class.get_tokenizer(ollm_model_id, model_params)
 
         model_cache["preloaded_model_id"] = ollm_model_id
         model_cache["preloaded_model"] = model
@@ -124,33 +114,46 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, input_text_box, ra
 
     ollm_logging.info("Input text: " + prompt)
     ollm_logging.info("Generating...")
-    with ClearCacheContext():
-        inputs = tokenizer(
-            [prompt],
-            **model_params.tokenizer_input_kwargs,
-        )
-    if isinstance(inputs, UserDict):
-        inputs = {k: v.to(model.device) for k, v in inputs.items()}
+    if model_params.require_tokenization:
+        with ClearCacheContext():
+            inputs = tokenizer(
+                [prompt],
+                **model_params.tokenizer_input_kwargs,
+            )
+        if hasattr(model, "device"):
+            if isinstance(inputs, UserDict):
+                inputs = {k: v.to(model.device) for k, v in inputs.items()}
+            else:
+                inputs = inputs.to(model.device)
     else:
-        inputs = inputs.to(model.device)
+        inputs = prompt
 
     generate_kwargs = model_params.get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
 
     t1 = time.time()
-    with ClearCacheContext(), torch.no_grad():
-        tokens = model.generate(
-            **generate_kwargs
-        )
+    if model_params.require_tokenization:
+        with ClearCacheContext(), torch.no_grad():
+            tokens = model.generate(
+                **generate_kwargs
+            )
+    else:
+        with ClearCacheContext():
+            tokens = model.create_completion(
+                **generate_kwargs
+            )
     t2 = time.time()
     elapsed_time = t2-t1
     ollm_logging.info(f"Generation time: {elapsed_time} seconds")
 
-    input_ids = generate_kwargs["input_ids"]
-    with ClearCacheContext():
-        output_text = tokenizer.decode(
-            tokens[0] if not model_params.output_text_only else tokens[0][len(input_ids[0]):],
-            **model_params.tokenizer_decode_kwargs,
-        )
+    if model_params.require_tokenization:
+        input_ids = generate_kwargs["input_ids"]
+        with ClearCacheContext():
+            output_text = tokenizer.decode(
+                tokens[0] if not model_params.output_text_only else tokens[0][len(input_ids[0]):],
+                **model_params.tokenizer_decode_kwargs,
+            )
+    else:
+        output_text = tokens["choices"][0]["text"]
 
     output_text = model_params.retreive_output_text(prompt, output_text, ollm_model_id, tokenizer)
 
@@ -167,7 +170,8 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, input_text_box, ra
     # chatbot.append((input_text_box, output_text))
     chatbot[-1][1] = output_text
 
-    return "", chatbot, f"Generation time: {elapsed_time} seconds", translated_output_text
+    return_status[methods_tabs.index(selected_tab)] = f"Generation time: {elapsed_time} seconds"
+    return ("", chatbot, *return_status, translated_output_text)
 
 
 @clear_cache_decorator
@@ -285,9 +289,9 @@ def on_ui_tabs():
             generate_inputs = [chatbot, ollm_model_id, cpp_ollm_model_id, input_text_box, rag_text_box,
                                max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk, cpu_execution_chk]
             generate_btn.click(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot]).then(
-                fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, translated_output_text])
+                fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, cpp_status_text, translated_output_text])
             input_text_box.submit(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot]).then(
-                fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, translated_output_text])
+                fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, cpp_status_text, translated_output_text])
 
             clear_btn.click(lambda: [None, None], None, [input_text_box, chatbot])
 

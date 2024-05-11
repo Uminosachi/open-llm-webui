@@ -45,6 +45,7 @@ class LLMConfig(ABC):
     tokenizer_decode_kwargs: dict = field(default_factory=dict)
     output_text_only: bool = True
     enable_rag_text: bool = False
+    require_tokenization: bool = True
 
     DOWNLOAD_COMPLETE = "Download complete"
 
@@ -853,6 +854,36 @@ class TransformersLLM:
 
         return llm
 
+    @clear_cache_decorator
+    @staticmethod
+    def get_model(ollm_model_id, model_params, generate_params):
+        pmnop = "pretrained_model_name_or_path"
+        if "quantize_config" in model_params.model_kwargs:
+            model = model_params.model_class.from_quantized(
+                ollm_model_id if pmnop not in model_params.model_kwargs else model_params.model_kwargs.pop(pmnop),
+                **model_params.model_kwargs,
+            )
+        else:
+            model = model_params.model_class.from_pretrained(
+                ollm_model_id if pmnop not in model_params.model_kwargs else model_params.model_kwargs.pop(pmnop),
+                **model_params.model_kwargs,
+            )
+        model.eval()
+        model.tie_weights()
+
+        return model
+
+    @clear_cache_decorator
+    @staticmethod
+    def get_tokenizer(ollm_model_id, model_params):
+        pmnop = "pretrained_model_name_or_path"
+        tokenizer = model_params.tokenizer_class.from_pretrained(
+            ollm_model_id if pmnop not in model_params.tokenizer_kwargs else model_params.tokenizer_kwargs.pop(pmnop),
+            **model_params.tokenizer_kwargs,
+        )
+
+        return tokenizer
+
 
 def get_ollm_model_ids():
     """Get Open LLM and Llama model IDs.
@@ -881,4 +912,3 @@ def get_ollm_model_ids():
         "stabilityai/japanese-stablelm-instruct-beta-7b",
         ]
     return ollm_model_ids
-
