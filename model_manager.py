@@ -320,7 +320,7 @@ class JapaneseStableLMModel(LLMConfig):
     system_message = "あなたは役立つアシスタントです。"
     user_query = "チャットボットとして応答に答えてください。"
 
-    prompt_template = "[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{user_query}\n\n{prompt} [/INST] "
+    prompt_template = "[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{user_query}\n\n{prompt} [/INST]"
 
     def __init__(self):
         super().__init__(
@@ -367,7 +367,7 @@ class ChatGPTQModel(LLMConfig):
 
     system_message = llama2_message
 
-    prompt_template = "[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{prompt} [/INST] "
+    prompt_template = "[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{prompt} [/INST]"
 
     def __init__(self):
         super().__init__(

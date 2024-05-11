@@ -10,6 +10,7 @@ from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
 from model_manager import LLMConfig, replace_br
 from registry import get_cpp_llm_class, register_cpp_model
+from start_messages import llama2_message  # noqa: F401
 
 cpp_download_model_map = {
     "Phi-3-mini-4k-instruct-q4.gguf": "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf",
@@ -24,6 +25,89 @@ if not os.path.isdir(cpp_models_dir):
 def get_gguf_file_path(cpp_ollm_model_id):
     gguf_file_path = os.path.join(cpp_models_dir, cpp_ollm_model_id)
     return gguf_file_path
+
+
+def list_files(directory, extension):
+    files = []
+    for file in os.listdir(directory):
+        full_path = os.path.join(directory, file)
+        if os.path.isfile(full_path) and file.endswith(extension):
+            files.append(file)
+    return files
+
+
+@register_cpp_model("default")
+class CPPDefaultModel(LLMConfig):
+    include_name: str = "default"
+
+    system_message = "Let's chat."
+
+    chat_template2 = ("{% for message in messages %}"
+                      "{% if message['role'] == 'system' %}"
+                      "{{ '<<SYS>>\\n' + message['content'] + '\\n<</SYS>>\\n\\n' }}"
+                      "{% elif message['role'] == 'user' %}"
+                      "{{ bos_token + '[INST] ' + message['content'] + ' [/INST]' }}"
+                      "{% elif message['role'] == 'assistant' %}"
+                      "{{ '[ASST] '  + message['content'] + ' [/ASST]' + eos_token }}"
+                      "{% endif %}{% endfor %}")
+
+    chat_template3 = ("{% set loop_messages = messages %}"
+                      "{% for message in loop_messages %}"
+                      "{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>' + message['content'] | trim + '<|eot_id|>' %}"
+                      "{% if loop.index0 == 0 %}"
+                      "{% set content = bos_token + content %}"
+                      "{% endif %}"
+                      "{{ content }}"
+                      "{% endfor %}"
+                      "{{ '<|start_header_id|>assistant<|end_header_id|>' }}")
+
+    def __init__(self):
+        super().__init__(
+            model_class=Llama,
+            tokenizer_class=AutoTokenizer,
+            model_kwargs=dict(
+                n_ctx=4096,
+                n_threads=8,
+            ),
+            tokenizer_kwargs=dict(
+                pretrained_model_name_or_path="meta-llama/Llama-2-7b-hf",
+                use_fast=True,
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=False,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+            output_text_only=True,
+            require_tokenization=False,
+        )
+
+    @replace_br
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
+        if tokenizer.chat_template is None:
+            tokenizer.chat_template = self.chat_template3
+        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=True)
+        return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = dict(
+            prompt=inputs,
+            max_tokens=generate_params["max_new_tokens"],
+            temperature=generate_params["temperature"],
+            top_k=generate_params["top_k"],
+            top_p=generate_params["top_p"],
+            repeat_penalty=generate_params["repetition_penalty"],
+        )
+
+        return generate_kwargs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        return output_text
 
 
 @register_cpp_model("phi-3")
@@ -158,4 +242,8 @@ def get_cpp_ollm_model_ids():
         "Phi-3-mini-4k-instruct-q4.gguf",
         "Phi-3-mini-4k-instruct-fp16.gguf",
         ]
+    list_model_ids = list_files(cpp_models_dir, ".gguf")
+    for model_id in list_model_ids:
+        if model_id not in cpp_ollm_model_ids:
+            cpp_ollm_model_ids.append(model_id)
     return cpp_ollm_model_ids

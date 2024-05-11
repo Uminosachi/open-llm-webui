@@ -72,7 +72,7 @@ To download the model:
 ```
 huggingface-cli login
 ```
-* To download Apple's OpenELM or models based on Llama 2, please ensure you have obtained the necessary access rights beforehand via the [Hugging Face page](https://huggingface.co/meta-llama/Llama-2-7b-hf).
+* To download models based on Llama 2, please ensure you have obtained the necessary access rights beforehand via the [Hugging Face page](https://huggingface.co/meta-llama/Llama-2-7b-hf).
 * To download models based on Llama 3, please ensure you have obtained the necessary access rights beforehand via the [Hugging Face page](https://huggingface.co/meta-llama/Meta-Llama-3-8B).
 
 * Please check the license in the Model Credit section below.
@@ -82,6 +82,10 @@ huggingface-cli login
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
 | Microsoft     | Phi-3-mini-4k-instruct-q4.gguf, Phi-3-mini-4k-instruct-fp16.gguf                           |
+
+* 🔍 Note: Place files with the `.gguf` extension in the `models` directory within the `open-llm-webui` folder. These files will then appear in the model list on the `llama.cpp` tab of the web UI, and can be used accordingly.
+* 📝 Note: If the metadata of a GGUF model includes `tokenizer.chat_template`, this template will be used to create the prompts.
+* 🛡️ Reminder: Since the Llama 2 tokenizer is utilized, please ensure that you have obtained the necessary permissions in advance by visiting the [Hugging Face page](https://huggingface.co/meta-llama/Llama-2-7b-hf).
 
 ## Usage
 
