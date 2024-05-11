@@ -4,49 +4,39 @@ from collections import UserDict
 
 import gradio as gr
 import torch
-from huggingface_hub import snapshot_download
 
 from cache_manager import ClearCacheContext, clear_cache, clear_cache_decorator, model_cache
-from model_manager import get_model_and_tokenizer_class, get_ollm_model_ids
 from custom_logging import ollm_logging
+from model_manager import LLMConfig, TransformersLLM, get_ollm_model_ids
+from model_manager_cpp import LlamaCPPLLM, get_cpp_ollm_model_ids
 from registry import get_llm_class
 from translator import load_translator, translate
 
 if torch.cuda.is_available():
     os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
 
-_DOWNLOAD_COMPLETED = "Download complete"
+methods_tabs = ["transformers", "llama.cpp"]
+selected_tab = methods_tabs[0]
 
 
 @clear_cache_decorator
-def download_model(ollm_model_id, local_files_only=False):
-    """Download Open LLM and Llama models.
-
-    Args:
-        ollm_model_id (str): String of Open LLM model ID.
-        local_files_only (bool, optional): If True, use only local files. Defaults to False.
-
-    Returns:
-        str: string of download result.
-    """
-    if not local_files_only:
-        ollm_logging.info(f"Downloading {ollm_model_id}")
-    try:
-        llm_class = get_llm_class(ollm_model_id)
-        if hasattr(llm_class, "download_kwargs") and isinstance(llm_class.download_kwargs, dict):
-            snapshot_download(repo_id=ollm_model_id, local_files_only=local_files_only, **llm_class.download_kwargs)
-        else:
-            snapshot_download(repo_id=ollm_model_id, local_files_only=local_files_only)
-    except FileNotFoundError:
-        return "Model not found. Please click Download model button."
-    except Exception as e:
-        return str(e)
-
-    return _DOWNLOAD_COMPLETED
+def change_tab_first():
+    global selected_tab
+    selected_tab = methods_tabs[0]
+    ollm_logging.debug(f"Selected tab: {selected_tab}")
+    return None
 
 
 @clear_cache_decorator
-def ollm_inference(chatbot, ollm_model_id, input_text_box, rag_text_box,
+def change_tab_second():
+    global selected_tab
+    selected_tab = methods_tabs[1]
+    ollm_logging.debug(f"Selected tab: {selected_tab}")
+    return None
+
+
+@clear_cache_decorator
+def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, input_text_box, rag_text_box,
                    max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk, cpu_execution_chk=False):
     """Open LLM inference.
 
@@ -78,11 +68,18 @@ def ollm_inference(chatbot, ollm_model_id, input_text_box, rag_text_box,
 
     chatbot = [] if chatbot is None else chatbot
 
-    dwonload_result = download_model(ollm_model_id, local_files_only=True)
-    if dwonload_result != _DOWNLOAD_COMPLETED:
+    if selected_tab == methods_tabs[0]:
+        method_class = TransformersLLM
+    else:
+        method_class = LlamaCPPLLM
+        ollm_model_id = cpp_ollm_model_id
+
+    dwonload_result = method_class.download_model(ollm_model_id, local_files_only=True)
+    ollm_logging.debug(f"Download result: {dwonload_result}")
+    if dwonload_result != LLMConfig.DOWNLOAD_COMPLETE:
         return input_text_box, chatbot, dwonload_result, ""
 
-    model_params = get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk)
+    model_params = method_class.get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk)
 
     pmnop = "pretrained_model_name_or_path"
 
@@ -206,6 +203,10 @@ def on_ui_tabs():
     ollm_model_index = ollm_model_ids.index("microsoft/Phi-3-mini-4k-instruct") \
         if "microsoft/Phi-3-mini-4k-instruct" in ollm_model_ids else 0
 
+    cpp_ollm_model_ids = get_cpp_ollm_model_ids()
+    cpp_ollm_model_index = cpp_ollm_model_ids.index("Phi-3-mini-4k-instruct-q4.gguf") \
+        if "Phi-3-mini-4k-instruct-q4.gguf" in cpp_ollm_model_ids else 0
+
     block = gr.Blocks().queue()
     block.title = "Open LLM WebUI"
     with block as ollm_interface:
@@ -218,17 +219,31 @@ def on_ui_tabs():
 
             with gr.Column():
                 with gr.Row():
-                    with gr.Column():
-                        with gr.Row():
-                            ollm_model_id = gr.Dropdown(label="LLM model ID", elem_id="ollm_model_id", choices=ollm_model_ids,
-                                                        value=ollm_model_ids[ollm_model_index], show_label=True)
-                        with gr.Row():
-                            cpu_execution_chk = gr.Checkbox(label="CPU execution", elem_id="cpu_execution_chk", value=False, show_label=True)
-                    with gr.Column():
-                        with gr.Row():
-                            download_model_btn = gr.Button("Download model", elem_id="download_model_btn")
-                        with gr.Row():
-                            status_text = gr.Textbox(label="", max_lines=1, show_label=False, interactive=False)
+                    with gr.Tabs(elem_id="methods_tabs", selected=selected_tab):
+                        with gr.TabItem(methods_tabs[0], elem_id=(methods_tabs[0]+"_tab"), id=methods_tabs[0]) as first_tab:
+                            with gr.Row():
+                                with gr.Column():
+                                    with gr.Row():
+                                        ollm_model_id = gr.Dropdown(label="LLM model ID", elem_id="ollm_model_id", choices=ollm_model_ids,
+                                                                    value=ollm_model_ids[ollm_model_index], show_label=True)
+                                    with gr.Row():
+                                        cpu_execution_chk = gr.Checkbox(label="CPU execution", elem_id="cpu_execution_chk", value=False, show_label=True)
+                                with gr.Column():
+                                    with gr.Row():
+                                        download_model_btn = gr.Button("Download model", elem_id="download_model_btn")
+                                    with gr.Row():
+                                        status_text = gr.Textbox(label="", max_lines=1, show_label=False, interactive=False)
+                        with gr.TabItem(methods_tabs[1], elem_id=(methods_tabs[1]+"_tab"), id=methods_tabs[1]) as second_tab:
+                            with gr.Row():
+                                with gr.Column():
+                                    with gr.Row():
+                                        cpp_ollm_model_id = gr.Dropdown(label="LLM model ID", elem_id="cpp_ollm_model_id", choices=cpp_ollm_model_ids,
+                                                                        value=cpp_ollm_model_ids[cpp_ollm_model_index], show_label=True)
+                                with gr.Column():
+                                    with gr.Row():
+                                        cpp_download_model_btn = gr.Button("Download model", elem_id="cpp_download_model_btn")
+                                    with gr.Row():
+                                        cpp_status_text = gr.Textbox(label="", max_lines=1, show_label=False, interactive=False)
                 with gr.Row():
                     input_text_box = gr.Textbox(
                         label="Input text",
@@ -258,11 +273,16 @@ def on_ui_tabs():
                 with gr.Row():
                     clear_btn = gr.Button("Clear text", elem_id="clear_btn")
 
-            download_model_btn.click(fn=download_model, inputs=[ollm_model_id], outputs=[status_text])
+            download_model_btn.click(fn=TransformersLLM.download_model, inputs=[ollm_model_id], outputs=[status_text])
             translate_chk.change(fn=translate_change, inputs=[translate_chk], outputs=[input_text_box, status_text])
             ollm_model_id.change(fn=change_model, inputs=[ollm_model_id], outputs=[rag_text_box])
 
-            generate_inputs = [chatbot, ollm_model_id, input_text_box, rag_text_box,
+            cpp_download_model_btn.click(fn=LlamaCPPLLM.download_model, inputs=[cpp_ollm_model_id], outputs=[cpp_status_text])
+            tabs_fn_map = {first_tab: change_tab_first, second_tab: change_tab_second}
+            for tab, fn in tabs_fn_map.items():
+                tab.select(fn=fn, inputs=None, outputs=None)
+
+            generate_inputs = [chatbot, ollm_model_id, cpp_ollm_model_id, input_text_box, rag_text_box,
                                max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk, cpu_execution_chk]
             generate_btn.click(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot]).then(
                 fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, translated_output_text])

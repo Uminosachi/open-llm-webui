@@ -5,6 +5,7 @@ from functools import wraps
 
 import torch
 from auto_gptq import AutoGPTQForCausalLM
+from huggingface_hub import snapshot_download
 from transformers import (AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM,  # noqa: F401
                           LlamaTokenizer, StoppingCriteriaList, TextIteratorStreamer)
 
@@ -44,6 +45,8 @@ class LLMConfig(ABC):
     tokenizer_decode_kwargs: dict = field(default_factory=dict)
     output_text_only: bool = True
     enable_rag_text: bool = False
+
+    DOWNLOAD_COMPLETE = "Download complete"
 
     def cpu_execution(self, cpu_execution_chk=False):
         if cpu_execution_chk:
@@ -800,6 +803,57 @@ class ChatQAModel(LLMConfig):
         return output_text
 
 
+class TransformersLLM:
+    @clear_cache_decorator
+    @staticmethod
+    def download_model(ollm_model_id, local_files_only=False):
+        """Download Open LLM and Llama models.
+
+        Args:
+            ollm_model_id (str): String of Open LLM model ID.
+            local_files_only (bool, optional): If True, use only local files. Defaults to False.
+
+        Returns:
+            str: string of download result.
+        """
+        if not local_files_only:
+            ollm_logging.info(f"Downloading {ollm_model_id}")
+        try:
+            llm_class = get_llm_class(ollm_model_id)
+            if hasattr(llm_class, "download_kwargs") and isinstance(llm_class.download_kwargs, dict):
+                snapshot_download(repo_id=ollm_model_id, local_files_only=local_files_only, **llm_class.download_kwargs)
+            else:
+                snapshot_download(repo_id=ollm_model_id, local_files_only=local_files_only)
+        except FileNotFoundError:
+            return "Model not found. Please click Download model button."
+        except Exception as e:
+            return str(e)
+
+        return LLMConfig.DOWNLOAD_COMPLETE
+
+    @clear_cache_decorator
+    @staticmethod
+    def get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk=False):
+        """Get model and tokenizer class.
+
+        Args:
+            ollm_model_id (str): String of Open LLM model ID.
+
+        Returns:
+            tuple(class, class, dict, dict): Tuple of model class, tokenizer class, model kwargs, and tokenizer kwargs.
+        """
+        llm = get_llm_class(ollm_model_id)()
+
+        llm.cpu_execution(cpu_execution_chk)
+
+        if platform.system() == "Darwin":
+            llm.model_kwargs.update(dict(torch_dtype=torch.float32))
+
+        ollm_logging.info(f"model_kwargs: {llm.model_kwargs}")
+
+        return llm
+
+
 def get_ollm_model_ids():
     """Get Open LLM and Llama model IDs.
 
@@ -828,24 +882,3 @@ def get_ollm_model_ids():
         ]
     return ollm_model_ids
 
-
-@clear_cache_decorator
-def get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk=False):
-    """Get model and tokenizer class.
-
-    Args:
-        ollm_model_id (str): String of Open LLM model ID.
-
-    Returns:
-        tuple(class, class, dict, dict): Tuple of model class, tokenizer class, model kwargs, and tokenizer kwargs.
-    """
-    llm = get_llm_class(ollm_model_id)()
-
-    llm.cpu_execution(cpu_execution_chk)
-
-    if platform.system() == "Darwin":
-        llm.model_kwargs.update(dict(torch_dtype=torch.float32))
-
-    ollm_logging.info(f"model_kwargs: {llm.model_kwargs}")
-
-    return llm

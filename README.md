@@ -26,6 +26,18 @@ cd open-llm-webui
 pip install -r requirements.txt
 ```
 
+* Since Mac does not support CUDA, please use the following command:
+
+```bash
+BUILD_CUDA_EXT=0 pip install -r requirements.txt
+```
+
+* If you want to use the llama.cpp with CUDA acceleration, please use the following command:
+
+```bash
+CMAKE_ARGS="-DLLAMA_CUBLAS=on" pip install -r requirements.txt
+```
+
 ## Running the application
 
 ```bash
