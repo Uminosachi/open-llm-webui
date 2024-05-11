@@ -26,7 +26,7 @@ cd open-llm-webui
 pip install -r requirements.txt
 ```
 
-* Since Mac does not support CUDA, please use the following command:
+* Since Mac OS does not support CUDA, please use the following command:
 
 ```bash
 BUILD_CUDA_EXT=0 pip install -r requirements.txt
@@ -54,7 +54,7 @@ To download the model:
 * Wait for the download to complete.
 * 🔍 Note: The downloaded model file will be stored in the `.cache/huggingface/hub` directory of your home directory.
 
-### Model List
+### Model List (transformers)
 
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
@@ -73,7 +73,15 @@ To download the model:
 huggingface-cli login
 ```
 * To download Apple's OpenELM or models based on Llama 2, please ensure you have obtained the necessary access rights beforehand via the [Hugging Face page](https://huggingface.co/meta-llama/Llama-2-7b-hf).
+* To download models based on Llama 3, please ensure you have obtained the necessary access rights beforehand via the [Hugging Face page](https://huggingface.co/meta-llama/Meta-Llama-3-8B).
+
 * Please check the license in the Model Credit section below.
+
+### Model List (llama.cpp)
+
+| Provider      | Model Names                                                                                |
+|---------------|--------------------------------------------------------------------------------------------|
+| Microsoft     | Phi-3-mini-4k-instruct-q4.gguf, Phi-3-mini-4k-instruct-fp16.gguf                           |
 
 ## Usage
 

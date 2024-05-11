@@ -826,7 +826,7 @@ class TransformersLLM:
             else:
                 snapshot_download(repo_id=ollm_model_id, local_files_only=local_files_only)
         except FileNotFoundError:
-            return "Model not found. Please click Download model button."
+            return "Model not found. Please download the model first."
         except Exception as e:
             return str(e)
 

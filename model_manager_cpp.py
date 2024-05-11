@@ -125,11 +125,6 @@ class LlamaCPPLLM:
         """
         llm = get_cpp_llm_class(ollm_model_id)()
 
-        # llm.cpu_execution(cpu_execution_chk)
-
-        # if platform.system() == "Darwin":
-        #     llm.model_kwargs.update(dict(torch_dtype=torch.float32))
-
         ollm_logging.info(f"model_kwargs: {llm.model_kwargs}")
 
         return llm
@@ -139,8 +134,6 @@ class LlamaCPPLLM:
     def get_model(ollm_model_id, model_params, generate_params):
         model_kwargs = model_params.model_kwargs
         model_kwargs["model_path"] = get_gguf_file_path(ollm_model_id)
-        # model_kwargs["n_ctx"] = min(generate_params["max_new_tokens"] * 2, 4096)
-        # model_kwargs["n_batch"] = model_kwargs["n_ctx"]
 
         model = model_params.model_class(**model_kwargs)
 
