@@ -33,7 +33,7 @@ cd open-llm-webui
   - Set up environment variables required for the build:
     ```bash
     "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-    set FORCE_CMAKE=1 && set CMAKE_ARGS="-DLLAMA_CUDA=1"
+    set FORCE_CMAKE=1 && set CMAKE_ARGS="-DLLAMA_CUDA=on"
     ```
   - Copy MSBuild extensions for CUDA with administrator (adjust the CUDA version as necessary):
     ```bash
@@ -48,7 +48,7 @@ cd open-llm-webui
 
 * **For Linux (with CUDA support):**
   ```bash
-  CMAKE_ARGS="-DLLAMA_CUDA=1" pip install -r requirements.txt
+  CMAKE_ARGS="-DLLAMA_CUDA=on" pip install -r requirements.txt
   ```
 
 * **For Mac OS (without CUDA support):**
