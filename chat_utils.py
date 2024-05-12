@@ -2,7 +2,7 @@ import re
 
 
 def convert_code_blocks_to_tags(text):
-    pattern = r"```(\w+)?\s*([^`]+?)```"
+    pattern = r"```([A-Za-z0-9_+]+)?\s*([^`]+?)```"
 
     def replace(match):
         language = match.group(1)
@@ -16,7 +16,7 @@ def convert_code_blocks_to_tags(text):
 
 
 def convert_code_tags_to_md(html_text):
-    pattern = r"<pre><code(?: class=\"(\w+)\")?>(.*?)</code></pre>"
+    pattern = r"<pre><code(?: class=\"([A-Za-z0-9_+]+)\")?>(.*?)</code></pre>"
 
     def replace(match):
         language = match.group(1)
