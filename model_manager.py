@@ -10,6 +10,7 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM,
                           LlamaTokenizer, StoppingCriteriaList, TextIteratorStreamer)
 
 from cache_manager import clear_cache_decorator, model_cache
+from chat_utils import convert_html_to_markdown
 from custom_logging import ollm_logging
 from registry import get_llm_class, register_model
 from start_messages import (StopOnTokens, chatqa_message, llama2_message, rakuten_message,
@@ -19,7 +20,7 @@ from start_messages import (StopOnTokens, chatqa_message, llama2_message, rakute
 def replace_br(func):
     @wraps(func)
     def wrapper(self, chatbot, *args, **kwargs):
-        chatbot = [[item.replace("<br>", "\n") for item in sublist] for sublist in chatbot]
+        chatbot = [[convert_html_to_markdown(item.replace("<br>", "\n")) for item in sublist] for sublist in chatbot]
         return func(self, chatbot, *args, **kwargs)
     return wrapper
 

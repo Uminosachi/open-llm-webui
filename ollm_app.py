@@ -295,7 +295,7 @@ def on_ui_tabs():
                         visible=False,
                     )
                 with gr.Row():
-                    max_new_tokens = gr.Slider(minimum=1, maximum=4096, step=1, value=256, label="Max new tokens", elem_id="max_new_tokens")
+                    max_new_tokens = gr.Slider(minimum=1, maximum=4096, step=1, value=512, label="Max new tokens", elem_id="max_new_tokens")
                 with gr.Row():
                     with gr.Accordion("Advanced options", open=False):
                         temperature = gr.Slider(minimum=0.1, maximum=1.0, step=0.05, value=0.7, label="Temperature", elem_id="temperature")
