@@ -111,6 +111,7 @@ class CPPDefaultModel(LLMConfig):
             model_kwargs=dict(
                 n_ctx=4096,
                 n_threads=8,
+                n_gpu_layers=-1,
             ),
             tokenizer_kwargs=dict(
                 pretrained_model_name_or_path="meta-llama/Llama-2-7b-hf",

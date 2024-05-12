@@ -71,11 +71,20 @@ class LLMConfig(ABC):
                 messages.append({"role": "assistant", "content": assistant_text})
             elif i < (len_chat - 1) or len(assistant_text) > 0:
                 messages.append({"role": "assistant", "content": assistant_text})
-        prompt = tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True,
-        )
+        try:
+            prompt = tokenizer.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                    add_generation_prompt=True,
+            )
+        except Exception:
+            ollm_logging.warning("Failed to apply chat template. Removing system message.")
+            messages = [message for message in messages if message["role"] != "system"]
+            prompt = tokenizer.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                    add_generation_prompt=True,
+            )
         return prompt
 
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
