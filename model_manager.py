@@ -515,7 +515,7 @@ class PHI3Model(LLMConfig):
 class OpenELMModel(LLMConfig):
     include_name: str = "openelm"
 
-    system_message = "Let's chat."
+    system_message = "Let's chat!"
 
     chat_template = ("{% for message in messages %}"
                      "{% if message['role'] == 'system' %}"

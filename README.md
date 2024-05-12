@@ -7,36 +7,35 @@ This repository contains a web application designed to execute relatively compac
 Please follow these steps to install the software:
 
 * Create a new conda environment:
-
 ```bash
 conda create -n ollm python=3.10
 conda activate ollm
 ```
 
 * Clone the software repository:
-
 ```bash
 git clone https://github.com/Uminosachi/open-llm-webui.git
 cd open-llm-webui
 ```
 
-* For the CUDA environment, install the following packages:
+### Python Package Installation
 
-```bash
-pip install -r requirements.txt
-```
+#### General Instructions
+* Install the necessary Python packages by executing:
+  ```bash
+  pip install -r requirements.txt
+  ```
 
-* Since Mac OS does not support CUDA, please use the following command:
+#### Platform-Specific Instructions
+* For Mac OS (without CUDA support):
+  ```bash
+  BUILD_CUDA_EXT=0 pip install -r requirements.txt
+  ```
 
-```bash
-BUILD_CUDA_EXT=0 pip install -r requirements.txt
-```
-
-* If you want to use the llama.cpp with CUDA acceleration, please use the following command:
-
-```bash
-CMAKE_ARGS="-DLLAMA_CUBLAS=on" pip install -r requirements.txt
-```
+* For CUDA Acceleration with llama.cpp:
+  ```bash
+  CMAKE_ARGS="-DLLAMA_CUBLAS=on" pip install -r requirements.txt
+  ```
 
 ## Running the application
 
@@ -52,7 +51,6 @@ To download the model:
 * Launch this application.
 * Click on the "Download model" button next to the LLM model ID.
 * Wait for the download to complete.
-* 🔍 Note: The downloaded model file will be stored in the `.cache/huggingface/hub` directory of your home directory.
 
 ### Model List (transformers)
 
@@ -67,15 +65,20 @@ To download the model:
 | TheBloke      | Llama-2-7b-Chat-GPTQ, Kunoichi-7B-GPTQ                                                     |
 | Stability AI  | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-instruct-beta-7b       |
 
-* To download Google's Gemma model, please ensure you have obtained the necessary access rights beforehand via the [Hugging Face page](https://huggingface.co/google/gemma-1.1-2b-it).
-  - Before downloading the model, you need to log in to Hugging Face via the command line. Please use the following command:
-```
-huggingface-cli login
-```
-* To download models based on Llama 2, please ensure you have obtained the necessary access rights beforehand via the [Hugging Face page](https://huggingface.co/meta-llama/Llama-2-7b-hf).
-* To download models based on Llama 3, please ensure you have obtained the necessary access rights beforehand via the [Hugging Face page](https://huggingface.co/meta-llama/Meta-Llama-3-8B).
+* 🔍 Note: The downloaded model file will be stored in the `.cache/huggingface/hub` directory of your home directory.
+* Please check the license in the **Model Credit** section below.
 
-* Please check the license in the Model Credit section below.
+#### Access and Download Models
+* Ensure you have obtained the necessary access rights via Hugging Face before downloading any models. Visit the following pages to obtain access:
+  - [Gemma model by Google](https://huggingface.co/google/gemma-1.1-2b-it)
+  - [Llama 2 model by Meta](https://huggingface.co/meta-llama/Llama-2-7b-hf)
+  - [Llama 3 model by Meta](https://huggingface.co/meta-llama/Meta-Llama-3-8B)
+
+#### Login to Hugging Face
+* Before downloading any models, please log in via the command line using:
+  ```
+  huggingface-cli login
+  ```
 
 ### Model List (llama.cpp)
 
@@ -83,21 +86,31 @@ huggingface-cli login
 |---------------|--------------------------------------------------------------------------------------------|
 | Microsoft     | Phi-3-mini-4k-instruct-q4.gguf, Phi-3-mini-4k-instruct-fp16.gguf                           |
 
-* 🔍 Note: Place files with the `.gguf` extension in the `models` directory within the `open-llm-webui` folder. These files will then appear in the model list on the `llama.cpp` tab of the web UI, and can be used accordingly.
-* 📝 Note: If the metadata of a GGUF model includes `tokenizer.chat_template`, this template will be used to create the prompts.
-* 🛡️ Reminder: Since the Llama 2 tokenizer is utilized, please ensure that you have obtained the necessary permissions in advance by visiting the [Hugging Face page](https://huggingface.co/meta-llama/Llama-2-7b-hf).
+#### Using any GGUF file
+* 🔍 File Placement: Place files with the `.gguf` extension in the `models` directory within the `open-llm-webui` folder. These files will then appear in the model list on the `llama.cpp` tab of the web UI and can be used accordingly.
+* 📝 Metadata Usage: If the metadata of a GGUF model includes `tokenizer.chat_template`, this template will be used to create the prompts.
+* 🛡️ Permission Reminder: As the Llama 2 tokenizer is utilized, please ensure that you have obtained the necessary permissions in advance by visiting the [Hugging Face page for Llama 2](https://huggingface.co/meta-llama/Llama-2-7b-hf).
 
 ## Usage
 
-* Enter your message into the "Input text" box.
-* Under "Advanced options", adjust the values for "Max New Tokens", "Temperature", "Top k", "Top p", and "Repetition Penalty" as necessary.
+* Enter your message into the "Input text" box. Adjust the slider for "Max new tokens" as needed.
+* Under "Advanced options", adjust the settings for "Temperature", "Top k", "Top p", and "Repetition Penalty" as needed.
 * Press "Enter" on your keyboard or click the "Generate" button.
-   - ⚠️ Note: If the cloud-based model has been updated, it might be downloaded upon execution.
-* If you enable the `CPU execution` checkbox, the model will utilize the argument `device_map="cpu"`.
+   - ⚠️ Note: If the cloud-based model has been updated, it may be downloaded upon execution.
+* If you click the "Clear text" button, the chat history will be cleared.
+
+### transformers tab
+* By enabling the `CPU execution` checkbox, the model will use the argument `device_map="cpu"`.
+
+### llama.cpp tab
+* Use the radio buttons in the `Default chat template` to select the template that will be used if the GGUF model lacks a `chat_template`.
+
+### options
 * When you enable the `Translate (ja->en/en->ja)` checkbox:
-   - Any input in Japanese will be translated to English.
-   - Responses in English will be translated back into Japanese.
+   - Any input in Japanese will be automatically translated to English, and responses in English will be automatically translated back into Japanese.
    - ⚠️ Note: Downloading the translation model for the first time may take some time.
+
+<br>
 
 ![UI image](images/open-ollm-webui_ui_image_1.png)
 

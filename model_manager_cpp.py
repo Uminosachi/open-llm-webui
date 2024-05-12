@@ -40,26 +40,55 @@ def list_files(directory, extension):
 class CPPDefaultModel(LLMConfig):
     include_name: str = "default"
 
-    system_message = "Let's chat."
+    system_message = "Let's chat!"
 
-    chat_template2 = ("{% for message in messages %}"
-                      "{% if message['role'] == 'system' %}"
-                      "{{ '<<SYS>>\\n' + message['content'] + '\\n<</SYS>>\\n\\n' }}"
-                      "{% elif message['role'] == 'user' %}"
-                      "{{ bos_token + '[INST] ' + message['content'] + ' [/INST]' }}"
-                      "{% elif message['role'] == 'assistant' %}"
-                      "{{ '[ASST] '  + message['content'] + ' [/ASST]' + eos_token }}"
-                      "{% endif %}{% endfor %}")
+    llama2_template = (
+        "{% for message in messages %}"
+        "{% if message['role'] == 'system' %}"
+        "{{ '<<SYS>>\\n' + message['content'] + '\\n<</SYS>>\\n\\n' }}"
+        "{% elif message['role'] == 'user' %}"
+        "{{ bos_token + '[INST] ' + message['content'] + ' [/INST]' }}"
+        "{% elif message['role'] == 'assistant' %}"
+        "{{ '[ASST] '  + message['content'] + ' [/ASST]' + eos_token }}"
+        "{% endif %}{% endfor %}")
 
-    chat_template3 = ("{% set loop_messages = messages %}"
-                      "{% for message in loop_messages %}"
-                      "{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>' + message['content'] | trim + '<|eot_id|>' %}"
-                      "{% if loop.index0 == 0 %}"
-                      "{% set content = bos_token + content %}"
-                      "{% endif %}"
-                      "{{ content }}"
-                      "{% endfor %}"
-                      "{{ '<|start_header_id|>assistant<|end_header_id|>' }}")
+    llama3_template = (
+        "{% set loop_messages = messages %}"
+        "{% for message in loop_messages %}"
+        "{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>' + message['content'] | trim + '<|eot_id|>' %}"
+        "{% if loop.index0 == 0 %}"
+        "{% set content = bos_token + content %}"
+        "{% endif %}"
+        "{{ content }}"
+        "{% endfor %}"
+        "{{ '<|start_header_id|>assistant<|end_header_id|>' }}")
+
+    gemma_template = (
+        "{{ bos_token }}"
+        "{% if messages[0]['role'] == 'system' %}"
+        "{{ raise_exception('System role not supported') }}"
+        "{% endif %}"
+        "{% for message in messages %}"
+        "{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}"
+        "{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}"
+        "{% endif %}"
+        "{% if (message['role'] == 'assistant') %}"
+        "{% set role = 'model' %}"
+        "{% else %}"
+        "{% set role = message['role'] %}"
+        "{% endif %}"
+        "{{ '<start_of_turn>' + role + '\n' + message['content'] | trim + '<end_of_turn>\n' }}"
+        "{% endfor %}"
+        "{% if add_generation_prompt %}"
+        "{{'<start_of_turn>model\n'}}"
+        "{% endif %}")
+
+    phi3_template = (
+        "{{ bos_token }}{% for message in messages %}"
+        "{% if (message['role'] == 'user') %}"
+        "{{'<|user|>' + '\n' + message['content'] + '<|end|>' + '\n' + '<|assistant|>' + '\n'}}"
+        "{% elif (message['role'] == 'assistant') %}{{message['content'] + '<|end|>' + '\n'}}"
+        "{% endif %}{% endfor %}")
 
     def __init__(self):
         super().__init__(
@@ -87,8 +116,6 @@ class CPPDefaultModel(LLMConfig):
     @replace_br
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
-        if tokenizer.chat_template is None:
-            tokenizer.chat_template = self.chat_template3
         prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=True)
         return prompt
 

@@ -7,9 +7,10 @@ import gradio as gr
 import torch
 
 from cache_manager import ClearCacheContext, clear_cache, clear_cache_decorator, model_cache
+from chat_utils import replace_newlines
 from custom_logging import ollm_logging
 from model_manager import LLMConfig, TransformersLLM, get_ollm_model_ids
-from model_manager_cpp import LlamaCPPLLM, get_cpp_ollm_model_ids
+from model_manager_cpp import CPPDefaultModel, LlamaCPPLLM, get_cpp_ollm_model_ids
 from registry import get_llm_class
 from translator import load_translator, translate
 
@@ -37,7 +38,7 @@ def change_tab_second():
 
 
 @clear_cache_decorator
-def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, input_text_box, rag_text_box,
+def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, cpp_chat_template, input_text_box, rag_text_box,
                    max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk, cpu_execution_chk=False):
     """Open LLM inference.
 
@@ -114,6 +115,26 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, input_text_box, ra
         if hasattr(model, "metadata") and model.metadata.get("tokenizer.chat_template", None) is not None:
             ollm_logging.info("Using chat template from model metadata")
             tokenizer.chat_template = model.metadata["tokenizer.chat_template"]
+        else:
+            # ["Llama2", "Llama3", "Gemma", "Phi-3"]
+            if cpp_chat_template == "Llama2":
+                ollm_logging.info("Using Llama 2 chat template")
+                tokenizer.chat_template = CPPDefaultModel.llama2_template
+                CPPDefaultModel.system_message = "Let's chat!"
+            elif cpp_chat_template == "Llama3":
+                ollm_logging.info("Using Llama 3 chat template")
+                tokenizer.chat_template = CPPDefaultModel.llama3_template
+                CPPDefaultModel.system_message = "Let's chat!"
+            elif cpp_chat_template == "Gemma":
+                ollm_logging.info("Using Gemma chat template")
+                tokenizer.chat_template = CPPDefaultModel.gemma_template
+                if hasattr(CPPDefaultModel, "system_message"):
+                    del CPPDefaultModel.system_message
+            elif cpp_chat_template == "Phi-3":
+                ollm_logging.info("Using Phi-3 chat template")
+                tokenizer.chat_template = CPPDefaultModel.phi3_template
+                if hasattr(CPPDefaultModel, "system_message"):
+                    del CPPDefaultModel.system_message
     prompt = model_params.create_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer)
 
     ollm_logging.info("Input text: " + prompt)
@@ -170,7 +191,10 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, input_text_box, ra
     else:
         translated_output_text = ""
 
-    output_text = output_text.replace("\n", "<br>")
+    if "```" not in output_text:
+        output_text = output_text.replace("\n", "<br>")
+    else:
+        output_text = replace_newlines(output_text)
     # chatbot.append((input_text_box, output_text))
     chatbot[-1][1] = output_text
 
@@ -252,6 +276,11 @@ def on_ui_tabs():
                                         cpp_download_model_btn = gr.Button("Download model", elem_id="cpp_download_model_btn")
                                     with gr.Row():
                                         cpp_status_text = gr.Textbox(label="", max_lines=1, show_label=False, interactive=False)
+                            with gr.Row():
+                                with gr.Column():
+                                    cpp_chat_template = gr.Radio(label="Default chat template", elem_id="cpp_chat_template",
+                                                                 choices=["Llama2", "Llama3", "Gemma", "Phi-3"], value="Llama2", type="value")
+
                 with gr.Row():
                     input_text_box = gr.Textbox(
                         label="Input text",
@@ -277,7 +306,7 @@ def on_ui_tabs():
                 with gr.Row():
                     generate_btn = gr.Button("Generate", elem_id="generate_btn")
                 with gr.Row():
-                    translated_output_text = gr.Textbox(label="Translated output text", show_label=True, lines=3, interactive=False)
+                    translated_output_text = gr.Textbox(label="Translated output text", show_label=True, lines=2, interactive=False)
                 with gr.Row():
                     clear_btn = gr.Button("Clear text", elem_id="clear_btn")
 
@@ -290,7 +319,7 @@ def on_ui_tabs():
             for tab, fn in tabs_fn_map.items():
                 tab.select(fn=fn, inputs=None, outputs=None)
 
-            generate_inputs = [chatbot, ollm_model_id, cpp_ollm_model_id, input_text_box, rag_text_box,
+            generate_inputs = [chatbot, ollm_model_id, cpp_ollm_model_id, cpp_chat_template, input_text_box, rag_text_box,
                                max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk, cpu_execution_chk]
             generate_btn.click(fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot]).then(
                 fn=ollm_inference, inputs=generate_inputs, outputs=[input_text_box, chatbot, status_text, cpp_status_text, translated_output_text])
