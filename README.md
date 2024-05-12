@@ -27,14 +27,33 @@ cd open-llm-webui
   ```
 
 #### Platform-Specific Instructions
-* For Mac OS (without CUDA support):
+* **For Windows (with CUDA support):**
+  - Install [Visual Studio](https://learn.microsoft.com/ja-jp/visualstudio/install/install-visual-studio?view=vs-2022):
+    - ⚠️ Note: Ensure to select `Desktop development with C++` during installation.
+  - Set up environment variables required for the build:
+    ```bash
+    "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+    set FORCE_CMAKE=1 && set CMAKE_ARGS="-DLLAMA_CUDA=1"
+    ```
+  - Copy MSBuild extensions for CUDA with administrator (adjust the CUDA version as necessary):
+    ```bash
+    xcopy /e "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\extras\visual_studio_integration\MSBuildExtensions" "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\BuildCustomizations"
+    ```
+  - Install the necessary Python packages (this process may take some time):
+    ```bash
+    pip install ninja cmake scikit-build-core[pyproject]
+    pip install llama-cpp-python
+    pip install -r requirements.txt
+    ```
+
+* **For Linux (with CUDA support):**
   ```bash
-  BUILD_CUDA_EXT=0 pip install -r requirements.txt
+  CMAKE_ARGS="-DLLAMA_CUDA=1" pip install -r requirements.txt
   ```
 
-* For CUDA Acceleration with llama.cpp:
+* **For Mac OS (without CUDA support):**
   ```bash
-  CMAKE_ARGS="-DLLAMA_CUBLAS=on" pip install -r requirements.txt
+  BUILD_CUDA_EXT=0 pip install -r requirements.txt
   ```
 
 ## Running the application
