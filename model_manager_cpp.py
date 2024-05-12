@@ -8,7 +8,7 @@ from transformers import AutoTokenizer
 
 from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
-from model_manager import LLMConfig, replace_br
+from model_manager import LLMConfig, replace_br_and_code
 from registry import get_cpp_llm_class, register_cpp_model
 from start_messages import llama2_message  # noqa: F401
 
@@ -90,6 +90,20 @@ class CPPDefaultModel(LLMConfig):
         "{% elif (message['role'] == 'assistant') %}{{message['content'] + '<|end|>' + '\n'}}"
         "{% endif %}{% endfor %}")
 
+    mixtral_template = (
+        "{{ bos_token }}"
+        "{% for message in messages %}"
+        "{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}"
+        "{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}"
+        "{% endif %}{% if message['role'] == 'user' %}"
+        "{{ '[INST] ' + message['content'] + ' [/INST]' }}"
+        "{% elif message['role'] == 'assistant' %}"
+        "{{ message['content'] + eos_token}}"
+        "{% else %}"
+        "{{ raise_exception('Only user and assistant roles are supported!') }}"
+        "{% endif %}"
+        "{% endfor %}")
+
     def __init__(self):
         super().__init__(
             model_class=Llama,
@@ -113,7 +127,7 @@ class CPPDefaultModel(LLMConfig):
             require_tokenization=False,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=True)
@@ -167,7 +181,7 @@ class CPPPHI3Model(LLMConfig):
             require_tokenization=False,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=True)

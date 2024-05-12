@@ -70,9 +70,7 @@ To download the model:
 
 #### Access and Download Models
 * Ensure you have obtained the necessary access rights via Hugging Face before downloading any models. Visit the following pages to obtain access:
-  - [Gemma model by Google](https://huggingface.co/google/gemma-1.1-2b-it)
-  - [Llama 2 model by Meta](https://huggingface.co/meta-llama/Llama-2-7b-hf)
-  - [Llama 3 model by Meta](https://huggingface.co/meta-llama/Meta-Llama-3-8B)
+  - [Gemma model by Google](https://huggingface.co/google/gemma-1.1-2b-it), [Llama 2 model by Meta](https://huggingface.co/meta-llama/Llama-2-7b-hf), [Llama 3 model by Meta](https://huggingface.co/meta-llama/Meta-Llama-3-8B)
 
 #### Login to Hugging Face
 * Before downloading any models, please log in via the command line using:

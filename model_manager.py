@@ -10,17 +10,17 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM,
                           LlamaTokenizer, StoppingCriteriaList, TextIteratorStreamer)
 
 from cache_manager import clear_cache_decorator, model_cache
-from chat_utils import convert_html_to_markdown
+from chat_utils import convert_code_tags_to_md
 from custom_logging import ollm_logging
 from registry import get_llm_class, register_model
 from start_messages import (StopOnTokens, chatqa_message, llama2_message, rakuten_message,
                             stablelm_message)
 
 
-def replace_br(func):
+def replace_br_and_code(func):
     @wraps(func)
     def wrapper(self, chatbot, *args, **kwargs):
-        chatbot = [[convert_html_to_markdown(item.replace("<br>", "\n")) for item in sublist] for sublist in chatbot]
+        chatbot = [[convert_code_tags_to_md(item.replace("<br>", "\n")) for item in sublist] for sublist in chatbot]
         return func(self, chatbot, *args, **kwargs)
     return wrapper
 
@@ -119,7 +119,7 @@ class DefaultModel(LLMConfig):
             output_text_only=True,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         prompt = input_text_box
@@ -161,7 +161,7 @@ class OpenCalmModel(LLMConfig):
             output_text_only=False,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         prompt = input_text_box
@@ -184,16 +184,17 @@ class GPTNeoXModel(LLMConfig):
 
     download_kwargs = dict(ignore_patterns=["pytorch_model*"])
 
-    chat_template1 = ("{% for message in messages %}"
-                      "{% if message['role'] == 'user' %}"
-                      "{{ 'ユーザー: ' + message['content'] + '\\n' }}"
-                      "{% elif message['role'] == 'assistant' %}"
-                      "{% if not loop.last or message['content'] %}"
-                      "{{ 'システム: '  + message['content'] + '\\n' }}"
-                      "{% else %}"
-                      "{{ 'システム: ' }}"
-                      "{% endif %}"
-                      "{% endif %}{% endfor %}")
+    chat_template1 = (
+        "{% for message in messages %}"
+        "{% if message['role'] == 'user' %}"
+        "{{ 'ユーザー: ' + message['content'] + '\\n' }}"
+        "{% elif message['role'] == 'assistant' %}"
+        "{% if not loop.last or message['content'] %}"
+        "{{ 'システム: '  + message['content'] + '\\n' }}"
+        "{% else %}"
+        "{{ 'システム: ' }}"
+        "{% endif %}"
+        "{% endif %}{% endfor %}")
 
     chat_template2 = chat_template1.replace("\\n", "<NL>")
 
@@ -219,7 +220,7 @@ class GPTNeoXModel(LLMConfig):
             output_text_only=True,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template1 if "bilingual-gpt-neox" in ollm_model_id else self.chat_template2
@@ -245,14 +246,15 @@ class StableLMTunedModel(LLMConfig):
 
     system_message = stablelm_message
 
-    chat_template = ("{% for message in messages %}"
-                     "{% if message['role'] == 'system' %}"
-                     "{{ message['content'] }}"
-                     "{% elif message['role'] == 'user' %}"
-                     "{{ '<|USER|>' + message['content'] }}"
-                     "{% elif message['role'] == 'assistant' %}"
-                     "{{ '<|ASSISTANT|>' + message['content'] }}"
-                     "{% endif %}{% endfor %}")
+    chat_template = (
+        "{% for message in messages %}"
+        "{% if message['role'] == 'system' %}"
+        "{{ message['content'] }}"
+        "{% elif message['role'] == 'user' %}"
+        "{{ '<|USER|>' + message['content'] }}"
+        "{% elif message['role'] == 'assistant' %}"
+        "{{ '<|ASSISTANT|>' + message['content'] }}"
+        "{% endif %}{% endfor %}")
 
     def __init__(self):
         super().__init__(
@@ -275,7 +277,7 @@ class StableLMTunedModel(LLMConfig):
             output_text_only=False,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template
@@ -344,7 +346,7 @@ class JapaneseStableLMModel(LLMConfig):
             output_text_only=True,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         prompt = self.prompt_template.format(system=self.system_message, user_query=self.user_query, prompt=input_text_box)
@@ -397,7 +399,7 @@ class ChatGPTQModel(LLMConfig):
             output_text_only=True,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         prompt = self.prompt_template.format(system=self.system_message, prompt=input_text_box)
@@ -449,7 +451,7 @@ class KunoichiGPTQModel(LLMConfig):
             output_text_only=True,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         prompt = self.prompt_template.format(system=self.system_message, prompt=input_text_box)
@@ -494,7 +496,7 @@ class PHI3Model(LLMConfig):
             output_text_only=True,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=True)
@@ -518,18 +520,19 @@ class OpenELMModel(LLMConfig):
 
     system_message = "Let's chat!"
 
-    chat_template = ("{% for message in messages %}"
-                     "{% if message['role'] == 'system' %}"
-                     "{{ 'System: ' + message['content'] + '\\n' }}"
-                     "{% elif message['role'] == 'user' %}"
-                     "{{ 'User: ' + message['content'] + '\\n' }}"
-                     "{% elif message['role'] == 'assistant' %}"
-                     "{% if not loop.last or message['content'] %}"
-                     "{{ 'Assistant: ' + message['content'] + '\\n' }}"
-                     "{% else %}"
-                     "{{ 'Assistant: ' }}"
-                     "{% endif %}"
-                     "{% endif %}{% endfor %}")
+    chat_template = (
+        "{% for message in messages %}"
+        "{% if message['role'] == 'system' %}"
+        "{{ 'System: ' + message['content'] + '\\n' }}"
+        "{% elif message['role'] == 'user' %}"
+        "{{ 'User: ' + message['content'] + '\\n' }}"
+        "{% elif message['role'] == 'assistant' %}"
+        "{% if not loop.last or message['content'] %}"
+        "{{ 'Assistant: ' + message['content'] + '\\n' }}"
+        "{% else %}"
+        "{{ 'Assistant: ' }}"
+        "{% endif %}"
+        "{% endif %}{% endfor %}")
 
     def __init__(self):
         super().__init__(
@@ -554,7 +557,7 @@ class OpenELMModel(LLMConfig):
             output_text_only=True,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template
@@ -600,7 +603,7 @@ class GemmaModel(LLMConfig):
             output_text_only=True,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=True)
@@ -625,18 +628,19 @@ class RakutenAIModel(LLMConfig):
 
     system_message = rakuten_message
 
-    chat_template = ("{% for message in messages %}"
-                     "{% if message['role'] == 'system' %}"
-                     "{{ message['content'] + ' '}}"
-                     "{% elif message['role'] == 'user' %}"
-                     "{{ 'USER: ' + message['content'] + ' '}}"
-                     "{% elif message['role'] == 'assistant' %}"
-                     "{% if not loop.last or message['content'] %}"
-                     "{{ 'ASSISTANT: ' + message['content'] + ' '}}"
-                     "{% else %}"
-                     "{{ 'ASSISTANT: ' }}"
-                     "{% endif %}"
-                     "{% endif %}{% endfor %}")
+    chat_template = (
+        "{% for message in messages %}"
+        "{% if message['role'] == 'system' %}"
+        "{{ message['content'] + ' '}}"
+        "{% elif message['role'] == 'user' %}"
+        "{{ 'USER: ' + message['content'] + ' '}}"
+        "{% elif message['role'] == 'assistant' %}"
+        "{% if not loop.last or message['content'] %}"
+        "{{ 'ASSISTANT: ' + message['content'] + ' '}}"
+        "{% else %}"
+        "{{ 'ASSISTANT: ' }}"
+        "{% endif %}"
+        "{% endif %}{% endfor %}")
 
     def __init__(self):
         super().__init__(
@@ -658,7 +662,7 @@ class RakutenAIModel(LLMConfig):
             output_text_only=True,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template
@@ -683,18 +687,19 @@ class RinnaYouriModel(LLMConfig):
 
     system_message = "チャットをしましょう。"
 
-    chat_template = ("{% for message in messages %}"
-                     "{% if message['role'] == 'system' %}"
-                     "{{ '設定: ' + message['content'] + '\\n' }}"
-                     "{% elif message['role'] == 'user' %}"
-                     "{{ 'ユーザー: ' + message['content'] + '\\n' }}"
-                     "{% elif message['role'] == 'assistant' %}"
-                     "{% if not loop.last or message['content'] %}"
-                     "{{ 'システム: ' + message['content'] + '\\n' }}"
-                     "{% else %}"
-                     "{{ 'システム: ' }}"
-                     "{% endif %}"
-                     "{% endif %}{% endfor %}")
+    chat_template = (
+        "{% for message in messages %}"
+        "{% if message['role'] == 'system' %}"
+        "{{ '設定: ' + message['content'] + '\\n' }}"
+        "{% elif message['role'] == 'user' %}"
+        "{{ 'ユーザー: ' + message['content'] + '\\n' }}"
+        "{% elif message['role'] == 'assistant' %}"
+        "{% if not loop.last or message['content'] %}"
+        "{{ 'システム: ' + message['content'] + '\\n' }}"
+        "{% else %}"
+        "{{ 'システム: ' }}"
+        "{% endif %}"
+        "{% endif %}{% endfor %}")
 
     def __init__(self):
         super().__init__(
@@ -716,7 +721,7 @@ class RinnaYouriModel(LLMConfig):
             output_text_only=True,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template
@@ -740,18 +745,19 @@ class ChatQAModel(LLMConfig):
     system_message = chatqa_message
     instruction = "Please give a full and complete answer for the question."
 
-    chat_template = ("{% for message in messages %}"
-                     "{% if message['role'] == 'system' %}"
-                     "{{ 'System: ' + message['content'] + '\\n\\n' }}"
-                     "{% elif message['role'] == 'user' %}"
-                     "{{ 'User: ' + message['content'] + '\\n\\n' }}"
-                     "{% elif message['role'] == 'assistant' %}"
-                     "{% if not loop.last or message['content'] %}"
-                     "{{ 'Assistant: ' + message['content'] + '\\n\\n' }}"
-                     "{% else %}"
-                     "{{ 'Assistant: ' }}"
-                     "{% endif %}"
-                     "{% endif %}{% endfor %}")
+    chat_template = (
+        "{% for message in messages %}"
+        "{% if message['role'] == 'system' %}"
+        "{{ 'System: ' + message['content'] + '\\n\\n' }}"
+        "{% elif message['role'] == 'user' %}"
+        "{{ 'User: ' + message['content'] + '\\n\\n' }}"
+        "{% elif message['role'] == 'assistant' %}"
+        "{% if not loop.last or message['content'] %}"
+        "{{ 'Assistant: ' + message['content'] + '\\n\\n' }}"
+        "{% else %}"
+        "{{ 'Assistant: ' }}"
+        "{% endif %}"
+        "{% endif %}{% endfor %}")
 
     def __init__(self):
         super().__init__(
@@ -774,7 +780,7 @@ class ChatQAModel(LLMConfig):
             enable_rag_text=True,
         )
 
-    @replace_br
+    @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template

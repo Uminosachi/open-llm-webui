@@ -7,7 +7,7 @@ import gradio as gr
 import torch
 
 from cache_manager import ClearCacheContext, clear_cache, clear_cache_decorator, model_cache
-from chat_utils import replace_newlines
+from chat_utils import replace_newlines_code_blocks
 from custom_logging import ollm_logging
 from model_manager import LLMConfig, TransformersLLM, get_ollm_model_ids
 from model_manager_cpp import CPPDefaultModel, LlamaCPPLLM, get_cpp_ollm_model_ids
@@ -37,6 +37,15 @@ def change_tab_second():
     return None
 
 
+chat_templates_map = {
+    "Llama2": [CPPDefaultModel.llama2_template, "Let's chat!"],
+    "Llama3": [CPPDefaultModel.llama3_template, "Let's chat!"],
+    "Gemma":  [CPPDefaultModel.gemma_template, None],
+    "Phi-3":  [CPPDefaultModel.phi3_template, None],
+    "Mixtral": [CPPDefaultModel.mixtral_template, None],
+}
+
+
 @clear_cache_decorator
 def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, cpp_chat_template, input_text_box, rag_text_box,
                    max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk, cpu_execution_chk=False):
@@ -45,6 +54,8 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, cpp_chat_template,
     Args:
         chatbot (list): Chatbot history.
         ollm_model_id (str): String of Open LLM model ID.
+        cpp_ollm_model_id (str): String of Open LLM model ID for llama.cpp.
+        cpp_chat_template (str): String of chat template for llama.cpp.
         input_text_box (str): Input text.
         max_new_tokens (int): Parameter for generate method.
         temperature (float): Parameter for generate method.
@@ -116,25 +127,13 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, cpp_chat_template,
             ollm_logging.info("Using chat template from model metadata")
             tokenizer.chat_template = model.metadata["tokenizer.chat_template"]
         else:
-            # ["Llama2", "Llama3", "Gemma", "Phi-3"]
-            if cpp_chat_template == "Llama2":
-                ollm_logging.info("Using Llama 2 chat template")
-                tokenizer.chat_template = CPPDefaultModel.llama2_template
-                CPPDefaultModel.system_message = "Let's chat!"
-            elif cpp_chat_template == "Llama3":
-                ollm_logging.info("Using Llama 3 chat template")
-                tokenizer.chat_template = CPPDefaultModel.llama3_template
-                CPPDefaultModel.system_message = "Let's chat!"
-            elif cpp_chat_template == "Gemma":
-                ollm_logging.info("Using Gemma chat template")
-                tokenizer.chat_template = CPPDefaultModel.gemma_template
-                if hasattr(CPPDefaultModel, "system_message"):
-                    del CPPDefaultModel.system_message
-            elif cpp_chat_template == "Phi-3":
-                ollm_logging.info("Using Phi-3 chat template")
-                tokenizer.chat_template = CPPDefaultModel.phi3_template
-                if hasattr(CPPDefaultModel, "system_message"):
-                    del CPPDefaultModel.system_message
+            ollm_logging.info(f"Using {cpp_chat_template} chat template")
+            tokenizer.chat_template = chat_templates_map[cpp_chat_template][0]
+            if chat_templates_map[cpp_chat_template][1] is not None:
+                CPPDefaultModel.system_message = chat_templates_map[cpp_chat_template][1]
+            elif hasattr(CPPDefaultModel, "system_message"):
+                del CPPDefaultModel.system_message
+
     prompt = model_params.create_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer)
 
     ollm_logging.info("Input text: " + prompt)
@@ -194,7 +193,7 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, cpp_chat_template,
     if "```" not in output_text:
         output_text = output_text.replace("\n", "<br>")
     else:
-        output_text = replace_newlines(output_text)
+        output_text = replace_newlines_code_blocks(output_text)
     # chatbot.append((input_text_box, output_text))
     chatbot[-1][1] = output_text
 
@@ -269,7 +268,8 @@ def on_ui_tabs():
                             with gr.Row():
                                 with gr.Column():
                                     with gr.Row():
-                                        cpp_ollm_model_id = gr.Dropdown(label="LLM model ID", elem_id="cpp_ollm_model_id", choices=cpp_ollm_model_ids,
+                                        cpp_ollm_model_id = gr.Dropdown(label="LLM model ID (models folder included)", elem_id="cpp_ollm_model_id",
+                                                                        choices=cpp_ollm_model_ids,
                                                                         value=cpp_ollm_model_ids[cpp_ollm_model_index], show_label=True)
                                 with gr.Column():
                                     with gr.Row():
@@ -278,8 +278,10 @@ def on_ui_tabs():
                                         cpp_status_text = gr.Textbox(label="", max_lines=1, show_label=False, interactive=False)
                             with gr.Row():
                                 with gr.Column():
-                                    cpp_chat_template = gr.Radio(label="Default chat template", elem_id="cpp_chat_template",
-                                                                 choices=["Llama2", "Llama3", "Gemma", "Phi-3"], value="Llama2", type="value")
+                                    cpp_chat_template = gr.Radio(label="Default chat template (when GGUF file is missing template)",
+                                                                 elem_id="cpp_chat_template",
+                                                                 choices=["Llama2", "Llama3", "Gemma", "Phi-3", "Mixtral"],
+                                                                 value="Llama2", type="value")
 
                 with gr.Row():
                     input_text_box = gr.Textbox(
@@ -306,7 +308,7 @@ def on_ui_tabs():
                 with gr.Row():
                     generate_btn = gr.Button("Generate", elem_id="generate_btn")
                 with gr.Row():
-                    translated_output_text = gr.Textbox(label="Translated output text", show_label=True, lines=2, interactive=False)
+                    translated_output_text = gr.Textbox(label="Translated output text", show_label=True, lines=1, interactive=False)
                 with gr.Row():
                     clear_btn = gr.Button("Clear text", elem_id="clear_btn")
 
