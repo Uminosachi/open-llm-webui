@@ -2,7 +2,7 @@ import re
 
 
 def convert_code_blocks_to_tags(text):
-    pattern = r"```([A-Za-z0-9_+\-]+)?\n?([\s\S]*?)\n?```"
+    pattern = r"```([A-Za-z0-9_+\-]+)?\n?(.*?)\n?```"
 
     def replace(match):
         language = match.group(1)
@@ -16,7 +16,7 @@ def convert_code_blocks_to_tags(text):
 
 
 def convert_code_tags_to_md(html_text):
-    pattern = r"<pre><code(?: class=\"language-([A-Za-z0-9_+\-]+)\")?>([\s\S]*?)</code></pre>"
+    pattern = r"<pre><code(?: class=\"language-([A-Za-z0-9_+\-]+)\")?>(.*?)</code></pre>"
 
     def replace(match):
         language = match.group(1)
@@ -30,8 +30,8 @@ def convert_code_tags_to_md(html_text):
 
 
 def replace_newlines_code_blocks(md_text):
-    code_blocks = re.findall(r"```[\s\S]*?```", md_text, flags=re.DOTALL)
-    non_code_blocks = re.split(r"```[\s\S]*?```", md_text, flags=re.DOTALL)
+    code_blocks = re.findall(r"```.*?```", md_text, flags=re.DOTALL)
+    non_code_blocks = re.split(r"```.*?```", md_text, flags=re.DOTALL)
 
     transformed_text = non_code_blocks[0].replace("\n", "<br>")
     for i in range(1, len(non_code_blocks)):

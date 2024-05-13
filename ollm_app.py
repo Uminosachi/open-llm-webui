@@ -43,6 +43,7 @@ chat_templates_map = {
     "Gemma":  [CPPDefaultModel.gemma_template, None],
     "Phi-3":  [CPPDefaultModel.phi3_template, None],
     "Mixtral": [CPPDefaultModel.mixtral_template, None],
+    "Zephyr": [CPPDefaultModel.zephyr_template, "Let's chat!"],
 }
 
 
@@ -281,7 +282,7 @@ def on_ui_tabs():
                                 with gr.Column():
                                     cpp_chat_template = gr.Radio(label="Default chat template (when GGUF file is missing template)",
                                                                  elem_id="cpp_chat_template",
-                                                                 choices=["Llama2", "Llama3", "Gemma", "Phi-3", "Mixtral"],
+                                                                 choices=["Llama2", "Llama3", "Gemma", "Phi-3", "Mixtral", "Zephyr"],
                                                                  value="Llama2", type="value")
 
                 with gr.Row():
