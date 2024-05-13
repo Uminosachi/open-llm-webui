@@ -194,6 +194,7 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, cpp_chat_template,
         output_text = output_text.replace("\n", "<br>")
     else:
         output_text = replace_newlines_code_blocks(output_text)
+        ollm_logging.debug(output_text)
     # chatbot.append((input_text_box, output_text))
     chatbot[-1][1] = output_text
 

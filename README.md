@@ -36,7 +36,7 @@ cd open-llm-webui
     ```
   - Configure the required environment variables for the build (adjust the CUDA version as necessary):
     ```bash
-    set PATH="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin";%PATH%
+    set PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin;%PATH%
     "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
     set FORCE_CMAKE=1 && set CMAKE_ARGS="-DLLAMA_CUDA=on"
     ```
