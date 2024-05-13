@@ -140,7 +140,7 @@ class CPPDefaultModel(LLMConfig):
                 n_gpu_layers=-1,
             ),
             tokenizer_kwargs=dict(
-                pretrained_model_name_or_path="meta-llama/Llama-2-7b-hf",
+                pretrained_model_name_or_path="microsoft/Phi-3-mini-4k-instruct",
                 use_fast=True,
             ),
             tokenizer_input_kwargs=dict(
