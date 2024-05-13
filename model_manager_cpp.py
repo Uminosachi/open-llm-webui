@@ -27,11 +27,23 @@ def get_gguf_file_path(cpp_ollm_model_id):
     return gguf_file_path
 
 
-def list_files(directory, extension):
+def list_files(directory: str, extension: str) -> list:
+    """List all files in the specified directory with the given extension.
+
+    Args:
+        directory (str): The path to the directory.
+        extension (str): The file extension to filter by, including the dot (e.g., '.txt').
+
+    Returns:
+        list: A list of filenames that match the given extension.
+    """
+    # Ensure the extension starts with a dot
+    if not extension.startswith("."):
+        extension = "." + extension
     files = []
     for file in os.listdir(directory):
         full_path = os.path.join(directory, file)
-        if os.path.isfile(full_path) and file.endswith(extension):
+        if os.path.isfile(full_path) and file.lower().endswith(extension.lower()):
             files.append(file)
     return files
 
@@ -299,6 +311,7 @@ def get_cpp_ollm_model_ids():
         "Phi-3-mini-4k-instruct-fp16.gguf",
         ]
     list_model_ids = list_files(cpp_models_dir, ".gguf")
+    list_model_ids += list_files(cpp_models_dir, ".bin")
     for model_id in list_model_ids:
         if model_id not in cpp_ollm_model_ids:
             cpp_ollm_model_ids.append(model_id)
