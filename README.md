@@ -42,19 +42,26 @@ cd open-llm-webui
   - Install the necessary Python packages (this process may take some time):
     ```bash
     pip install ninja cmake scikit-build-core[pyproject]
-    pip install llama-cpp-python
+    pip install --force-reinstall --no-cache-dir llama-cpp-python
     pip install -r requirements.txt
     ```
 
 * **For Linux (with CUDA support):**
-  ```bash
-  CMAKE_ARGS="-DLLAMA_CUDA=on" pip install -r requirements.txt
-  ```
+  - Set up environment variables required for the build (If not set):
+    ```bash
+    export PATH=/usr/local/cuda/bin:${PATH}
+    ```
+  - Install the necessary Python packages:
+    ```bash
+    CMAKE_ARGS="-DLLAMA_CUDA=on" pip install --force-reinstall --no-cache-dir llama-cpp-python
+    pip install -r requirements.txt
+    ```
 
 * **For Mac OS (without CUDA support):**
-  ```bash
-  BUILD_CUDA_EXT=0 pip install -r requirements.txt
-  ```
+  - Install the necessary Python packages:
+    ```bash
+    BUILD_CUDA_EXT=0 pip install -r requirements.txt
+    ```
 
 ## Running the application
 
