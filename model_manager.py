@@ -850,7 +850,7 @@ class TransformersLLM:
 
     @clear_cache_decorator
     @staticmethod
-    def get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk=False):
+    def get_llm_instance(ollm_model_id, cpu_execution_chk=False):
         """Get model and tokenizer class.
 
         Args:

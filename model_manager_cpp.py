@@ -48,12 +48,7 @@ def list_files(directory: str, extension: str) -> list:
     return files
 
 
-@register_cpp_model("default")
-class CPPDefaultModel(LLMConfig):
-    include_name: str = "default"
-
-    system_message = "Let's chat!"
-
+class CPPChatTemplates:
     llama2_template = (
         "{% for message in messages %}"
         "{% if message['role'] == 'system' %}"
@@ -130,6 +125,55 @@ class CPPDefaultModel(LLMConfig):
         "{% endif %}\n"
         "{% endfor %}")
 
+    # ["Llama2", "Llama3", "Gemma", "Phi-3", "Mixtral", "Zephyr"]
+    chat_templates_map = {
+        "Llama2": [llama2_template, "Let's chat!"],
+        "Llama3": [llama3_template, "Let's chat!"],
+        "Gemma":  [gemma_template, None],
+        "Phi-3":  [phi3_template, None],
+        "Mixtral": [mixtral_template, None],
+        "Zephyr": [zephyr_template, "Let's chat!"],
+    }
+
+    @clear_cache_decorator
+    def prepare_tokenizer(self, tokenizer, model, cpp_chat_template):
+        set_chat_template = False
+        if hasattr(model, "metadata") and isinstance(model.metadata, dict):
+            if model.metadata.get("tokenizer.chat_template", None) is not None:
+                ollm_logging.info("Using chat template from model metadata")
+                tokenizer.chat_template = model.metadata["tokenizer.chat_template"]
+                set_chat_template = True
+
+            if hasattr(model, "_model") and hasattr(model._model, "token_get_text"):
+                if model.metadata.get("tokenizer.ggml.bos_token_id", None) is not None:
+                    ggml_bos_token_id = int(model.metadata["tokenizer.ggml.bos_token_id"])
+                    ggml_bos_token = model._model.token_get_text(ggml_bos_token_id)
+                    tokenizer.bos_token = ggml_bos_token
+                    ollm_logging.info(f"Setting tokenizer.bos_token: {ggml_bos_token}")
+
+                if model.metadata.get("tokenizer.ggml.eos_token_id", None) is not None:
+                    ggml_eos_token_id = int(model.metadata["tokenizer.ggml.eos_token_id"])
+                    ggml_eos_token = model._model.token_get_text(ggml_eos_token_id)
+                    tokenizer.eos_token = ggml_eos_token
+                    ollm_logging.info(f"Setting tokenizer.eos_token: {ggml_eos_token}")
+
+        if not set_chat_template:
+            ollm_logging.info(f"Using {cpp_chat_template} chat template because model template is missing")
+            tokenizer.chat_template = self.chat_templates_map[cpp_chat_template][0]
+            if self.chat_templates_map[cpp_chat_template][1] is not None:
+                self.__class__.system_message = self.chat_templates_map[cpp_chat_template][1]
+            elif hasattr(self.__class__, "system_message"):
+                del self.__class__.system_message
+
+        return tokenizer
+
+
+@register_cpp_model("default")
+class CPPDefaultModel(LLMConfig, CPPChatTemplates):
+    include_name: str = "default"
+
+    system_message = "Let's chat!"
+
     def __init__(self):
         super().__init__(
             model_class=Llama,
@@ -179,7 +223,7 @@ class CPPDefaultModel(LLMConfig):
 
 
 @register_cpp_model("phi-3")
-class CPPPHI3Model(LLMConfig):
+class CPPPHI3Model(LLMConfig, CPPChatTemplates):
     include_name: str = "phi-3"
 
     system_message = "You are a helpful digital assistant. Please provide safe, ethical and accurate information to the user."
@@ -266,7 +310,7 @@ class LlamaCPPLLM:
 
     @clear_cache_decorator
     @staticmethod
-    def get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk=False):
+    def get_llm_instance(ollm_model_id, cpu_execution_chk=False):
         """Get model and tokenizer class.
 
         Args:

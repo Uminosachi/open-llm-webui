@@ -10,7 +10,7 @@ from cache_manager import ClearCacheContext, clear_cache, clear_cache_decorator,
 from chat_utils import replace_newlines_code_blocks
 from custom_logging import ollm_logging
 from model_manager import LLMConfig, TransformersLLM, get_ollm_model_ids
-from model_manager_cpp import CPPDefaultModel, LlamaCPPLLM, get_cpp_ollm_model_ids
+from model_manager_cpp import LlamaCPPLLM, get_cpp_ollm_model_ids
 from registry import get_llm_class
 from translator import load_translator, translate
 
@@ -35,16 +35,6 @@ def change_tab_second():
     selected_tab = methods_tabs[1]
     ollm_logging.debug(f"Selected tab: {selected_tab}")
     return None
-
-
-chat_templates_map = {
-    "Llama2": [CPPDefaultModel.llama2_template, "Let's chat!"],
-    "Llama3": [CPPDefaultModel.llama3_template, "Let's chat!"],
-    "Gemma":  [CPPDefaultModel.gemma_template, None],
-    "Phi-3":  [CPPDefaultModel.phi3_template, None],
-    "Mixtral": [CPPDefaultModel.mixtral_template, None],
-    "Zephyr": [CPPDefaultModel.zephyr_template, "Let's chat!"],
-}
 
 
 @clear_cache_decorator
@@ -96,7 +86,7 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, cpp_chat_template,
         return_status[methods_tabs.index(selected_tab)] = dwonload_result
         return (input_text_box, chatbot, *return_status, "")
 
-    model_params = method_class.get_model_and_tokenizer_class(ollm_model_id, cpu_execution_chk)
+    model_params = method_class.get_llm_instance(ollm_model_id, cpu_execution_chk)
 
     # pmnop = "pretrained_model_name_or_path"
 
@@ -124,33 +114,7 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, cpp_chat_template,
         tokenizer = model_cache["preloaded_tokenizer"]
 
     if selected_tab == methods_tabs[1]:
-        set_chat_template = False
-        if hasattr(model, "metadata"):
-            if model.metadata.get("tokenizer.chat_template", None) is not None:
-                ollm_logging.info("Using chat template from model metadata")
-                tokenizer.chat_template = model.metadata["tokenizer.chat_template"]
-                set_chat_template = True
-
-            if hasattr(model, "_model") and hasattr(model._model, "token_get_text"):
-                if model.metadata.get("tokenizer.ggml.bos_token_id", None) is not None:
-                    ggml_bos_token_id = int(model.metadata["tokenizer.ggml.bos_token_id"])
-                    ggml_bos_token = model._model.token_get_text(ggml_bos_token_id)
-                    tokenizer.bos_token = ggml_bos_token
-                    ollm_logging.info(f"Setting tokenizer.bos_token: {ggml_bos_token}")
-
-                if model.metadata.get("tokenizer.ggml.eos_token_id", None) is not None:
-                    ggml_eos_token_id = int(model.metadata["tokenizer.ggml.eos_token_id"])
-                    ggml_eos_token = model._model.token_get_text(ggml_eos_token_id)
-                    tokenizer.eos_token = ggml_eos_token
-                    ollm_logging.info(f"Setting tokenizer.eos_token: {ggml_eos_token}")
-
-        if not set_chat_template:
-            ollm_logging.info(f"Using {cpp_chat_template} chat template because model template is missing")
-            tokenizer.chat_template = chat_templates_map[cpp_chat_template][0]
-            if chat_templates_map[cpp_chat_template][1] is not None:
-                CPPDefaultModel.system_message = chat_templates_map[cpp_chat_template][1]
-            elif hasattr(CPPDefaultModel, "system_message"):
-                del CPPDefaultModel.system_message
+        tokenizer = model_params.prepare_tokenizer(tokenizer, model, cpp_chat_template)
 
     prompt = model_params.create_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer)
 
