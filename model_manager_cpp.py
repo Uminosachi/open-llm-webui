@@ -12,10 +12,16 @@ from model_manager import LLMConfig, replace_br_and_code
 from registry import get_cpp_llm_class, register_cpp_model
 from start_messages import llama2_message  # noqa: F401
 
-cpp_download_model_map = {
-    "Phi-3-mini-4k-instruct-q4.gguf": "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf",
-    "Phi-3-mini-4k-instruct-fp16.gguf": "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-fp16.gguf",
-}
+cpp_download_model_list = [
+    ("Phi-3-mini-4k-instruct-q4.gguf",
+     "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf"),
+    ("Phi-3-mini-4k-instruct-fp16.gguf",
+     "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-fp16.gguf"),
+    ("Meta-Llama-3-8B-Instruct.Q4_K_M.gguf",
+     "https://huggingface.co/QuantFactory/Meta-Llama-3-8B-Instruct-GGUF/resolve/main/Meta-Llama-3-8B-Instruct.Q4_K_M.gguf")
+]
+
+cpp_download_model_map = dict(cpp_download_model_list)
 
 cpp_models_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "models")
 if not os.path.isdir(cpp_models_dir):
@@ -298,12 +304,12 @@ class LlamaCPPLLM:
                 ollm_logging.info(f"Downloading {cpp_ollm_model_id} to {gguf_file_path}")
                 download_url_to_file(download_url, gguf_file_path)
             except FileNotFoundError:
-                return "Model not found."
+                return "Model not found in the ID list."
             except Exception as e:
                 return str(e)
         else:
             if not os.path.isfile(gguf_file_path):
-                ollm_logging.debug(gguf_file_path)
+                ollm_logging.debug(f"Model not found: {gguf_file_path}")
                 return "Model not found. Please download the model first."
 
         return LLMConfig.DOWNLOAD_COMPLETE
@@ -353,6 +359,7 @@ def get_cpp_ollm_model_ids():
     cpp_ollm_model_ids = [
         "Phi-3-mini-4k-instruct-q4.gguf",
         "Phi-3-mini-4k-instruct-fp16.gguf",
+        "Meta-Llama-3-8B-Instruct.Q4_K_M.gguf",
         ]
     list_model_ids = list_files(cpp_models_dir, ".gguf")
     list_model_ids += list_files(cpp_models_dir, ".bin")
