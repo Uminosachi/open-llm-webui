@@ -200,8 +200,12 @@ def user(message, history, translate_chk):
 def translate_change(translate_chk):
     if translate_chk:
         load_translator()
+        gr_update = gr.update(visible=True)
+    else:
+        gr_update = gr.update(visible=False)
 
-    return "", "Translation enabled" if translate_chk else "Translation disabled"
+    ret_status = ["Translation enable" if translate_chk else "Translation disable"] * 2
+    return ("", gr_update, *ret_status)
 
 
 @clear_cache_decorator
@@ -291,12 +295,14 @@ def on_ui_tabs():
                 with gr.Row():
                     generate_btn = gr.Button("Generate", elem_id="generate_btn")
                 with gr.Row():
-                    translated_output_text = gr.Textbox(label="Translated output text", show_label=True, lines=1, interactive=False)
+                    translated_output_text = gr.Textbox(
+                        label="Translated output text", show_label=True, lines=1, interactive=False, visible=False)
                 with gr.Row():
                     clear_btn = gr.Button("Clear text", elem_id="clear_btn")
 
             download_model_btn.click(fn=TransformersLLM.download_model, inputs=[ollm_model_id], outputs=[status_text])
-            translate_chk.change(fn=translate_change, inputs=[translate_chk], outputs=[input_text_box, status_text])
+            translate_chk.change(fn=translate_change, inputs=[translate_chk],
+                                 outputs=[input_text_box, translated_output_text, status_text, cpp_status_text])
             ollm_model_id.change(fn=change_model, inputs=[ollm_model_id], outputs=[rag_text_box])
 
             cpp_download_model_btn.click(fn=LlamaCPPLLM.download_model, inputs=[cpp_ollm_model_id], outputs=[cpp_status_text])
