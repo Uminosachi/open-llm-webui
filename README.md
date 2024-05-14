@@ -110,11 +110,12 @@ To download the model:
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
 | Microsoft     | Phi-3-mini-4k-instruct-q4.gguf, Phi-3-mini-4k-instruct-fp16.gguf                           |
+| TheBloke      | llama-2-7b-chat.Q4_K_M.gguf                                                                |
+| QuantFactory  | Meta-Llama-3-8B-Instruct.Q4_K_M.gguf                                                       |
 
 #### Using any GGUF file
 * 🔍 File Placement: Place files with the `.gguf` extension in the `models` directory within the `open-llm-webui` folder. These files will then appear in the model list on the `llama.cpp` tab of the web UI and can be used accordingly.
 * 📝 Metadata Usage: If the metadata of a GGUF model includes `tokenizer.chat_template`, this template will be used to create the prompts.
-* 🛡️ Permission Reminder: As the Llama 2 tokenizer is utilized, please ensure that you have obtained the necessary permissions in advance by visiting the [Hugging Face page for Llama 2](https://huggingface.co/meta-llama/Llama-2-7b-hf).
 
 ## Usage
 

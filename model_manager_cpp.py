@@ -17,8 +17,10 @@ cpp_download_model_list = [
      "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf"),
     ("Phi-3-mini-4k-instruct-fp16.gguf",
      "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-fp16.gguf"),
+    ("llama-2-7b-chat.Q4_K_M.gguf",
+     "https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q4_K_M.gguf"),
     ("Meta-Llama-3-8B-Instruct.Q4_K_M.gguf",
-     "https://huggingface.co/QuantFactory/Meta-Llama-3-8B-Instruct-GGUF/resolve/main/Meta-Llama-3-8B-Instruct.Q4_K_M.gguf")
+     "https://huggingface.co/QuantFactory/Meta-Llama-3-8B-Instruct-GGUF/resolve/main/Meta-Llama-3-8B-Instruct.Q4_K_M.gguf"),
 ]
 
 cpp_download_model_map = dict(cpp_download_model_list)
@@ -359,6 +361,7 @@ def get_cpp_ollm_model_ids():
     cpp_ollm_model_ids = [
         "Phi-3-mini-4k-instruct-q4.gguf",
         "Phi-3-mini-4k-instruct-fp16.gguf",
+        "llama-2-7b-chat.Q4_K_M.gguf",
         "Meta-Llama-3-8B-Instruct.Q4_K_M.gguf",
         ]
     list_model_ids = list_files(cpp_models_dir, ".gguf")
