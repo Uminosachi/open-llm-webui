@@ -1,5 +1,6 @@
 import os
 import platform  # noqa: F401
+from typing import Any
 
 import torch  # noqa: F401
 from llama_cpp import Llama
@@ -133,54 +134,67 @@ class CPPChatTemplates:
         "{% endif %}\n"
         "{% endfor %}")
 
+    qwen_template = (
+        "{% for message in messages %}"
+        "{% if loop.first and messages[0]['role'] != 'system' %}"
+        "{{ '<|im_start|>system\\nYou are a helpful assistant.<|im_end|>\\n' }}"
+        "{% endif %}"
+        "{{'<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>' + '\\n'}}"
+        "{% endfor %}"
+        "{% if add_generation_prompt %}"
+        "{{ '<|im_start|>assistant\\n' }}"
+        "{% endif %}")
+
     # ["Llama2", "Llama3", "Gemma", "Phi-3", "Mixtral", "Zephyr"]
     chat_templates_map = {
-        "Llama2": [llama2_template, "Let's chat!"],
-        "Llama3": [llama3_template, "Let's chat!"],
+        "Llama2": [llama2_template, "You are a helpful assistant."],
+        "Llama3": [llama3_template, "You are a helpful assistant."],
         "Gemma":  [gemma_template, None],
         "Phi-3":  [phi3_template, None],
         "Mixtral": [mixtral_template, None],
-        "Zephyr": [zephyr_template, "Let's chat!"],
+        "Qwen": [qwen_template, "You are a helpful assistant."],
+        "Zephyr": [zephyr_template, "You are a helpful assistant."],
     }
 
     @clear_cache_decorator
-    def prepare_tokenizer(self, tokenizer, model, cpp_chat_template):
-        set_chat_template = False
+    def prepare_tokenizer(self, tokenizer: Any, model: Any, cpp_chat_template: str) -> Any:
+        def set_tokenizer_token(metadata_key: str, tokenizer_attr: str, log_message: str):
+            token_id = model.metadata.get(metadata_key)
+            if token_id is not None:
+                token_id = int(token_id)
+                token = model._model.token_get_text(token_id)
+                setattr(tokenizer, tokenizer_attr, token)
+                ollm_logging.info(f"Setting {tokenizer_attr}: {token} - {log_message}")
+
         if hasattr(model, "metadata") and isinstance(model.metadata, dict):
-            if model.metadata.get("tokenizer.chat_template", None) is not None:
+            if model.metadata.get("tokenizer.chat_template") is not None:
                 ollm_logging.info("Using chat template from model metadata")
                 tokenizer.chat_template = model.metadata["tokenizer.chat_template"]
-                set_chat_template = True
+            else:
+                ollm_logging.info(f"Using {cpp_chat_template} chat template because model is missing template")
+                tokenizer.chat_template = self.chat_templates_map[cpp_chat_template][0]
+
+                if self.chat_templates_map[cpp_chat_template][1] is not None:
+                    self.__class__.system_message = self.chat_templates_map[cpp_chat_template][1]
+                elif hasattr(self.__class__, "system_message"):
+                    del self.__class__.system_message
 
             if hasattr(model, "_model") and hasattr(model._model, "token_get_text"):
-                if model.metadata.get("tokenizer.ggml.bos_token_id", None) is not None:
-                    ggml_bos_token_id = int(model.metadata["tokenizer.ggml.bos_token_id"])
-                    ggml_bos_token = model._model.token_get_text(ggml_bos_token_id)
-                    tokenizer.bos_token = ggml_bos_token
-                    ollm_logging.info(f"Setting tokenizer.bos_token: {ggml_bos_token}")
-
-                if model.metadata.get("tokenizer.ggml.eos_token_id", None) is not None:
-                    ggml_eos_token_id = int(model.metadata["tokenizer.ggml.eos_token_id"])
-                    ggml_eos_token = model._model.token_get_text(ggml_eos_token_id)
-                    tokenizer.eos_token = ggml_eos_token
-                    ollm_logging.info(f"Setting tokenizer.eos_token: {ggml_eos_token}")
-
-        if not set_chat_template:
-            ollm_logging.info(f"Using {cpp_chat_template} chat template because model template is missing")
-            tokenizer.chat_template = self.chat_templates_map[cpp_chat_template][0]
-            if self.chat_templates_map[cpp_chat_template][1] is not None:
-                self.__class__.system_message = self.chat_templates_map[cpp_chat_template][1]
-            elif hasattr(self.__class__, "system_message"):
-                del self.__class__.system_message
+                set_tokenizer_token("tokenizer.ggml.bos_token_id", "bos_token", "beginning of sentence")
+                set_tokenizer_token("tokenizer.ggml.eos_token_id", "eos_token", "end of sentence")
 
         return tokenizer
+
+
+def get_chat_templates_keys():
+    return list(CPPChatTemplates.chat_templates_map.keys())
 
 
 @register_cpp_model("default")
 class CPPDefaultModel(LLMConfig, CPPChatTemplates):
     include_name: str = "default"
 
-    system_message = "Let's chat!"
+    system_message = "You are a helpful assistant."
 
     def __init__(self):
         super().__init__(
@@ -300,13 +314,13 @@ class LlamaCPPLLM:
         gguf_file_path = get_gguf_file_path(cpp_ollm_model_id)
         if not local_files_only and not os.path.isfile(gguf_file_path):
             try:
-                download_url = cpp_download_model_map.get(cpp_ollm_model_id, None)
+                download_url = cpp_download_model_map.get(cpp_ollm_model_id)
                 if download_url is None:
-                    raise FileNotFoundError(f"Model {cpp_ollm_model_id} not found.")
+                    raise FileNotFoundError(f"Model {cpp_ollm_model_id} not found in the models list.")
                 ollm_logging.info(f"Downloading {cpp_ollm_model_id} to {gguf_file_path}")
                 download_url_to_file(download_url, gguf_file_path)
-            except FileNotFoundError:
-                return "Model not found in the ID list."
+            except FileNotFoundError as e:
+                return str(e)
             except Exception as e:
                 return str(e)
         else:

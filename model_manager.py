@@ -527,7 +527,7 @@ class PHI3Model(LLMConfig):
 class OpenELMModel(LLMConfig):
     include_name: str = "openelm"
 
-    system_message = "Let's chat!"
+    system_message = "You are a helpful assistant."
 
     chat_template = (
         "{% for message in messages %}"

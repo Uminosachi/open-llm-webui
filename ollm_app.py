@@ -10,7 +10,7 @@ from cache_manager import ClearCacheContext, clear_cache, clear_cache_decorator,
 from chat_utils import replace_newlines_code_blocks
 from custom_logging import ollm_logging
 from model_manager import LLMConfig, TransformersLLM, get_ollm_model_ids
-from model_manager_cpp import LlamaCPPLLM, get_cpp_ollm_model_ids
+from model_manager_cpp import LlamaCPPLLM, get_chat_templates_keys, get_cpp_ollm_model_ids
 from registry import get_llm_class
 from translator import load_translator, translate
 
@@ -267,7 +267,7 @@ def on_ui_tabs():
                                 with gr.Column():
                                     cpp_chat_template = gr.Radio(label="Default chat template (when GGUF file is missing template)",
                                                                  elem_id="cpp_chat_template",
-                                                                 choices=["Llama2", "Llama3", "Gemma", "Phi-3", "Mixtral", "Zephyr"],
+                                                                 choices=get_chat_templates_keys(),
                                                                  value="Llama2", type="value")
 
                 with gr.Row():
