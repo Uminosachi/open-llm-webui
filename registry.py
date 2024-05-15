@@ -1,3 +1,5 @@
+from custom_logging import ollm_logging
+
 MODEL_REGISTRY = {}
 CPP_MODEL_REGISTRY = {}
 
@@ -36,7 +38,7 @@ def load_cpp_model(name):
         return None
 
 
-def get_llm_class(ollm_model_id):
+def get_llm_class(ollm_model_id: str):
     """Get LLM class.
 
     Args:
@@ -47,15 +49,16 @@ def get_llm_class(ollm_model_id):
     """
     llm_class = None
     for _, model_class in MODEL_REGISTRY.items():
-        if model_class.include_name in ollm_model_id.lower():
+        if model_class.include_name.lower() in ollm_model_id.lower():
             llm_class = model_class
     if llm_class is None:
         llm_class = MODEL_REGISTRY["default"] if "default" in MODEL_REGISTRY else None
+    ollm_logging.debug(f"Using model class: {llm_class.__name__}")
 
     return llm_class
 
 
-def get_cpp_llm_class(cpp_ollm_model_id):
+def get_cpp_llm_class(cpp_ollm_model_id: str):
     """Get C++ LLM class.
 
     Args:
@@ -66,9 +69,10 @@ def get_cpp_llm_class(cpp_ollm_model_id):
     """
     llm_class = None
     for _, model_class in CPP_MODEL_REGISTRY.items():
-        if model_class.include_name in cpp_ollm_model_id.lower():
+        if model_class.include_name.lower() in cpp_ollm_model_id.lower():
             llm_class = model_class
     if llm_class is None:
         llm_class = CPP_MODEL_REGISTRY["default"] if "default" in CPP_MODEL_REGISTRY else None
+    ollm_logging.debug(f"Using model class: {llm_class.__name__}")
 
     return llm_class

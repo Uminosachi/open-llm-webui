@@ -145,7 +145,6 @@ class CPPChatTemplates:
         "{{ '<|im_start|>assistant\\n' }}"
         "{% endif %}")
 
-    # ["Llama2", "Llama3", "Gemma", "Phi-3", "Mixtral", "Zephyr"]
     chat_templates_map = {
         "Llama2": [llama2_template, "You are a helpful assistant."],
         "Llama3": [llama3_template, "You are a helpful assistant."],
@@ -246,7 +245,7 @@ class CPPDefaultModel(LLMConfig, CPPChatTemplates):
 
 @register_cpp_model("phi-3")
 class CPPPHI3Model(LLMConfig, CPPChatTemplates):
-    include_name: str = "phi-3"
+    include_name: str = "Phi-3"
 
     system_message = "You are a helpful digital assistant. Please provide safe, ethical and accurate information to the user."
 

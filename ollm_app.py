@@ -210,7 +210,7 @@ def translate_change(translate_chk):
 
 @clear_cache_decorator
 def change_model(ollm_model_id):
-    if get_llm_class(ollm_model_id)().enable_rag_text:
+    if get_llm_class(ollm_model_id).enable_rag_text:
         return gr.update(visible=True)
     else:
         return gr.update(visible=False)

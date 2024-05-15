@@ -88,7 +88,7 @@ To download the model:
 | NVIDIA        | Llama3-ChatQA-1.5-8B                                                                       |
 | Apple         | OpenELM-1_1B-Instruct, OpenELM-3B-Instruct                                                 |
 | Rakuten       | RakutenAI-7B-chat, RakutenAI-7B-instruct                                                   |
-| rinna         | youri-7b-chat, bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2, japanese-gpt-neox-3.6b-instruction-ppo |
+| rinna         | youri-7b-chat, bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2 |
 | TheBloke      | Llama-2-7b-Chat-GPTQ, Kunoichi-7B-GPTQ                                                     |
 | Stability AI  | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-instruct-beta-7b       |
 

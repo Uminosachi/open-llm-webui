@@ -45,7 +45,6 @@ class LLMConfig(ABC):
     tokenizer_input_kwargs: dict = field(default_factory=dict)
     tokenizer_decode_kwargs: dict = field(default_factory=dict)
     output_text_only: bool = True
-    enable_rag_text: bool = False
     require_tokenization: bool = True
 
     DOWNLOAD_COMPLETE = "Download complete"
@@ -101,6 +100,9 @@ class LLMConfig(ABC):
     @abstractmethod
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         pass
+
+
+LLMConfig.enable_rag_text = False
 
 
 @register_model("default")
@@ -317,7 +319,6 @@ class StableLMTunedModel(LLMConfig):
             streamer = model_cache.get("preloaded_streamer")
             partial_text = ""
             for new_text in streamer:
-                ollm_logging.debug(new_text)
                 partial_text += new_text
 
             output_text = partial_text
@@ -373,9 +374,9 @@ class JapaneseStableLMModel(LLMConfig):
         return output_text
 
 
-@register_model("chat-gptq")
+@register_model("llama-2-chat-gptq")
 class ChatGPTQModel(LLMConfig):
-    include_name: str = "chat-gptq"
+    include_name: str = "Llama-2-7b-Chat-GPTQ"
 
     system_message = llama2_message
 
@@ -427,7 +428,7 @@ class ChatGPTQModel(LLMConfig):
 
 @register_model("kunoichi")
 class KunoichiGPTQModel(LLMConfig):
-    include_name: str = "kunoichi"
+    include_name: str = "Kunoichi"
 
     system_message = "Below is an instruction that describes a task. Write a response that appropriately completes the request."
 
@@ -479,7 +480,7 @@ class KunoichiGPTQModel(LLMConfig):
 
 @register_model("phi-3")
 class PHI3Model(LLMConfig):
-    include_name: str = "phi-3"
+    include_name: str = "Phi-3"
 
     system_message = "You are a helpful digital assistant. Please provide safe, ethical and accurate information to the user."
 
@@ -525,7 +526,7 @@ class PHI3Model(LLMConfig):
 
 @register_model("openelm")
 class OpenELMModel(LLMConfig):
-    include_name: str = "openelm"
+    include_name: str = "OpenELM"
 
     system_message = "You are a helpful assistant."
 
@@ -587,7 +588,7 @@ class OpenELMModel(LLMConfig):
 
 @register_model("gemma")
 class GemmaModel(LLMConfig):
-    include_name: str = "gemma"
+    include_name: str = "Gemma"
 
     download_kwargs = dict(ignore_patterns=["*.gguf"])
 
@@ -631,7 +632,7 @@ class GemmaModel(LLMConfig):
 
 @register_model("rakuten")
 class RakutenAIModel(LLMConfig):
-    include_name: str = "rakuten"
+    include_name: str = "Rakuten"
 
     download_kwargs = dict(ignore_patterns=["pytorch_model*"])
 
@@ -688,9 +689,9 @@ class RakutenAIModel(LLMConfig):
         return output_text
 
 
-@register_model("youri")
+@register_model("youri-chat")
 class RinnaYouriModel(LLMConfig):
-    include_name: str = "youri"
+    include_name: str = "youri-7b-chat"
 
     download_kwargs = dict(ignore_patterns=["pytorch_model*"])
 
@@ -749,7 +750,7 @@ class RinnaYouriModel(LLMConfig):
 
 @register_model("chatqa")
 class ChatQAModel(LLMConfig):
-    include_name: str = "chatqa"
+    include_name: str = "ChatQA"
 
     system_message = chatqa_message
     instruction = "Please give a full and complete answer for the question."
@@ -786,7 +787,6 @@ class ChatQAModel(LLMConfig):
                 skip_special_tokens=True,
             ),
             output_text_only=True,
-            enable_rag_text=True,
         )
 
     @replace_br_and_code
@@ -818,6 +818,9 @@ class ChatQAModel(LLMConfig):
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         return output_text
+
+
+ChatQAModel.enable_rag_text = True
 
 
 class TransformersLLM:
@@ -920,7 +923,6 @@ def get_ollm_model_ids():
         "rinna/youri-7b-chat",
         "rinna/bilingual-gpt-neox-4b-instruction-sft",
         "rinna/japanese-gpt-neox-3.6b-instruction-sft-v2",
-        "rinna/japanese-gpt-neox-3.6b-instruction-ppo",
         "TheBloke/Llama-2-7b-Chat-GPTQ",
         "TheBloke/Kunoichi-7B-GPTQ",
         "stabilityai/stablelm-tuned-alpha-3b",
