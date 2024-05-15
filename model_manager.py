@@ -47,6 +47,7 @@ class LLMConfig(ABC):
     output_text_only: bool = True
     require_tokenization: bool = True
 
+    enable_rag_text = False
     DOWNLOAD_COMPLETE = "Download complete"
 
     def cpu_execution(self, cpu_execution_chk=False):
@@ -100,9 +101,6 @@ class LLMConfig(ABC):
     @abstractmethod
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         pass
-
-
-LLMConfig.enable_rag_text = False
 
 
 @register_model("default")
@@ -752,6 +750,7 @@ class RinnaYouriModel(LLMConfig):
 class ChatQAModel(LLMConfig):
     include_name: str = "ChatQA"
 
+    enable_rag_text = True
     system_message = chatqa_message
     instruction = "Please give a full and complete answer for the question."
 
@@ -818,9 +817,6 @@ class ChatQAModel(LLMConfig):
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         return output_text
-
-
-ChatQAModel.enable_rag_text = True
 
 
 class TransformersLLM:
