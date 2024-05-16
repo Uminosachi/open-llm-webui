@@ -9,7 +9,7 @@ from transformers import AutoTokenizer
 
 from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
-from model_manager import LLMConfig, replace_br_and_code
+from model_manager import BaseAbstractLLM, LLMConfig, replace_br_and_code
 from registry import get_cpp_llm_class, register_cpp_model
 from start_messages import llama2_message  # noqa: F401
 
@@ -297,10 +297,10 @@ class CPPPHI3Model(LLMConfig, CPPChatTemplates):
         return output_text
 
 
-class LlamaCPPLLM:
+class LlamaCPPLLM(BaseAbstractLLM):
     @clear_cache_decorator
     @staticmethod
-    def download_model(cpp_ollm_model_id, local_files_only=False):
+    def download_model(ollm_model_id, local_files_only=False):
         """Download Open LLM and Llama models.
 
         Args:
@@ -310,13 +310,13 @@ class LlamaCPPLLM:
         Returns:
             str: string of download result.
         """
-        gguf_file_path = get_gguf_file_path(cpp_ollm_model_id)
+        gguf_file_path = get_gguf_file_path(ollm_model_id)
         if not local_files_only and not os.path.isfile(gguf_file_path):
             try:
-                download_url = cpp_download_model_map.get(cpp_ollm_model_id)
+                download_url = cpp_download_model_map.get(ollm_model_id)
                 if download_url is None:
-                    raise FileNotFoundError(f"Model {cpp_ollm_model_id} not found in the models list.")
-                ollm_logging.info(f"Downloading {cpp_ollm_model_id} to {gguf_file_path}")
+                    raise FileNotFoundError(f"Model {ollm_model_id} not found in the models list.")
+                ollm_logging.info(f"Downloading {ollm_model_id} to {gguf_file_path}")
                 download_url_to_file(download_url, gguf_file_path)
             except FileNotFoundError as e:
                 return str(e)
@@ -336,9 +336,10 @@ class LlamaCPPLLM:
 
         Args:
             ollm_model_id (str): String of Open LLM model ID.
+            cpu_execution_chk (bool, optional): If True, use CPU execution. Defaults to False.
 
         Returns:
-            tuple(class, class, dict, dict): Tuple of model class, tokenizer class, model kwargs, and tokenizer kwargs.
+            object: Open LLM model instance.
         """
         llm = get_cpp_llm_class(ollm_model_id)()
 

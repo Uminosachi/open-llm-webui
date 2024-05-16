@@ -113,7 +113,7 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, cpp_chat_template,
         model = model_cache["preloaded_model"]
         tokenizer = model_cache["preloaded_tokenizer"]
 
-    if selected_tab == methods_tabs[1]:
+    if selected_tab == methods_tabs[1] and hasattr(model_params, "prepare_tokenizer"):
         tokenizer = model_params.prepare_tokenizer(tokenizer, model, cpp_chat_template)
 
     prompt = model_params.create_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer)

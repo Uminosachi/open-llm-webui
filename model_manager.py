@@ -819,7 +819,29 @@ class ChatQAModel(LLMConfig):
         return output_text
 
 
-class TransformersLLM:
+class BaseAbstractLLM(ABC):
+    @staticmethod
+    @abstractmethod
+    def download_model(ollm_model_id, local_files_only=False):
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_llm_instance(ollm_model_id, cpu_execution_chk=False):
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_model(ollm_model_id, model_params, generate_params):
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_tokenizer(ollm_model_id, model_params):
+        pass
+
+
+class TransformersLLM(BaseAbstractLLM):
     @clear_cache_decorator
     @staticmethod
     def download_model(ollm_model_id, local_files_only=False):
@@ -854,9 +876,10 @@ class TransformersLLM:
 
         Args:
             ollm_model_id (str): String of Open LLM model ID.
+            cpu_execution_chk (bool, optional): If True, use CPU execution. Defaults to False.
 
         Returns:
-            tuple(class, class, dict, dict): Tuple of model class, tokenizer class, model kwargs, and tokenizer kwargs.
+            object: Open LLM model instance.
         """
         llm = get_llm_class(ollm_model_id)()
 

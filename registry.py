@@ -59,13 +59,13 @@ def get_llm_class(ollm_model_id: str):
 
 
 def get_cpp_llm_class(cpp_ollm_model_id: str):
-    """Get C++ LLM class.
+    """Get llama.cpp LLM class.
 
     Args:
-        cpp_ollm_model_id (str): String of C++ LLM model ID.
+        cpp_ollm_model_id (str): String of llama.cpp LLM model ID.
 
     Returns:
-        class: C++ LLM class.
+        class: llama.cpp LLM class.
     """
     llm_class = None
     for _, model_class in CPP_MODEL_REGISTRY.items():
