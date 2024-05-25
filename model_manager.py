@@ -819,6 +819,67 @@ class ChatQAModel(LLMConfig):
         return output_text
 
 
+@register_model("mistral")
+class MistralModel(LLMConfig):
+    include_name: str = "Mistral"
+
+    download_kwargs = dict(ignore_patterns=["params.json", "consolidated.safetensors", "tokenizer.model.v3"])
+
+    # system_message = "You are a pirate chatbot who always responds in pirate speak!"
+
+    chat_template = (
+        "{{ bos_token }}"
+        "{% for message in messages %}"
+        "{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}"
+        "{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}"
+        "{% endif %}{% if message['role'] == 'user' %}"
+        "{{ '[INST] ' + message['content'] + ' [/INST]' }}"
+        "{% elif message['role'] == 'assistant' %}"
+        "{{ message['content'] + eos_token}}"
+        "{% else %}"
+        "{{ raise_exception('Only user and assistant roles are supported!') }}"
+        "{% endif %}"
+        "{% endfor %}")
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoModelForCausalLM,
+            tokenizer_class=AutoTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype=torch.bfloat16,
+            ),
+            tokenizer_kwargs=dict(
+                use_fast=False,
+                padding_side="left",
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+                add_special_tokens=False,
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+            output_text_only=True,
+        )
+
+    @replace_br_and_code
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
+        tokenizer.chat_template = self.chat_template
+        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=True)
+        return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        return generate_kwargs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        return output_text
+
+
 class BaseAbstractLLM(ABC):
     @staticmethod
     @abstractmethod
@@ -935,6 +996,7 @@ def get_ollm_model_ids():
         "google/gemma-1.1-2b-it",
         "google/gemma-1.1-7b-it",
         "nvidia/Llama3-ChatQA-1.5-8B",
+        "mistralai/Mistral-7B-Instruct-v0.3",
         "apple/OpenELM-1_1B-Instruct",
         "apple/OpenELM-3B-Instruct",
         "Rakuten/RakutenAI-7B-chat",
