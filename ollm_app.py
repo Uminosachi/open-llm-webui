@@ -137,16 +137,8 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, cpp_chat_template,
     generate_kwargs = model_params.get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
 
     t1 = time.time()
-    if model_params.require_tokenization:
-        with ClearCacheContext(), torch.no_grad():
-            tokens = model.generate(
-                **generate_kwargs
-            )
-    else:
-        with ClearCacheContext():
-            tokens = model.create_completion(
-                **generate_kwargs
-            )
+    with ClearCacheContext(), torch.no_grad():
+        tokens = getattr(model, model_params.model_generate_name)(**generate_kwargs)
     t2 = time.time()
     elapsed_time = t2-t1
     ollm_logging.info(f"Generation time: {elapsed_time} seconds")
@@ -159,7 +151,7 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, cpp_chat_template,
                 **model_params.tokenizer_decode_kwargs,
             )
     else:
-        output_text = tokens["choices"][0]["text"]
+        output_text = tokens
 
     output_text = model_params.retreive_output_text(prompt, output_text, ollm_model_id, tokenizer)
 

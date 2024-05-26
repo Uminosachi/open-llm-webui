@@ -204,6 +204,7 @@ class CPPDefaultModel(LLMConfig, CPPChatTemplates):
                 n_threads=8,
                 n_gpu_layers=-1,
             ),
+            model_generate_name="create_completion",
             tokenizer_kwargs=dict(
                 pretrained_model_name_or_path="microsoft/Phi-3-mini-4k-instruct",
                 use_fast=True,
@@ -222,7 +223,8 @@ class CPPDefaultModel(LLMConfig, CPPChatTemplates):
     @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
-        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=True)
+        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer,
+                                         check_assistant=True, remove_bos_token=True)
         return prompt
 
     @clear_cache_decorator
@@ -240,7 +242,8 @@ class CPPDefaultModel(LLMConfig, CPPChatTemplates):
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
-        return output_text
+        ollm_logging.debug(f"output_text: {output_text}")
+        return output_text["choices"][0]["text"]
 
 
 @register_cpp_model("phi-3")
@@ -258,6 +261,7 @@ class CPPPHI3Model(LLMConfig, CPPChatTemplates):
                 n_threads=8,
                 n_gpu_layers=35,
             ),
+            model_generate_name="create_completion",
             tokenizer_kwargs=dict(
                 pretrained_model_name_or_path="microsoft/Phi-3-mini-4k-instruct",
                 use_fast=True,
@@ -276,7 +280,8 @@ class CPPPHI3Model(LLMConfig, CPPChatTemplates):
     @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
-        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=True)
+        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer,
+                                         check_assistant=True, remove_bos_token=True)
         return prompt
 
     @clear_cache_decorator
@@ -294,7 +299,8 @@ class CPPPHI3Model(LLMConfig, CPPChatTemplates):
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
-        return output_text
+        ollm_logging.debug(f"output_text: {output_text}")
+        return output_text["choices"][0]["text"]
 
 
 class LlamaCPPLLM(BaseAbstractLLM):

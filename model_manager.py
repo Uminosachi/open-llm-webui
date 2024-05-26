@@ -41,6 +41,7 @@ class LLMConfig(ABC):
     model_class: object
     tokenizer_class: object
     model_kwargs: dict = field(default_factory=dict)
+    model_generate_name: str = "generate"
     tokenizer_kwargs: dict = field(default_factory=dict)
     tokenizer_input_kwargs: dict = field(default_factory=dict)
     tokenizer_decode_kwargs: dict = field(default_factory=dict)
@@ -59,7 +60,8 @@ class LLMConfig(ABC):
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         pass
 
-    def create_chat_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None, check_assistant=False):
+    def create_chat_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None,
+                           check_assistant=False, remove_bos_token=False):
         if getattr(self, "system_message", None) is not None:
             messages = [{"role": "system", "content": self.system_message}]
         else:
@@ -85,6 +87,10 @@ class LLMConfig(ABC):
                     tokenize=False,
                     add_generation_prompt=True,
             )
+        if remove_bos_token:
+            if getattr(tokenizer, "bos_token", None) is not None and prompt.startswith(tokenizer.bos_token):
+                ollm_logging.debug("Removing bos_token from prompt")
+                prompt = prompt.replace(tokenizer.bos_token, "", 1)
         return prompt
 
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
@@ -233,7 +239,8 @@ class GPTNeoXModel(LLMConfig):
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template1 if "bilingual-gpt-neox" in ollm_model_id else self.chat_template2
-        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=False)
+        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer,
+                                         check_assistant=False)
         return prompt
 
     @clear_cache_decorator
@@ -290,7 +297,8 @@ class StableLMTunedModel(LLMConfig):
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template
-        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=False)
+        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer,
+                                         check_assistant=False)
         return prompt
 
     @clear_cache_decorator
@@ -507,7 +515,8 @@ class PHI3Model(LLMConfig):
     @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
-        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=True)
+        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer,
+                                         check_assistant=True)
         return prompt
 
     @clear_cache_decorator
@@ -569,7 +578,8 @@ class OpenELMModel(LLMConfig):
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template
-        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=False)
+        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer,
+                                         check_assistant=False)
         return prompt
 
     @clear_cache_decorator
@@ -614,7 +624,8 @@ class GemmaModel(LLMConfig):
     @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
-        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=True)
+        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer,
+                                         check_assistant=True)
         return prompt
 
     @clear_cache_decorator
@@ -674,7 +685,8 @@ class RakutenAIModel(LLMConfig):
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template
-        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=False)
+        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer,
+                                         check_assistant=False)
         return prompt
 
     @clear_cache_decorator
@@ -733,7 +745,8 @@ class RinnaYouriModel(LLMConfig):
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template
-        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=False)
+        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer,
+                                         check_assistant=False)
         return prompt
 
     @clear_cache_decorator
@@ -867,7 +880,8 @@ class MistralModel(LLMConfig):
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         tokenizer.chat_template = self.chat_template
-        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer, check_assistant=True)
+        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer,
+                                         check_assistant=True)
         return prompt
 
     @clear_cache_decorator

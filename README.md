@@ -86,7 +86,7 @@ To download the model:
 | Microsoft     | Phi-3-mini-4k-instruct, Phi-3-mini-128k-instruct                                           |
 | Google        | gemma-1.1-2b-it, gemma-1.1-7b-it                                                           |
 | NVIDIA        | Llama3-ChatQA-1.5-8B                                                                       |
-| Mistral AI    | mistralai/Mistral-7B-Instruct-v0.3                                                         |
+| Mistral AI    | Mistral-7B-Instruct-v0.3                                                                   |
 | Apple         | OpenELM-1_1B-Instruct, OpenELM-3B-Instruct                                                 |
 | Rakuten       | RakutenAI-7B-chat, RakutenAI-7B-instruct                                                   |
 | rinna         | youri-7b-chat, bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2 |
