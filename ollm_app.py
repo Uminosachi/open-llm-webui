@@ -5,6 +5,7 @@ from collections import UserDict
 
 import gradio as gr
 import torch
+from transformers.utils import ModelOutput
 
 from cache_manager import ClearCacheContext, clear_cache, clear_cache_decorator, model_cache
 from chat_utils import replace_newlines_code_blocks
@@ -35,6 +36,23 @@ def change_tab_second():
     selected_tab = methods_tabs[1]
     ollm_logging.debug(f"Selected tab: {selected_tab}")
     return None
+
+
+def ensure_tensor_on_device(inputs, device):
+    if isinstance(inputs, ModelOutput):
+        return ModelOutput({name: ensure_tensor_on_device(tensor, device) for name, tensor in inputs.items()})
+    elif isinstance(inputs, dict):
+        return {name: ensure_tensor_on_device(tensor, device) for name, tensor in inputs.items()}
+    elif isinstance(inputs, UserDict):
+        return UserDict({name: ensure_tensor_on_device(tensor, device) for name, tensor in inputs.items()})
+    elif isinstance(inputs, list):
+        return [ensure_tensor_on_device(item, device) for item in inputs]
+    elif isinstance(inputs, tuple):
+        return tuple([ensure_tensor_on_device(item, device) for item in inputs])
+    elif isinstance(inputs, torch.Tensor):
+        return inputs.to(device)
+    else:
+        return inputs
 
 
 @clear_cache_decorator
@@ -127,10 +145,7 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, cpp_chat_template,
                 **model_params.tokenizer_input_kwargs,
             )
         if hasattr(model, "device"):
-            if isinstance(inputs, UserDict):
-                inputs = {k: v.to(model.device) for k, v in inputs.items()}
-            else:
-                inputs = inputs.to(model.device)
+            inputs = ensure_tensor_on_device(inputs, model.device)
     else:
         inputs = prompt
 
