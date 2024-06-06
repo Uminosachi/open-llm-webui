@@ -639,6 +639,46 @@ class GemmaModel(LLMConfig):
         return output_text
 
 
+@register_model("qwen")
+class QwenModel(LLMConfig):
+    include_name: str = "Qwen"
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoModelForCausalLM,
+            tokenizer_class=AutoTokenizer,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype="auto",
+            ),
+            tokenizer_kwargs=dict(
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+            output_text_only=True,
+        )
+
+    @replace_br_and_code
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
+        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer,
+                                         check_assistant=True)
+        return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        return generate_kwargs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        return output_text
+
+
 @register_model("rakuten")
 class RakutenAIModel(LLMConfig):
     include_name: str = "Rakuten"
@@ -1010,6 +1050,7 @@ def get_ollm_model_ids():
         "google/gemma-1.1-2b-it",
         "google/gemma-1.1-7b-it",
         "nvidia/Llama3-ChatQA-1.5-8B",
+        "Qwen/Qwen2-7B-Instruct",
         "mistralai/Mistral-7B-Instruct-v0.3",
         "apple/OpenELM-1_1B-Instruct",
         "apple/OpenELM-3B-Instruct",
