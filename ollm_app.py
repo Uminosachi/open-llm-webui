@@ -1,3 +1,4 @@
+import functools
 import os
 import time
 import types  # noqa: F401
@@ -12,30 +13,28 @@ from chat_utils import replace_newlines_code_blocks
 from custom_logging import ollm_logging
 from model_manager import LLMConfig, TransformersLLM, get_ollm_model_ids
 from model_manager_cpp import LlamaCPPLLM, get_chat_templates_keys, get_cpp_ollm_model_ids
+from model_manager_llava import get_llava_ollm_model_ids
 from registry import get_llm_class
 from translator import load_translator, translate
 
 if torch.cuda.is_available():
     os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
 
-methods_tabs = ["transformers", "llama.cpp"]
+methods_tabs = ["transformers", "llama.cpp", "LLaVA"]
 selected_tab = methods_tabs[0]
 
 
 @clear_cache_decorator
-def change_tab_first():
+def change_tab(tab_num):
     global selected_tab
-    selected_tab = methods_tabs[0]
+    selected_tab = methods_tabs[tab_num]
     ollm_logging.debug(f"Selected tab: {selected_tab}")
     return None
 
 
-@clear_cache_decorator
-def change_tab_second():
-    global selected_tab
-    selected_tab = methods_tabs[1]
-    ollm_logging.debug(f"Selected tab: {selected_tab}")
-    return None
+change_tab_first = functools.partial(change_tab, tab_num=0)
+change_tab_second = functools.partial(change_tab, tab_num=1)
+change_tab_third = functools.partial(change_tab, tab_num=2)
 
 
 def ensure_tensor_on_device(inputs, device):
@@ -232,6 +231,9 @@ def on_ui_tabs():
     cpp_ollm_model_index = cpp_ollm_model_ids.index("Phi-3-mini-4k-instruct-q4.gguf") \
         if "Phi-3-mini-4k-instruct-q4.gguf" in cpp_ollm_model_ids else 0
 
+    llava_ollm_model_ids = get_llava_ollm_model_ids()
+    llava_ollm_model_index = 0
+
     block = gr.Blocks().queue()
     block.title = "Open LLM WebUI"
     with block as ollm_interface:
@@ -249,8 +251,9 @@ def on_ui_tabs():
                             with gr.Row():
                                 with gr.Column():
                                     with gr.Row():
-                                        ollm_model_id = gr.Dropdown(label="LLM model ID", elem_id="ollm_model_id", choices=ollm_model_ids,
-                                                                    value=ollm_model_ids[ollm_model_index], show_label=True)
+                                        ollm_model_id = gr.Dropdown(
+                                            label="LLM model ID", elem_id="ollm_model_id", choices=ollm_model_ids,
+                                            value=ollm_model_ids[ollm_model_index], show_label=True)
                                     with gr.Row():
                                         cpu_execution_chk = gr.Checkbox(label="CPU execution", elem_id="cpu_execution_chk", value=False, show_label=True)
                                 with gr.Column():
@@ -262,9 +265,10 @@ def on_ui_tabs():
                             with gr.Row():
                                 with gr.Column():
                                     with gr.Row():
-                                        cpp_ollm_model_id = gr.Dropdown(label="LLM model ID (models folder included)", elem_id="cpp_ollm_model_id",
-                                                                        choices=cpp_ollm_model_ids,
-                                                                        value=cpp_ollm_model_ids[cpp_ollm_model_index], show_label=True)
+                                        cpp_ollm_model_id = gr.Dropdown(
+                                            label="LLM model ID (models folder included)", elem_id="cpp_ollm_model_id",
+                                            choices=cpp_ollm_model_ids,
+                                            value=cpp_ollm_model_ids[cpp_ollm_model_index], show_label=True)
                                 with gr.Column():
                                     with gr.Row():
                                         cpp_download_model_btn = gr.Button("Download model", elem_id="cpp_download_model_btn")
@@ -276,6 +280,19 @@ def on_ui_tabs():
                                                                  elem_id="cpp_chat_template",
                                                                  choices=get_chat_templates_keys(),
                                                                  value="Llama2", type="value")
+                        with gr.TabItem(methods_tabs[2], elem_id=(methods_tabs[2]+"_tab"), id=methods_tabs[2]) as third_tab:
+                            with gr.Row():
+                                with gr.Column():
+                                    with gr.Row():
+                                        llava_ollm_model_id = gr.Dropdown(
+                                            label="LLM model ID", elem_id="llava_ollm_model_id",
+                                            choices=llava_ollm_model_ids,
+                                            value=llava_ollm_model_ids[llava_ollm_model_index], show_label=True)
+                                with gr.Column():
+                                    with gr.Row():
+                                        llava_download_model_btn = gr.Button("Download model", elem_id="llava_download_model_btn")
+                                    with gr.Row():
+                                        llava_status_text = gr.Textbox(label="", max_lines=1, show_label=False, interactive=False)
 
                 with gr.Row():
                     input_text_box = gr.Textbox(
@@ -313,7 +330,7 @@ def on_ui_tabs():
             ollm_model_id.change(fn=change_model, inputs=[ollm_model_id], outputs=[rag_text_box])
 
             cpp_download_model_btn.click(fn=LlamaCPPLLM.download_model, inputs=[cpp_ollm_model_id], outputs=[cpp_status_text])
-            tabs_fn_map = {first_tab: change_tab_first, second_tab: change_tab_second}
+            tabs_fn_map = {first_tab: change_tab_first, second_tab: change_tab_second, third_tab: change_tab_third}
             for tab, fn in tabs_fn_map.items():
                 tab.select(fn=fn, inputs=None, outputs=None)
 

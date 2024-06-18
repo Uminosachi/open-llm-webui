@@ -373,10 +373,10 @@ class LlamaCPPLLM(BaseAbstractLLM):
 
 
 def get_cpp_ollm_model_ids():
-    """Get Open LLM and Llama model IDs.
+    """Get list of model IDs for the llama.cpp models.
 
     Returns:
-        list: List of Open LLM model IDs.
+        list: List of model IDs for the llama.cpp models.
     """
     cpp_ollm_model_ids = [
         "Phi-3-mini-4k-instruct-q4.gguf",
