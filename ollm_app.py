@@ -13,7 +13,7 @@ from chat_utils import replace_newlines_code_blocks
 from custom_logging import ollm_logging
 from model_manager import LLMConfig, TransformersLLM, get_ollm_model_ids
 from model_manager_cpp import LlamaCPPLLM, get_chat_templates_keys, get_cpp_ollm_model_ids
-from model_manager_llava import get_llava_ollm_model_ids
+from model_manager_llava import LlavaLLM, get_llava_ollm_model_ids
 from registry import get_llm_class
 from translator import load_translator, translate
 
@@ -330,6 +330,7 @@ def on_ui_tabs():
             ollm_model_id.change(fn=change_model, inputs=[ollm_model_id], outputs=[rag_text_box])
 
             cpp_download_model_btn.click(fn=LlamaCPPLLM.download_model, inputs=[cpp_ollm_model_id], outputs=[cpp_status_text])
+            llava_download_model_btn.click(fn=LlavaLLM.download_model, inputs=[llava_ollm_model_id], outputs=[llava_status_text])
             tabs_fn_map = {first_tab: change_tab_first, second_tab: change_tab_second, third_tab: change_tab_third}
             for tab, fn in tabs_fn_map.items():
                 tab.select(fn=fn, inputs=None, outputs=None)

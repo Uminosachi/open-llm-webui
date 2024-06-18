@@ -2,11 +2,53 @@ import platform
 
 import torch
 from huggingface_hub import snapshot_download
+from transformers import LlavaNextForConditionalGeneration, LlavaNextProcessor
 
 from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
-from model_manager import BaseAbstractLLM, LLMConfig
-from registry import get_llm_class
+from model_manager import BaseAbstractLLM, LLMConfig, replace_br_and_code
+from registry import get_llm_class, register_model
+
+
+@register_model("llava-mistral")
+class LlavaMistralModel(LLMConfig):
+    include_name: str = "llava-*-mistral"
+
+    def __init__(self):
+        super().__init__(
+            model_class=LlavaNextForConditionalGeneration,
+            tokenizer_class=LlavaNextProcessor,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype=torch.float16,
+                low_cpu_mem_usage=True,
+            ),
+            tokenizer_kwargs=dict(
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+            output_text_only=True,
+        )
+
+    @replace_br_and_code
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
+        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer,
+                                         check_assistant=True)
+        return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        return generate_kwargs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        return output_text
 
 
 class LlavaLLM(BaseAbstractLLM):
