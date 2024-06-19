@@ -67,8 +67,51 @@ class LlavaMistralModel(LLMConfig):
 
 
 @register_model("llava-vicuna")
-class LlavaVicunaModel(LlavaMistralModel):
+class LlavaVicunaModel(LLMConfig):
     include_name: str = "llava-*-vicuna"
+
+    prompt_template = ("A chat between a curious human and an artificial intelligence assistant. "
+                       "The assistant gives helpful, detailed, and polite answers to the human's questions. "
+                       "USER: <image>\n{prompt} ASSISTANT:")
+    quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
+
+    def __init__(self):
+        super().__init__(
+            model_class=LlavaNextForConditionalGeneration,
+            tokenizer_class=LlavaNextProcessor,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype=torch.float16,
+                low_cpu_mem_usage=True,
+                quantization_config=self.quantization_config,
+                offload_buffers=True,
+            ),
+            tokenizer_kwargs=dict(
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+            output_text_only=True,
+            multimodal_image=True,
+        )
+
+    @replace_br_and_code
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
+        prompt = self.prompt_template.format(prompt=input_text_box)
+        return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        return generate_kwargs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        return output_text
 
 
 class LlavaLLM(BaseAbstractLLM):
