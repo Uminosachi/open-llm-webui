@@ -1,8 +1,9 @@
+import importlib.util
 import platform
 
 import torch
 from huggingface_hub import snapshot_download
-from transformers import LlavaNextForConditionalGeneration, LlavaNextProcessor
+from transformers import BitsAndBytesConfig, LlavaNextForConditionalGeneration, LlavaNextProcessor
 
 from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
@@ -10,11 +11,21 @@ from model_manager import BaseAbstractLLM, LLMConfig, replace_br_and_code
 from registry import get_llm_class, register_model
 
 
+def check_package_installed(package_name):
+    package_spec = importlib.util.find_spec(package_name)
+    return package_spec is not None
+
+
+if not check_package_installed("bitsandbytes"):
+    raise ModuleNotFoundError("Please install the bitsandbytes package to use the load_in_4bit option.")
+
+
 @register_model("llava-mistral")
 class LlavaMistralModel(LLMConfig):
     include_name: str = "llava-*-mistral"
 
     prompt_template = "[INST] <image>\n{prompt} [/INST]"
+    quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
 
     def __init__(self):
         super().__init__(
@@ -24,6 +35,7 @@ class LlavaMistralModel(LLMConfig):
                 device_map="auto",
                 torch_dtype=torch.float16,
                 low_cpu_mem_usage=True,
+                quantization_config=self.quantization_config,
                 offload_buffers=True,
             ),
             tokenizer_kwargs=dict(
@@ -52,6 +64,11 @@ class LlavaMistralModel(LLMConfig):
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         return output_text
+
+
+@register_model("llava-vicuna")
+class LlavaVicunaModel(LlavaMistralModel):
+    include_name: str = "llava-*-vicuna"
 
 
 class LlavaLLM(BaseAbstractLLM):
@@ -143,7 +160,8 @@ def get_llava_ollm_model_ids():
         list: List of model IDs for the LLaVA models.
     """
     llava_ollm_model_ids = [
-        "llava-hf/llava-v1.6-mistral-7b-hf"
+        "llava-hf/llava-v1.6-mistral-7b-hf",
+        "llava-hf/llava-v1.6-vicuna-7b-hf",
     ]
 
     return llava_ollm_model_ids

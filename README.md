@@ -123,7 +123,7 @@ To download the model:
 
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
-| llava-hf      | llava-v1.6-mistral-7b-hf                                                                   |
+| llava-hf      | llava-v1.6-mistral-7b-hf, llava-v1.6-vicuna-7b-hf                                          |
 
 ## Usage
 
@@ -141,6 +141,10 @@ To download the model:
 
 ### LLaVA tab
 * You can upload an image to the LLaVA Image area of this tab and input a prompt related to the image.
+* The LLaVA model is loaded with the following 4-bit settings using the `bitsandbytes` package.
+  ```python
+  quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
+  ```
 
 ### options
 * When you enable the `Translate (ja->en/en->ja)` checkbox:
@@ -155,8 +159,8 @@ To download the model:
 
 | Developer           | Model                        | License                                                        |
 |---------------------|------------------------------|----------------------------------------------------------------|
-| Microsoft           | Phi-3                        | [The MIT License](https://opensource.org/licenses/MIT)         |
-| Google              | Gemma                        | [Gemma Terms of Use](https://ai.google.dev/gemma/terms)        |
+| Microsoft           | Phi-3                        | [The MIT License](https://opensource.org/licenses/MIT) |
+| Google              | Gemma                        | [Gemma Terms of Use](https://ai.google.dev/gemma/terms) |
 | NVIDIA              | Llama3-ChatQA                | [Llama 3 Community License](https://huggingface.co/meta-llama/Meta-Llama-3-8B/blob/main/LICENSE) |
 | Hugging Face        | llava-v1.6-mistral-7b-hf     | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Alibaba Group       | Qwen2-7B-Instruct            | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
@@ -164,8 +168,8 @@ To download the model:
 | Apple               | OpenELM                      | [Apple sample code license](https://huggingface.co/apple/OpenELM-1_1B-Instruct/blob/main/LICENSE) |
 | Rakuten             | RakutenAI                    | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | rinna               | Youri                        | [Llama 2 Community License](https://ai.meta.com/llama/license/) |
-| rinna               | Japanese GPT-NeoX            | [The MIT License](https://opensource.org/licenses/MIT)         |
+| rinna               | Japanese GPT-NeoX            | [The MIT License](https://opensource.org/licenses/MIT) |
 | Meta AI             | Llama 2                      | [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE) |
-| Sanji Watsuki       | Kunoichi-7B                  | [CC-BY-NC-4.0](https://spdx.org/licenses/CC-BY-NC-4.0)         |
+| Sanji Watsuki       | Kunoichi-7B                  | [CC-BY-NC-4.0](https://spdx.org/licenses/CC-BY-NC-4.0) |
 | Stability AI        | StableLM                     | [Apache License 2.0](https://github.com/Stability-AI/StableLM/blob/main/LICENSE) |
 | Stability AI        | Japanese-StableLM-Instruct   | [Japanese Stablelm Research License Agreement](https://huggingface.co/stabilityai/japanese-stablelm-instruct-alpha-7b/blob/main/LICENSE) |

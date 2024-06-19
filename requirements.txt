@@ -16,3 +16,4 @@ sacremoses
 auto-gptq
 einops
 llama-cpp-python
+bitsandbytes
