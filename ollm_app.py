@@ -11,9 +11,10 @@ from transformers.utils import ModelOutput
 from cache_manager import ClearCacheContext, clear_cache, clear_cache_decorator, model_cache
 from chat_utils import replace_newlines_code_blocks
 from custom_logging import ollm_logging
-from model_manager import LLMConfig, TransformersLLM, get_ollm_model_ids
-from model_manager_cpp import LlamaCPPLLM, get_chat_templates_keys, get_cpp_ollm_model_ids
-from model_manager_llava import LlavaLLM, get_llava_ollm_model_ids
+from model_manager.base import LLMConfig
+from model_manager.llama_cpp import LlamaCPPLLM, get_chat_templates_keys, get_cpp_ollm_model_ids
+from model_manager.llava import LlavaLLM, get_llava_ollm_model_ids
+from model_manager.transformers import TransformersLLM, get_ollm_model_ids
 from registry import get_llm_class
 from translator import load_translator, translate
 
@@ -106,7 +107,7 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
         if llava_image is None:
             ollm_logging.error("LLaVA image is not exist.")
             return_status[methods_tabs.index(selected_tab)] = "LLaVA image is not exist."
-            return ("", chatbot, *return_status, "")
+            return (input_text_box, chatbot, *return_status, "")
     else:
         return_status[methods_tabs.index(selected_tab)] = "Selected tab is not supported."
         return ("", chatbot, *return_status, "")

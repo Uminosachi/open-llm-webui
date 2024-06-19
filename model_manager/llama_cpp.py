@@ -9,7 +9,7 @@ from transformers import AutoTokenizer
 
 from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
-from model_manager import BaseAbstractLLM, LLMConfig, replace_br_and_code
+from model_manager.base import BaseAbstractLLM, LLMConfig, replace_br_and_code
 from registry import get_cpp_llm_class, register_cpp_model
 from start_messages import llama2_message  # noqa: F401
 
@@ -26,7 +26,7 @@ cpp_download_model_list = [
 
 cpp_download_model_map = dict(cpp_download_model_list)
 
-cpp_models_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "models")
+cpp_models_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "models")
 if not os.path.isdir(cpp_models_dir):
     os.makedirs(cpp_models_dir, exist_ok=True)
 

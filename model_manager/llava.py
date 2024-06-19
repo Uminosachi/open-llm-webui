@@ -7,7 +7,7 @@ from transformers import BitsAndBytesConfig, LlavaNextForConditionalGeneration, 
 
 from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
-from model_manager import BaseAbstractLLM, LLMConfig, replace_br_and_code
+from model_manager.base import BaseAbstractLLM, LLMConfig, replace_br_and_code
 from registry import get_llm_class, register_model
 
 
