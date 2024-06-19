@@ -47,6 +47,7 @@ class LLMConfig(ABC):
     tokenizer_decode_kwargs: dict = field(default_factory=dict)
     output_text_only: bool = True
     require_tokenization: bool = True
+    multimodal_image: bool = False
 
     enable_rag_text = False
     DOWNLOAD_COMPLETE = "Download complete"
@@ -94,6 +95,9 @@ class LLMConfig(ABC):
         return prompt
 
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        if not hasattr(tokenizer, "pad_token_id") and hasattr(tokenizer, "tokenizer"):
+            tokenizer = tokenizer.tokenizer
+
         generate_kwargs = dict(
             **inputs,
             do_sample=True,
@@ -874,7 +878,7 @@ class ChatQAModel(LLMConfig):
 
 @register_model("mistral")
 class MistralModel(LLMConfig):
-    include_name: str = "Mistral"
+    include_name: str = "Mistral-*-Instruct"
 
     download_kwargs = dict(ignore_patterns=["params.json", "consolidated.safetensors", "tokenizer.model.v3"])
 

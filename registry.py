@@ -1,4 +1,4 @@
-import fnmatch
+import re
 
 from custom_logging import ollm_logging
 
@@ -6,11 +6,18 @@ MODEL_REGISTRY = {}
 CPP_MODEL_REGISTRY = {}
 
 
+def wildcard_to_regex(pattern):
+    pattern = re.escape(pattern)
+    pattern = pattern.replace(r"\*", ".*")
+    return pattern
+
+
 def is_match(pattern, target):
     if "*" in pattern:
-        return fnmatch.fnmatch(target, pattern)
+        regex_pattern = wildcard_to_regex(pattern)
+        return re.search(regex_pattern, target, re.IGNORECASE) is not None
     else:
-        return pattern in target
+        return pattern.lower() in target.lower()
 
 
 def register_model(name):
@@ -59,7 +66,7 @@ def get_llm_class(ollm_model_id: str):
     llm_class = None
     for _, model_class in MODEL_REGISTRY.items():
         # if model_class.include_name.lower() in ollm_model_id.lower():
-        if is_match(model_class.include_name.lower(), ollm_model_id.lower()):
+        if is_match(model_class.include_name, ollm_model_id):
             llm_class = model_class
     if llm_class is None:
         llm_class = MODEL_REGISTRY["default"] if "default" in MODEL_REGISTRY else None
@@ -80,7 +87,7 @@ def get_cpp_llm_class(cpp_ollm_model_id: str):
     llm_class = None
     for _, model_class in CPP_MODEL_REGISTRY.items():
         # if model_class.include_name.lower() in cpp_ollm_model_id.lower():
-        if is_match(model_class.include_name.lower(), cpp_ollm_model_id.lower()):
+        if is_match(model_class.include_name, cpp_ollm_model_id):
             llm_class = model_class
     if llm_class is None:
         llm_class = CPP_MODEL_REGISTRY["default"] if "default" in CPP_MODEL_REGISTRY else None

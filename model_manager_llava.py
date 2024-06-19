@@ -14,6 +14,8 @@ from registry import get_llm_class, register_model
 class LlavaMistralModel(LLMConfig):
     include_name: str = "llava-*-mistral"
 
+    prompt_template = "[INST] <image>\n{prompt} [/INST]"
+
     def __init__(self):
         super().__init__(
             model_class=LlavaNextForConditionalGeneration,
@@ -22,6 +24,7 @@ class LlavaMistralModel(LLMConfig):
                 device_map="auto",
                 torch_dtype=torch.float16,
                 low_cpu_mem_usage=True,
+                offload_buffers=True,
             ),
             tokenizer_kwargs=dict(
             ),
@@ -32,13 +35,13 @@ class LlavaMistralModel(LLMConfig):
                 skip_special_tokens=True,
             ),
             output_text_only=True,
+            multimodal_image=True,
         )
 
     @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
-        prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer,
-                                         check_assistant=True)
+        prompt = self.prompt_template.format(prompt=input_text_box)
         return prompt
 
     @clear_cache_decorator

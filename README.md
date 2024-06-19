@@ -119,10 +119,16 @@ To download the model:
 * 🔍 File Placement: Place files with the `.gguf` extension in the `models` directory within the `open-llm-webui` folder. These files will then appear in the model list on the `llama.cpp` tab of the web UI and can be used accordingly.
 * 📝 Metadata Usage: If the metadata of a GGUF model includes `tokenizer.chat_template`, this template will be used to create the prompts.
 
+### Model List (LLaVA)
+
+| Provider      | Model Names                                                                                |
+|---------------|--------------------------------------------------------------------------------------------|
+| llava-hf      | llava-v1.6-mistral-7b-hf                                                                   |
+
 ## Usage
 
 * Enter your message into the "Input text" box. Adjust the slider for "Max new tokens" as needed.
-* Under "Advanced options", adjust the settings for "Temperature", "Top k", "Top p", and "Repetition Penalty" as needed.
+* Under "Advanced options" adjust the settings for "Temperature", "Top k", "Top p", and "Repetition Penalty" as needed.
 * Press "Enter" on your keyboard or click the "Generate" button.
    - ⚠️ Note: If the cloud-based model has been updated, it may be downloaded upon execution.
 * If you click the "Clear text" button, the chat history will be cleared.
@@ -132,6 +138,9 @@ To download the model:
 
 ### llama.cpp tab
 * Use the radio buttons in the `Default chat template` to select the template that will be used if the GGUF model lacks a `chat_template`.
+
+### LLaVA tab
+* You can upload an image to the LLaVA Image area of this tab and input a prompt related to the image.
 
 ### options
 * When you enable the `Translate (ja->en/en->ja)` checkbox:
@@ -149,6 +158,7 @@ To download the model:
 | Microsoft           | Phi-3                        | [The MIT License](https://opensource.org/licenses/MIT)         |
 | Google              | Gemma                        | [Gemma Terms of Use](https://ai.google.dev/gemma/terms)        |
 | NVIDIA              | Llama3-ChatQA                | [Llama 3 Community License](https://huggingface.co/meta-llama/Meta-Llama-3-8B/blob/main/LICENSE) |
+| Hugging Face        | llava-v1.6-mistral-7b-hf     | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Alibaba Group       | Qwen2-7B-Instruct            | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Mistral AI          | Mistral-7B-Instruct          | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Apple               | OpenELM                      | [Apple sample code license](https://huggingface.co/apple/OpenELM-1_1B-Instruct/blob/main/LICENSE) |
