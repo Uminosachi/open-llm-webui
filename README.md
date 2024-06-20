@@ -143,7 +143,7 @@ To download the model:
 * You can upload an image to the LLaVA Image area of this tab and input a prompt related to the image.
 * The LLaVA model is loaded with the following 4-bit settings using the `bitsandbytes` package.
   ```python
-  quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
+  quantization_config = BitsAndBytesConfig(load_in_4bit=True)
   ```
 
 ### options
@@ -162,7 +162,7 @@ To download the model:
 | Microsoft           | Phi-3                        | [The MIT License](https://opensource.org/licenses/MIT) |
 | Google              | Gemma                        | [Gemma Terms of Use](https://ai.google.dev/gemma/terms) |
 | NVIDIA              | Llama3-ChatQA                | [Llama 3 Community License](https://huggingface.co/meta-llama/Meta-Llama-3-8B/blob/main/LICENSE) |
-| Hugging Face        | llava-v1.6-mistral-7b-hf     | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
+| Hugging Face        | llava-v1.6-*-7b-hf           | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Alibaba Group       | Qwen2-7B-Instruct            | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Mistral AI          | Mistral-7B-Instruct          | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Apple               | OpenELM                      | [Apple sample code license](https://huggingface.co/apple/OpenELM-1_1B-Instruct/blob/main/LICENSE) |

@@ -150,12 +150,12 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
 
     prompt = model_params.create_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer)
 
-    ollm_logging.info("Input text: " + prompt)
+    ollm_logging.info(f"Input text: {prompt}")
     ollm_logging.info("Generating...")
     if model_params.multimodal_image:
         with ClearCacheContext():
             inputs = tokenizer(
-                prompt,
+                [prompt],
                 llava_image,
                 **model_params.tokenizer_input_kwargs,
             )
