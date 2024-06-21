@@ -132,7 +132,7 @@ class TinyLLaVAModel(LLMConfig):
                 offload_buffers=True,
                 trust_remote_code=True,
             ),
-            model_generate_name="chat",
+            model_generate_name="generate",
             tokenizer_kwargs=dict(
                 pretrained_model_name_or_path="google/siglip-so400m-patch14-384",
             ),
@@ -155,6 +155,7 @@ class TinyLLaVAModel(LLMConfig):
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
         generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        generate_kwargs["images"] = generate_kwargs.pop("pixel_values")
         return generate_kwargs
 
     @clear_cache_decorator
