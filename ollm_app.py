@@ -154,11 +154,23 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
     ollm_logging.info("Generating...")
     if model_params.multimodal_image:
         with ClearCacheContext():
-            inputs = tokenizer(
-                [prompt],
-                llava_image,
-                **model_params.tokenizer_input_kwargs,
-            )
+            if hasattr(tokenizer, "tokenizer"):
+                inputs = tokenizer(
+                    [prompt],
+                    llava_image,
+                    **model_params.tokenizer_input_kwargs,
+                )
+            else:
+                input_ids = LlavaLLM.tokenizer_image_token(
+                    prompt,
+                    tokenizer,
+                    **model_params.tokenizer_input_kwargs,
+                ).unsqueeze(0)
+                images = tokenizer.image_processor(
+                    llava_image,
+                    **model_params.image_processor_input_kwargs,
+                )["pixel_values"]
+                inputs = dict(inputs=input_ids, images=images)
         if hasattr(model, "device"):
             inputs = ensure_tensor_on_device(inputs, model.device)
     elif model_params.require_tokenization:

@@ -31,10 +31,13 @@ def print_return(name):
 class LLMConfig(ABC):
     model_class: object
     tokenizer_class: object
+    image_processor_class: object = None
     model_kwargs: dict = field(default_factory=dict)
     model_generate_name: str = "generate"
     tokenizer_kwargs: dict = field(default_factory=dict)
+    image_processor_kwargs: dict = field(default_factory=dict)
     tokenizer_input_kwargs: dict = field(default_factory=dict)
+    image_processor_input_kwargs: dict = field(default_factory=dict)
     tokenizer_decode_kwargs: dict = field(default_factory=dict)
     output_text_only: bool = True
     require_tokenization: bool = True

@@ -3,8 +3,9 @@ import platform
 
 import torch
 from huggingface_hub import snapshot_download
-from transformers import (AutoModelForCausalLM, AutoProcessor, BitsAndBytesConfig,
-                          LlavaNextForConditionalGeneration, LlavaNextProcessor)
+from transformers import (AutoModelForCausalLM, AutoProcessor, AutoTokenizer,  # noqa: F401
+                          BitsAndBytesConfig, LlavaNextForConditionalGeneration,
+                          LlavaNextProcessor, SiglipImageProcessor)
 
 from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
@@ -87,6 +88,7 @@ class LlavaVicunaModel(LLMConfig):
                 quantization_config=self.quantization_config,
                 offload_buffers=True,
             ),
+            model_generate_name="generate",
             tokenizer_kwargs=dict(
             ),
             tokenizer_input_kwargs=dict(
@@ -125,7 +127,8 @@ class TinyLLaVAModel(LLMConfig):
     def __init__(self):
         super().__init__(
             model_class=AutoModelForCausalLM,
-            tokenizer_class=AutoProcessor,
+            tokenizer_class=AutoTokenizer,
+            image_processor_class=SiglipImageProcessor,
             model_kwargs=dict(
                 torch_dtype=torch.float16,
                 # quantization_config=self.quantization_config,
@@ -134,9 +137,15 @@ class TinyLLaVAModel(LLMConfig):
             ),
             model_generate_name="generate",
             tokenizer_kwargs=dict(
+                use_fast=False,
+            ),
+            image_processor_kwargs=dict(
                 pretrained_model_name_or_path="google/siglip-so400m-patch14-384",
             ),
             tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+            ),
+            image_processor_input_kwargs=dict(
                 return_tensors="pt",
             ),
             tokenizer_decode_kwargs=dict(
@@ -155,12 +164,16 @@ class TinyLLaVAModel(LLMConfig):
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
         generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
-        generate_kwargs["images"] = generate_kwargs.pop("pixel_values")
         return generate_kwargs
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         return output_text
+
+
+IGNORE_INDEX = -100
+IMAGE_TOKEN_INDEX = -200
+DEFAULT_IMAGE_TOKEN = "<image>"
 
 
 class LlavaLLM(BaseAbstractLLM):
@@ -237,12 +250,46 @@ class LlavaLLM(BaseAbstractLLM):
     @staticmethod
     def get_tokenizer(ollm_model_id, model_params):
         pmnop = "pretrained_model_name_or_path"
-        tokenizer = model_params.tokenizer_class.from_pretrained(
-            ollm_model_id if pmnop not in model_params.tokenizer_kwargs else model_params.tokenizer_kwargs.pop(pmnop),
-            **model_params.tokenizer_kwargs,
-        )
+        if model_params.image_processor_class is None:
+            tokenizer = model_params.tokenizer_class.from_pretrained(
+                ollm_model_id if pmnop not in model_params.tokenizer_kwargs else model_params.tokenizer_kwargs.pop(pmnop),
+                **model_params.tokenizer_kwargs,
+            )
+            return tokenizer
+        else:
+            tokenizer = model_params.tokenizer_class.from_pretrained(
+                ollm_model_id if pmnop not in model_params.tokenizer_kwargs else model_params.tokenizer_kwargs.pop(pmnop),
+                **model_params.tokenizer_kwargs,
+            )
+            image_processor = model_params.image_processor_class.from_pretrained(
+                ollm_model_id if pmnop not in model_params.image_processor_kwargs else model_params.image_processor_kwargs.pop(pmnop),
+                **model_params.image_processor_kwargs,
+            )
+            tokenizer.image_processor = image_processor
+            return tokenizer
 
-        return tokenizer
+    @clear_cache_decorator
+    @staticmethod
+    def tokenizer_image_token(prompt, tokenizer, image_token_index=IMAGE_TOKEN_INDEX, return_tensors=None):
+        prompt_chunks = [tokenizer(chunk).input_ids for chunk in prompt.split('<image>')]
+
+        def insert_separator(X, sep):
+            return [ele for sublist in zip(X, [sep]*len(X)) for ele in sublist][:-1]
+
+        input_ids = []
+        offset = 0
+        if len(prompt_chunks) > 0 and len(prompt_chunks[0]) > 0 and prompt_chunks[0][0] == tokenizer.bos_token_id:
+            offset = 1
+            input_ids.append(prompt_chunks[0][0])
+
+        for x in insert_separator(prompt_chunks, [image_token_index] * (offset + 1)):
+            input_ids.extend(x[offset:])
+
+        if return_tensors is not None:
+            if return_tensors == 'pt':
+                return torch.tensor(input_ids, dtype=torch.long)
+            raise ValueError(f'Unsupported tensor type: {return_tensors}')
+        return input_ids
 
 
 def get_llava_ollm_model_ids():
