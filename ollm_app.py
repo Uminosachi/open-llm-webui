@@ -193,7 +193,10 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
     elapsed_time = t2-t1
     ollm_logging.info(f"Generation time: {elapsed_time} seconds")
 
-    if model_params.require_tokenization:
+    if model_params.multimodal_image and "input_ids" not in generate_kwargs:  # TinyLLaVA
+        with ClearCacheContext():
+            output_text = tokenizer.batch_decode(tokens, **model_params.tokenizer_decode_kwargs)[0].strip()
+    elif model_params.require_tokenization:
         input_ids = generate_kwargs["input_ids"]
         with ClearCacheContext():
             output_text = tokenizer.decode(
