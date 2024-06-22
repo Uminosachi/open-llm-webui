@@ -119,12 +119,13 @@ To download the model:
 * 🔍 File Placement: Place files with the `.gguf` extension in the `models` directory within the `open-llm-webui` folder. These files will then appear in the model list on the `llama.cpp` tab of the web UI and can be used accordingly.
 * 📝 Metadata Usage: If the metadata of a GGUF model includes `tokenizer.chat_template`, this template will be used to create the prompts.
 
-### Model List (LLaVA)
+### Model List (Multimodal LLaVA)
 
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
 | llava-hf      | llava-v1.6-mistral-7b-hf, llava-v1.6-vicuna-7b-hf                                          |
 | tinyllava     | TinyLLaVA-Phi-2-SigLIP-3.1B                                                                |
+| xtuner        | llava-llama-3-8b-v1_1-transformers                                                         |
 
 ## Usage
 
@@ -165,6 +166,7 @@ To download the model:
 | NVIDIA              | Llama3-ChatQA                | [Llama 3 Community License](https://huggingface.co/meta-llama/Meta-Llama-3-8B/blob/main/LICENSE) |
 | Hugging Face        | llava-v1.6-*-7b-hf           | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | TinyLLaVA           | TinyLLaVA-Phi-2-SigLIP-3.1B  | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
+| XTuner              | llava-llama-3-8b-v1_1-hf     | [Llama 3 Community License](https://huggingface.co/meta-llama/Meta-Llama-3-8B/blob/main/LICENSE) |
 | Alibaba Group       | Qwen2-7B-Instruct            | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Mistral AI          | Mistral-7B-Instruct          | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Apple               | OpenELM                      | [Apple sample code license](https://huggingface.co/apple/OpenELM-1_1B-Instruct/blob/main/LICENSE) |
