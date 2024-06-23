@@ -10,7 +10,7 @@ from transformers import (AutoModelForCausalLM, AutoProcessor, AutoTokenizer,  #
 
 from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
-from model_manager.base import BaseAbstractLLM, LLMConfig, replace_br_and_code
+from model_manager.base import BaseAbstractLLM, LLMConfig, ensure_tensor_dtype, replace_br_and_code
 from registry import get_llm_class, register_model
 
 
@@ -160,6 +160,56 @@ class LlavaLlama3Model(LLMConfig):
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
         generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        return generate_kwargs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        return output_text
+
+
+@register_model("llava-calm2")
+class LlavaCALM2Model(LLMConfig):
+    include_name: str = "llava-calm2"
+
+    prompt_template = "USER: <image>\n{prompt}\nASSISTANT: "
+    # quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
+    torch_dtype = torch.bfloat16
+
+    def __init__(self):
+        super().__init__(
+            model_class=LlavaForConditionalGeneration,
+            tokenizer_class=AutoProcessor,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype=self.torch_dtype,
+                low_cpu_mem_usage=True,
+                # quantization_config=self.quantization_config,
+                offload_buffers=True,
+            ),
+            model_generate_name="generate",
+            tokenizer_kwargs=dict(
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+            output_text_only=True,
+            multimodal_image=True,
+        )
+
+    @replace_br_and_code
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
+        prompt = self.prompt_template.format(prompt=input_text_box)
+        return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        if "pixel_values" in generate_kwargs:
+            generate_kwargs["pixel_values"] = ensure_tensor_dtype(generate_kwargs["pixel_values"], self.torch_dtype)
         return generate_kwargs
 
     @clear_cache_decorator
@@ -322,7 +372,7 @@ class LlavaLLM(BaseAbstractLLM):
     @clear_cache_decorator
     @staticmethod
     def tokenizer_image_token(prompt, tokenizer, image_token_index=IMAGE_TOKEN_INDEX, return_tensors=None):
-        prompt_chunks = [tokenizer(chunk).input_ids for chunk in prompt.split('<image>')]
+        prompt_chunks = [tokenizer(chunk).input_ids for chunk in prompt.split("<image>")]
 
         def insert_separator(X, sep):
             return [ele for sublist in zip(X, [sep]*len(X)) for ele in sublist][:-1]
@@ -337,9 +387,9 @@ class LlavaLLM(BaseAbstractLLM):
             input_ids.extend(x[offset:])
 
         if return_tensors is not None:
-            if return_tensors == 'pt':
+            if return_tensors == "pt":
                 return torch.tensor(input_ids, dtype=torch.long)
-            raise ValueError(f'Unsupported tensor type: {return_tensors}')
+            raise ValueError(f"Unsupported tensor type: {return_tensors}")
         return input_ids
 
 
@@ -354,6 +404,7 @@ def get_llava_ollm_model_ids():
         "llava-hf/llava-v1.6-vicuna-7b-hf",
         "tinyllava/TinyLLaVA-Phi-2-SigLIP-3.1B",
         "xtuner/llava-llama-3-8b-v1_1-transformers",
+        "cyberagent/llava-calm2-siglip",
     ]
 
     return llava_ollm_model_ids

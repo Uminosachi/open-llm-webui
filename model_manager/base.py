@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import UserDict
 from dataclasses import dataclass, field
 from functools import wraps
 
@@ -25,6 +26,21 @@ def print_return(name):
             return ret
         return wrapper
     return decorator
+
+
+def ensure_tensor_dtype(inputs, torch_dtype):
+    if isinstance(inputs, dict):
+        return {name: ensure_tensor_dtype(tensor, torch_dtype) for name, tensor in inputs.items()}
+    elif isinstance(inputs, UserDict):
+        return UserDict({name: ensure_tensor_dtype(tensor, torch_dtype) for name, tensor in inputs.items()})
+    elif isinstance(inputs, list):
+        return [ensure_tensor_dtype(item, torch_dtype) for item in inputs]
+    elif isinstance(inputs, tuple):
+        return tuple([ensure_tensor_dtype(item, torch_dtype) for item in inputs])
+    elif isinstance(inputs, torch.Tensor):
+        return inputs.to(torch_dtype)
+    else:
+        return inputs
 
 
 @dataclass
