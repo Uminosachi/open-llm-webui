@@ -160,6 +160,8 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
                     llava_image,
                     **model_params.tokenizer_input_kwargs,
                 )
+                # ollm_logging.debug(f"Tokenizer class: {tokenizer.tokenizer.__class__.__name__}")
+                # ollm_logging.debug(f"Processor class: {tokenizer.image_processor.__class__.__name__}")
             else:
                 input_ids = LlavaLLM.tokenizer_image_token(
                     prompt,
@@ -170,6 +172,8 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
                     llava_image,
                     **model_params.image_processor_input_kwargs,
                 )["pixel_values"]
+                # ollm_logging.debug(f"Tokenizer class: {tokenizer.__class__.__name__}")
+                # ollm_logging.debug(f"Processor class: {tokenizer.image_processor.__class__.__name__}")
                 inputs = dict(inputs=input_ids, images=images)
         if hasattr(model, "device"):
             inputs = ensure_tensor_on_device(inputs, model.device)
