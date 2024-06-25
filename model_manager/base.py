@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from functools import wraps
 
 import torch
+from transformers.utils import ModelOutput
 
 from chat_utils import convert_code_tags_to_md
 from custom_logging import ollm_logging
@@ -28,8 +29,27 @@ def print_return(name):
     return decorator
 
 
+def ensure_tensor_on_device(inputs, device):
+    if isinstance(inputs, ModelOutput):
+        return ModelOutput({name: ensure_tensor_on_device(tensor, device) for name, tensor in inputs.items()})
+    elif isinstance(inputs, dict):
+        return {name: ensure_tensor_on_device(tensor, device) for name, tensor in inputs.items()}
+    elif isinstance(inputs, UserDict):
+        return UserDict({name: ensure_tensor_on_device(tensor, device) for name, tensor in inputs.items()})
+    elif isinstance(inputs, list):
+        return [ensure_tensor_on_device(item, device) for item in inputs]
+    elif isinstance(inputs, tuple):
+        return tuple([ensure_tensor_on_device(item, device) for item in inputs])
+    elif isinstance(inputs, torch.Tensor):
+        return inputs.to(device)
+    else:
+        return inputs
+
+
 def ensure_tensor_dtype(inputs, torch_dtype):
-    if isinstance(inputs, dict):
+    if isinstance(inputs, ModelOutput):
+        return ModelOutput({name: ensure_tensor_dtype(tensor, torch_dtype) for name, tensor in inputs.items()})
+    elif isinstance(inputs, dict):
         return {name: ensure_tensor_dtype(tensor, torch_dtype) for name, tensor in inputs.items()}
     elif isinstance(inputs, UserDict):
         return UserDict({name: ensure_tensor_dtype(tensor, torch_dtype) for name, tensor in inputs.items()})

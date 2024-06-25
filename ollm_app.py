@@ -1,17 +1,14 @@
 import functools
 import os
 import time
-import types  # noqa: F401
-from collections import UserDict
 
 import gradio as gr
 import torch
-from transformers.utils import ModelOutput
 
 from cache_manager import ClearCacheContext, clear_cache, clear_cache_decorator, model_cache
 from chat_utils import replace_newlines_code_blocks
 from custom_logging import ollm_logging
-from model_manager.base import LLMConfig
+from model_manager.base import LLMConfig, ensure_tensor_on_device
 from model_manager.llama_cpp import LlamaCPPLLM, get_chat_templates_keys, get_cpp_ollm_model_ids
 from model_manager.llava import LlavaLLM, get_llava_ollm_model_ids
 from model_manager.transformers import TransformersLLM, get_ollm_model_ids
@@ -36,23 +33,6 @@ def change_tab(tab_num):
 change_tab_first = functools.partial(change_tab, tab_num=0)
 change_tab_second = functools.partial(change_tab, tab_num=1)
 change_tab_third = functools.partial(change_tab, tab_num=2)
-
-
-def ensure_tensor_on_device(inputs, device):
-    if isinstance(inputs, ModelOutput):
-        return ModelOutput({name: ensure_tensor_on_device(tensor, device) for name, tensor in inputs.items()})
-    elif isinstance(inputs, dict):
-        return {name: ensure_tensor_on_device(tensor, device) for name, tensor in inputs.items()}
-    elif isinstance(inputs, UserDict):
-        return UserDict({name: ensure_tensor_on_device(tensor, device) for name, tensor in inputs.items()})
-    elif isinstance(inputs, list):
-        return [ensure_tensor_on_device(item, device) for item in inputs]
-    elif isinstance(inputs, tuple):
-        return tuple([ensure_tensor_on_device(item, device) for item in inputs])
-    elif isinstance(inputs, torch.Tensor):
-        return inputs.to(device)
-    else:
-        return inputs
 
 
 @clear_cache_decorator
