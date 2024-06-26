@@ -1,3 +1,4 @@
+import os
 import platform
 
 import torch
@@ -912,6 +913,9 @@ class TransformersLLM(BaseAbstractLLM):
         return tokenizer
 
 
+add_tfs_models_txt = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "add_tfs_models.txt")
+
+
 def get_ollm_model_ids():
     """Get Open LLM and Llama model IDs.
 
@@ -939,4 +943,13 @@ def get_ollm_model_ids():
         "stabilityai/stablelm-tuned-alpha-7b",
         "stabilityai/japanese-stablelm-instruct-beta-7b",
         ]
+
+    if os.path.isfile(add_tfs_models_txt):
+        try:
+            with open(add_tfs_models_txt, "r") as f:
+                tfs_model_ids = [repo for repo in f.read().splitlines() if len(repo) > 0]
+            ollm_model_ids = tfs_model_ids + ollm_model_ids
+        except Exception:
+            pass
+
     return ollm_model_ids
