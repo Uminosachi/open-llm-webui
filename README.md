@@ -90,9 +90,9 @@ To download the model:
 | Mistral AI    | Mistral-7B-Instruct-v0.3                                                                   |
 | Apple         | OpenELM-1_1B-Instruct, OpenELM-3B-Instruct                                                 |
 | Rakuten       | RakutenAI-7B-chat, RakutenAI-7B-instruct                                                   |
-| rinna         | youri-7b-chat, bilingual-gpt-neox-4b-instruction-sft, japanese-gpt-neox-3.6b-instruction-sft-v2 |
+| rinna         | youri-7b-chat, bilingual-gpt-neox-4b-instruction-sft                                       |
 | TheBloke      | Llama-2-7b-Chat-GPTQ, Kunoichi-7B-GPTQ                                                     |
-| Stability AI  | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b, japanese-stablelm-instruct-beta-7b       |
+| Stability AI  | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b                                           |
 
 * 🔍 Note: The downloaded model file will be stored in the `.cache/huggingface/hub` directory of your home directory.
 * Please check the license in the **Model Credit** section below.
@@ -170,11 +170,10 @@ To download the model:
 | Apple               | OpenELM                      | [Apple sample code license](https://huggingface.co/apple/OpenELM-1_1B-Instruct/blob/main/LICENSE) |
 | Rakuten             | RakutenAI                    | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | rinna               | Youri                        | [Llama 2 Community License](https://ai.meta.com/llama/license/) |
-| rinna               | Japanese GPT-NeoX            | [The MIT License](https://opensource.org/licenses/MIT) |
+| rinna               | GPT-NeoX                     | [The MIT License](https://opensource.org/licenses/MIT) |
 | Meta AI             | Llama 2                      | [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE) |
 | Sanji Watsuki       | Kunoichi-7B                  | [CC-BY-NC-4.0](https://spdx.org/licenses/CC-BY-NC-4.0) |
 | Stability AI        | StableLM                     | [Apache License 2.0](https://github.com/Stability-AI/StableLM/blob/main/LICENSE) |
-| Stability AI        | Japanese-StableLM-Instruct   | [Japanese Stablelm Research License Agreement](https://huggingface.co/stabilityai/japanese-stablelm-instruct-alpha-7b/blob/main/LICENSE) |
 
 | Developer           | Model                        | License                                                        |
 |---------------------|------------------------------|----------------------------------------------------------------|

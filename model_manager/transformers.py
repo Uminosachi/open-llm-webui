@@ -934,12 +934,10 @@ def get_ollm_model_ids():
         "Rakuten/RakutenAI-7B-instruct",
         "rinna/youri-7b-chat",
         "rinna/bilingual-gpt-neox-4b-instruction-sft",
-        "rinna/japanese-gpt-neox-3.6b-instruction-sft-v2",
         "TheBloke/Llama-2-7b-Chat-GPTQ",
         "TheBloke/Kunoichi-7B-GPTQ",
         "stabilityai/stablelm-tuned-alpha-3b",
         "stabilityai/stablelm-tuned-alpha-7b",
-        "stabilityai/japanese-stablelm-instruct-beta-7b",
         ]
 
     if os.path.isfile(add_tfs_models_txt):
