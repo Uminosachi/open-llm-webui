@@ -28,11 +28,9 @@ class DefaultModel(LLMConfig):
                 torch_dtype="auto",
             ),
             tokenizer_kwargs=dict(
-                use_fast=True,
             ),
             tokenizer_input_kwargs=dict(
                 return_tensors="pt",
-                add_special_tokens=True,
             ),
             tokenizer_decode_kwargs=dict(
                 skip_special_tokens=True,
