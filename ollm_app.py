@@ -247,12 +247,10 @@ def change_model(ollm_model_id):
 
 def on_ui_tabs():
     ollm_model_ids = get_ollm_model_ids()
-    ollm_model_index = ollm_model_ids.index("microsoft/Phi-3-mini-4k-instruct") \
-        if "microsoft/Phi-3-mini-4k-instruct" in ollm_model_ids else 0
+    ollm_model_index = 0
 
     cpp_ollm_model_ids = get_cpp_ollm_model_ids()
-    cpp_ollm_model_index = cpp_ollm_model_ids.index("Phi-3-mini-4k-instruct-q4.gguf") \
-        if "Phi-3-mini-4k-instruct-q4.gguf" in cpp_ollm_model_ids else 0
+    cpp_ollm_model_index = 0
 
     llava_ollm_model_ids = get_llava_ollm_model_ids()
     llava_ollm_model_index = 0

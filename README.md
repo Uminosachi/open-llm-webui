@@ -94,8 +94,8 @@ To download the model:
 | TheBloke      | Llama-2-7b-Chat-GPTQ, Kunoichi-7B-GPTQ                                                     |
 | Stability AI  | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b                                           |
 
+* 📋 Note: By adding the repository paths of models to `model_manager/add_tfs_models.txt`, they will be included in the list of Model IDs and displayed in the UI.
 * 🔍 Note: The downloaded model file will be stored in the `.cache/huggingface/hub` directory of your home directory.
-* Please check the license in the **Model Credit** section below.
 
 #### Access and Download Models
 * Ensure you have obtained the necessary access rights via Hugging Face before downloading any models. Visit the following pages to obtain access:

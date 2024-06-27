@@ -911,7 +911,7 @@ class TransformersLLM(BaseAbstractLLM):
         return tokenizer
 
 
-add_tfs_models_txt = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "add_tfs_models.txt")
+add_tfs_models_txt = os.path.join(os.path.dirname(os.path.realpath(__file__)), "add_tfs_models.txt")
 
 
 def get_ollm_model_ids():
