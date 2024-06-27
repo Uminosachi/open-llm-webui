@@ -48,6 +48,8 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
         llava_ollm_model_id (str): String of Open LLM model ID for LLaVA.
         cpp_chat_template (str): String of chat template for llama.cpp.
         input_text_box (str): Input text.
+        rag_text_box (str): Context document for ChatQA model.
+        llava_image (PIL.Image): Image for LLaVA.
         max_new_tokens (int): Parameter for generate method.
         temperature (float): Parameter for generate method.
         top_k (int): Parameter for generate method.
@@ -99,8 +101,6 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
         return (input_text_box, chatbot, *return_status, "")
 
     model_params = method_class.get_llm_instance(ollm_model_id, cpu_execution_chk)
-
-    # pmnop = "pretrained_model_name_or_path"
 
     ollm_logging.info(f"Loading {ollm_model_id}")
     if (model_cache.get("preloaded_model_id") != ollm_model_id or

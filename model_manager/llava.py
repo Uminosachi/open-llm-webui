@@ -277,7 +277,7 @@ class TinyLLaVAModel(LLMConfig):
             tokenizer_class=AutoTokenizer,
             image_processor_class=SiglipImageProcessor,
             model_kwargs=dict(
-                device_map="auto",
+                device_map=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
                 torch_dtype=torch.float16,
                 # quantization_config=self.quantization_config,
                 offload_buffers=True,
