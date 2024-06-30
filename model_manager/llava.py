@@ -370,6 +370,8 @@ class LlavaLLM(BaseAbstractLLM):
 
         if platform.system() == "Darwin":
             llm.model_kwargs.update(dict(torch_dtype=torch.float32))
+            if "quantization_config" in llm.model_kwargs:
+                llm.model_kwargs.pop("quantization_config")
 
         ollm_logging.info(f"model_kwargs: {llm.model_kwargs}")
 

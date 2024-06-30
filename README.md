@@ -63,6 +63,16 @@ cd open-llm-webui
     ```bash
     BUILD_CUDA_EXT=0 pip install -r requirements.txt
     ```
+  - Rebuild the `bitsandbytes` package with the CPU option.
+    ```bash
+    pip uninstall bitsandbytes
+    git clone https://github.com/TimDettmers/bitsandbytes.git
+    cd bitsandbytes
+    cmake -DCOMPUTE_BACKEND=cpu -S .
+    make
+    pip install .
+    ```
+  - Known Issue: Running the LLaVA model on Mac results in an error.
 
 ## Running the application
 
