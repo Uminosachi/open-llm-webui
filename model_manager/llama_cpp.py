@@ -100,11 +100,16 @@ class CPPChatTemplates:
         "{% endif %}")
 
     phi3_template = (
-        "{{ bos_token }}{% for message in messages %}"
-        "{% if (message['role'] == 'user') %}"
+        "{{ bos_token }}"
+        "{% for message in messages %}"
+        "{% if (message['role'] == 'system') %}"
+        "{{'<|system|>' + '\\n' + message['content'] + '<|end|>' + '\\n'}}"
+        "{% elif (message['role'] == 'user') %}"
         "{{'<|user|>' + '\\n' + message['content'] + '<|end|>' + '\\n' + '<|assistant|>' + '\\n'}}"
-        "{% elif (message['role'] == 'assistant') %}{{message['content'] + '<|end|>' + '\\n'}}"
-        "{% endif %}{% endfor %}")
+        "{% elif (message['role'] == 'assistant') %}"
+        "{{message['content'] + '<|end|>' + '\\n'}}"
+        "{% endif %}"
+        "{% endfor %}")
 
     mixtral_template = (
         "{{ bos_token }}"
