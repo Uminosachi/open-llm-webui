@@ -11,7 +11,7 @@ from custom_logging import ollm_logging
 from model_manager.base import LLMConfig, ensure_tensor_on_device
 from model_manager.llama_cpp import LlamaCPPLLM, get_chat_templates_keys, get_cpp_ollm_model_ids
 from model_manager.llava import LlavaLLM, get_llava_ollm_model_ids
-from model_manager.transformers import TransformersLLM, get_ollm_model_ids
+from model_manager.tformers import TransformersLLM, get_ollm_model_ids
 from registry import get_llm_class
 from translator import load_translator, translate
 
