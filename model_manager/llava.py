@@ -3,7 +3,7 @@ import platform
 
 import torch
 from huggingface_hub import snapshot_download
-from minicpm.modeling_minicpmv import MiniCPMV
+from minicpm.modeling_minicpmv import MiniCPMV, PreTrainedTokenizerFastWrapper
 from transformers import (AutoModel, AutoModelForCausalLM, AutoProcessor,  # noqa: F401
                           AutoTokenizer, BitsAndBytesConfig, LlavaForConditionalGeneration,
                           LlavaNextForConditionalGeneration, LlavaNextProcessor,
@@ -189,7 +189,7 @@ class MiniCPMLlama3Model(LLMConfig):
     def __init__(self):
         super().__init__(
             model_class=MiniCPMV,
-            tokenizer_class=AutoTokenizer,
+            tokenizer_class=PreTrainedTokenizerFastWrapper,
             model_kwargs=dict(
                 device_map="auto",
                 torch_dtype=torch.float16,
@@ -199,7 +199,6 @@ class MiniCPMLlama3Model(LLMConfig):
             ),
             model_generate_name="generate",
             tokenizer_kwargs=dict(
-                trust_remote_code=True,
             ),
             tokenizer_input_kwargs=dict(
                 return_tensors="pt",
