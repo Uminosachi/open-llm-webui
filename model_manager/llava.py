@@ -517,6 +517,7 @@ def get_llava_ollm_model_ids():
         "llava-hf/llava-v1.6-vicuna-7b-hf",
         "llava-hf/llava-1.5-7b-hf",
         "tinyllava/TinyLLaVA-Phi-2-SigLIP-3.1B",
+        "openbmb/MiniCPM-Llama3-V-2_5-int4",
         "openbmb/MiniCPM-Llama3-V-2_5",
         "xtuner/llava-llama-3-8b-v1_1-transformers",
         "cyberagent/llava-calm2-siglip",

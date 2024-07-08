@@ -3,9 +3,10 @@ import os  # noqa: F401
 import sys  # noqa: F401
 
 import matplotlib.pyplot as plt
-# First, import the slice_image function
-from minicpm.modeling_minicpmv import slice_image
 from PIL import Image
+
+# First, import the slice_image function
+from .minicpm.modeling_minicpmv import slice_image
 
 # Load a sample image
 image_path = "path/to/your/sample/image.jpg"  # Replace with actual path
