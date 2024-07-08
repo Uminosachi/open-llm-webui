@@ -192,7 +192,7 @@ class MiniCPMLlama3Model(LLMConfig):
             model_class=MiniCPMV,
             tokenizer_class=PreTrainedTokenizerFastWrapper,
             model_kwargs=dict(
-                device_map="auto",
+                device_map=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
                 torch_dtype=torch.float16,
                 low_cpu_mem_usage=True,
                 # quantization_config=self.quantization_config,
