@@ -9,10 +9,11 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM,
 
 from cache_manager import clear_cache_decorator, model_cache
 from custom_logging import ollm_logging
-from model_manager.base import BaseAbstractLLM, LLMConfig, replace_br_and_code
 from registry import get_llm_class, register_model
 from start_messages import (StopOnTokens, chatqa_message, llama2_message, rakuten_message,
                             stablelm_message)
+
+from .base import BaseAbstractLLM, LLMConfig, replace_br_and_code
 
 
 @register_model("default")

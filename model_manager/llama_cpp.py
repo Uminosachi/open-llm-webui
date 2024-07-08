@@ -9,9 +9,10 @@ from transformers import AutoTokenizer
 
 from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
-from model_manager.base import BaseAbstractLLM, LLMConfig, replace_br_and_code
 from registry import get_cpp_llm_class, register_cpp_model
 from start_messages import llama2_message  # noqa: F401
+
+from .base import BaseAbstractLLM, LLMConfig, replace_br_and_code
 
 cpp_download_model_list = [
     ("Phi-3-mini-4k-instruct-q4.gguf",

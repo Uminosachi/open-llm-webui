@@ -476,6 +476,107 @@ class MiniCPMV(MiniCPMVPreTrainedModel):
             answer = res[0]
             return answer
 
+    def prepare_chat(
+        self,
+        image,
+        msgs,
+        tokenizer,
+        vision_hidden_states=None,
+        max_new_tokens=1024,
+        sampling=True,
+        max_inp_length=2048,
+        system_prompt='',
+        stream=False,
+        **kwargs
+    ):
+        if isinstance(msgs, str):
+            msgs = json.loads(msgs)
+
+        copy_msgs = deepcopy(msgs)
+        assert len(copy_msgs) > 0, 'msgs is empty'
+        assert sampling or not stream, 'if use stream mode, make sure sampling=True'
+
+        if image is not None and isinstance(copy_msgs[0]['content'], str):
+            copy_msgs[0]['content'] = [image, copy_msgs[0]['content']]
+
+        images = []
+        tgt_sizes = []
+        for i, msg in enumerate(copy_msgs):
+            role = msg["role"]
+            content = msg["content"]
+            assert role in ["user", "assistant"]
+            if i == 0:
+                assert role == "user", "The role of first msg should be user"
+            if isinstance(content, str):
+                content = [content]
+
+            cur_msgs = []
+            for c in content:
+                if isinstance(c, Image.Image):
+                    image = c
+                    if self.config.slice_mode:
+                        slice_images, image_placeholder = self.get_slice_image_placeholder(
+                            image, tokenizer
+                        )
+                        cur_msgs.append(image_placeholder)
+                        for slice_image in slice_images:
+                            slice_image = self.transform(slice_image)
+                            H, W = slice_image.shape[1:]
+                            images.append(self.reshape_by_patch(slice_image))
+                            tgt_sizes.append(torch.Tensor([H // self.config.patch_size, W // self.config.patch_size]).type(torch.int32))
+                    else:
+                        images.append(self.transform(image))
+                        cur_msgs.append(
+                            tokenizer.im_start
+                            + tokenizer.unk_token * self.config.query_num
+                            + tokenizer.im_end
+                        )
+                elif isinstance(c, str):
+                    cur_msgs.append(c)
+
+            msg['content'] = '\n'.join(cur_msgs)
+        if tgt_sizes:
+            tgt_sizes = torch.vstack(tgt_sizes)
+
+        if system_prompt:
+            sys_msg = {'role': 'system', 'content': system_prompt}
+            copy_msgs = [sys_msg] + copy_msgs
+
+        input_ids = tokenizer.apply_chat_template(copy_msgs, tokenize=True, add_generation_prompt=False)
+
+        if sampling:
+            generation_config = {
+                "top_p": 0.8,
+                "top_k": 100,
+                "temperature": 0.7,
+                "do_sample": True,
+                "repetition_penalty": 1.05
+            }
+        else:
+            generation_config = {
+                "num_beams": 3,
+                "repetition_penalty": 1.2,
+            }
+
+        generation_config.update(
+            (k, kwargs[k]) for k in generation_config.keys() & kwargs.keys()
+        )
+
+        gen_input_dict = dict(
+            input_id_list=[input_ids],
+            max_inp_length=max_inp_length,
+            img_list=[images],
+            tgt_sizes=[tgt_sizes],
+            tokenizer=tokenizer,
+            max_new_tokens=max_new_tokens,
+            vision_hidden_states=vision_hidden_states,
+            return_vision_hidden_states=True,
+            stream=stream,
+            **generation_config
+        )
+
+        return gen_input_dict
+
 
 class PreTrainedTokenizerFastWrapper(PreTrainedTokenizerFast):
     def __init__(self, **kwargs):

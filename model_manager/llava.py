@@ -3,7 +3,6 @@ import platform
 
 import torch
 from huggingface_hub import snapshot_download
-from minicpm.modeling_minicpmv import MiniCPMV, PreTrainedTokenizerFastWrapper
 from transformers import (AutoModel, AutoModelForCausalLM, AutoProcessor,  # noqa: F401
                           AutoTokenizer, BitsAndBytesConfig, LlavaForConditionalGeneration,
                           LlavaNextForConditionalGeneration, LlavaNextProcessor,
@@ -11,8 +10,10 @@ from transformers import (AutoModel, AutoModelForCausalLM, AutoProcessor,  # noq
 
 from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
-from model_manager.base import BaseAbstractLLM, LLMConfig, ensure_tensor_dtype, replace_br_and_code
 from registry import get_llm_class, register_model
+
+from .base import BaseAbstractLLM, LLMConfig, ensure_tensor_dtype, replace_br_and_code
+from .minicpm.modeling_minicpmv import MiniCPMV, PreTrainedTokenizerFastWrapper
 
 
 def check_package_installed(package_name):
@@ -184,7 +185,7 @@ class MiniCPMLlama3Model(LLMConfig):
         "{% endfor %}"
         "{{ '<|start_header_id|>assistant<|end_header_id|>\n\n' }}")
 
-    quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
+    # quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
 
     def __init__(self):
         super().__init__(
@@ -194,36 +195,40 @@ class MiniCPMLlama3Model(LLMConfig):
                 device_map="auto",
                 torch_dtype=torch.float16,
                 low_cpu_mem_usage=True,
-                quantization_config=self.quantization_config,
+                # quantization_config=self.quantization_config,
                 offload_buffers=True,
             ),
             model_generate_name="generate",
             tokenizer_kwargs=dict(
             ),
             tokenizer_input_kwargs=dict(
-                return_tensors="pt",
             ),
             tokenizer_decode_kwargs=dict(
                 skip_special_tokens=True,
             ),
             output_text_only=True,
             multimodal_image=True,
+            require_tokenization=False,
         )
 
     @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
-        prompt = self.prompt_template.format(prompt=input_text_box)
+        # prompt = self.prompt_template.format(prompt=input_text_box)
+        prompt = {"role": "user", "content": input_text_box}
         return prompt
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
-        return generate_kwargs
+        # generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        inputs.update(generate_params)
+        inputs["return_vision_hidden_states"] = False
+        return inputs
 
     @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
-        return output_text
+        generated_text = "".join(output_text)
+        return generated_text
 
 
 @register_model("llava-1.5")

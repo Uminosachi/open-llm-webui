@@ -135,13 +135,21 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
     if model_params.multimodal_image:
         with ClearCacheContext():
             if model_params.image_processor_class is None:
-                inputs = tokenizer(
-                    [prompt],
-                    llava_image,
-                    **model_params.tokenizer_input_kwargs,
-                )
-                # ollm_logging.debug(f"Tokenizer class: {tokenizer.tokenizer.__class__.__name__}")
-                # ollm_logging.debug(f"Processor class: {tokenizer.image_processor.__class__.__name__}")
+                if hasattr(model, "chat"):
+                    inputs = model.prepare_chat(
+                        llava_image,
+                        [prompt],
+                        tokenizer,
+                        **model_params.tokenizer_input_kwargs,
+                    )
+                else:
+                    inputs = tokenizer(
+                        [prompt],
+                        llava_image,
+                        **model_params.tokenizer_input_kwargs,
+                    )
+                    # ollm_logging.debug(f"Tokenizer class: {tokenizer.tokenizer.__class__.__name__}")
+                    # ollm_logging.debug(f"Processor class: {tokenizer.image_processor.__class__.__name__}")
             elif hasattr(tokenizer, "image_processor"):
                 input_ids = LlavaLLM.tokenizer_image_token(
                     prompt,
@@ -155,16 +163,6 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
                 # ollm_logging.debug(f"Tokenizer class: {tokenizer.__class__.__name__}")
                 # ollm_logging.debug(f"Processor class: {tokenizer.image_processor.__class__.__name__}")
                 inputs = dict(inputs=input_ids, images=images)
-            elif hasattr(model, "image_processor"):
-                inputs = tokenizer(
-                    [prompt],
-                    **model_params.tokenizer_input_kwargs,
-                )
-                images = model.image_processor(
-                    llava_image,
-                    **model_params.image_processor_input_kwargs,
-                )["pixel_values"]
-                inputs["images"] = images
             else:
                 ollm_logging.error("Image processor is not exist.")
                 return_status[methods_tabs.index(selected_tab)] = "Image processor is not exist."
