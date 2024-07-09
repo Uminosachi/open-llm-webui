@@ -845,6 +845,8 @@ class TransformersLLM(BaseAbstractLLM):
         """
         if not local_files_only:
             ollm_logging.info(f"Downloading {ollm_model_id}")
+        if os.path.isdir(ollm_model_id) and os.path.isfile(os.path.join(ollm_model_id, "config.json")):
+            return LLMConfig.DOWNLOAD_COMPLETE
         try:
             llm_class = get_llm_class(ollm_model_id)
             if hasattr(llm_class, "download_kwargs") and isinstance(llm_class.download_kwargs, dict):
@@ -885,6 +887,8 @@ class TransformersLLM(BaseAbstractLLM):
     @staticmethod
     def get_model(ollm_model_id, model_params, generate_params):
         pmnop = "pretrained_model_name_or_path"
+        if os.path.isdir(ollm_model_id) and os.path.isfile(os.path.join(ollm_model_id, "config.json")):
+            model_params.model_kwargs.update(dict(local_files_only=True))
         if "quantize_config" in model_params.model_kwargs:
             model = model_params.model_class.from_quantized(
                 ollm_model_id if pmnop not in model_params.model_kwargs else model_params.model_kwargs.pop(pmnop),
