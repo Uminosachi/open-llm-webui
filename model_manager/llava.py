@@ -173,31 +173,37 @@ class LlavaLlama3Model(LLMConfig):
 class MiniCPMLlama3Model(LLMConfig):
     include_name: str = "MiniCPM-Llama3"
 
-    prompt_template = ("<|start_header_id|>user<|end_header_id|>\n\n<image>\n{prompt}<|eot_id|>"
-                       "<|start_header_id|>assistant<|end_header_id|>\n\n")
-    chat_template = (
-        "{% set loop_messages = messages %}"
-        "{% for message in loop_messages %}"
-        "{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' %}"
-        "{% if loop.index0 == 0 %}"
-        "{% set content = bos_token + content %}"
-        "{% endif %}{{ content }}"
-        "{% endfor %}"
-        "{{ '<|start_header_id|>assistant<|end_header_id|>\n\n' }}")
-
-    # quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
+    quantization_8bit_config = BitsAndBytesConfig(**{
+        "bnb_4bit_compute_dtype": "float16",
+        "bnb_4bit_quant_storage": "uint8",
+        "bnb_4bit_quant_type": "nf4",
+        "bnb_4bit_use_double_quant": True,
+        "llm_int8_enable_fp32_cpu_offload": False,
+        "llm_int8_has_fp16_weight": False,
+        "llm_int8_skip_modules": [
+            "out_proj",
+            "kv_proj",
+            "lm_head"
+            ],
+        "llm_int8_threshold": 6.0,
+        "load_in_4bit": False,
+        "load_in_8bit": True,
+    })
 
     def __init__(self):
+        model_kwargs = dict(
+            device_map=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+            torch_dtype=torch.float16,
+            low_cpu_mem_usage=True,
+            offload_buffers=True,
+        )
+        if hasattr(self, "model_id") and "int4" not in self.model_id:
+            model_kwargs.update(dict(quantization_config=self.quantization_8bit_config))
+
         super().__init__(
             model_class=MiniCPMV,
             tokenizer_class=PreTrainedTokenizerFastWrapper,
-            model_kwargs=dict(
-                device_map=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
-                torch_dtype=torch.float16,
-                low_cpu_mem_usage=True,
-                # quantization_config=self.quantization_config,
-                offload_buffers=True,
-            ),
+            model_kwargs=model_kwargs,
             model_generate_name="generate",
             tokenizer_kwargs=dict(
             ),
@@ -214,13 +220,11 @@ class MiniCPMLlama3Model(LLMConfig):
     @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
-        # prompt = self.prompt_template.format(prompt=input_text_box)
         prompt = {"role": "user", "content": input_text_box}
         return prompt
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-        # generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
         inputs.update(generate_params)
         inputs["return_vision_hidden_states"] = False
         return inputs
@@ -283,18 +287,34 @@ class LlavaCALM2Model(LLMConfig):
     include_name: str = "llava-calm2"
 
     prompt_template = "USER: <image>\n{prompt}\nASSISTANT: "
-    # quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
     torch_dtype = torch.bfloat16
+
+    quantization_4bit_config = BitsAndBytesConfig(**{
+        "bnb_4bit_compute_dtype": "float16",
+        "bnb_4bit_quant_storage": "uint8",
+        "bnb_4bit_quant_type": "nf4",
+        "bnb_4bit_use_double_quant": True,
+        "llm_int8_enable_fp32_cpu_offload": False,
+        "llm_int8_has_fp16_weight": False,
+        "llm_int8_skip_modules": [
+            "out_proj",
+            "kv_proj",
+            "lm_head"
+            ],
+        "llm_int8_threshold": 6.0,
+        "load_in_4bit": True,
+        "load_in_8bit": False,
+    })
 
     def __init__(self):
         super().__init__(
             model_class=LlavaForConditionalGeneration,
             tokenizer_class=AutoProcessor,
             model_kwargs=dict(
-                device_map="auto",
+                device_map=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
                 torch_dtype=self.torch_dtype,
                 low_cpu_mem_usage=True,
-                # quantization_config=self.quantization_config,
+                quantization_config=self.quantization_4bit_config,
                 offload_buffers=True,
             ),
             model_generate_name="generate",

@@ -72,6 +72,7 @@ def get_llm_class(ollm_model_id: str):
         llm_class = MODEL_REGISTRY["default"] if "default" in MODEL_REGISTRY else None
     ollm_logging.debug(f"Using model class: {llm_class.__name__}")
 
+    llm_class.model_id = ollm_model_id
     return llm_class
 
 
@@ -93,4 +94,5 @@ def get_cpp_llm_class(cpp_ollm_model_id: str):
         llm_class = CPP_MODEL_REGISTRY["default"] if "default" in CPP_MODEL_REGISTRY else None
     ollm_logging.debug(f"Using model class: {llm_class.__name__}")
 
+    llm_class.model_id = cpp_ollm_model_id
     return llm_class
