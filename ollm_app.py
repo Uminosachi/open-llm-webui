@@ -38,7 +38,7 @@ change_tab_third = functools.partial(change_tab, tab_num=2)
 @clear_cache_decorator
 def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_id, cpp_chat_template, input_text_box, rag_text_box,
                    llava_image, max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk,
-                   cpu_execution_chk=False, llava_cpu_execution_chk=False):
+                   cpu_execution_chk=False, llava_cpu_execution_chk=False, replace_system=False, system_message=""):
     """Open LLM inference.
 
     Args:
@@ -101,6 +101,9 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
         return (input_text_box, chatbot, *return_status, "")
 
     model_params = method_class.get_llm_instance(ollm_model_id, cpu_execution_chk)
+
+    if replace_system:
+        model_params.system_message = system_message
 
     ollm_logging.info(f"Loading {ollm_model_id}")
     if (model_cache.get("preloaded_model_id") != ollm_model_id or
@@ -343,6 +346,7 @@ def on_ui_tabs():
                     rag_text_box = gr.Textbox(
                         label="Context document for ChatQA model",
                         placeholder="Context document",
+                        value="",
                         show_label=True,
                         visible=False,
                     )
@@ -350,6 +354,13 @@ def on_ui_tabs():
                     max_new_tokens = gr.Slider(minimum=1, maximum=4096, step=1, value=512, label="Max new tokens", elem_id="max_new_tokens")
                 with gr.Row():
                     with gr.Accordion("Advanced options", open=False):
+                        with gr.Row():
+                            with gr.Column(scale=0, min_width=160):
+                                replace_system = gr.Checkbox(label="Replace system message", elem_id="replace_system_message",
+                                                             value=False, show_label=True)
+                            with gr.Column():
+                                system_message = gr.Textbox(label="System message", placeholder="System message", value="",
+                                                            show_label=True)
                         temperature = gr.Slider(minimum=0.1, maximum=1.0, step=0.05, value=0.7, label="Temperature", elem_id="temperature")
                         top_k = gr.Slider(minimum=1, maximum=200, step=1, value=50, label="Top k", elem_id="top_k")
                         top_p = gr.Slider(minimum=0.1, maximum=1.0, step=0.05, value=1.0, label="Top p", elem_id="top_p")
@@ -379,7 +390,7 @@ def on_ui_tabs():
             generate_inputs = [
                 chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_id, cpp_chat_template, input_text_box, rag_text_box,
                 llava_image, max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk,
-                cpu_execution_chk, llava_cpu_execution_chk]
+                cpu_execution_chk, llava_cpu_execution_chk, replace_system, system_message]
             inference_outputs = [input_text_box, chatbot] + status_text_boxes + [translated_output_text]
             generate_btn.click(
                 fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot]
