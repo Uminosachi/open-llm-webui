@@ -966,7 +966,7 @@ def get_ollm_model_ids():
         except Exception:
             pass
 
-    combined_model_ids = list(set(add_tfs_model_ids + store_model_ids))
+    combined_model_ids = list(dict.fromkeys(add_tfs_model_ids + store_model_ids))
     ollm_logging.debug(f"combined_model_ids: {combined_model_ids}")
 
     try:
