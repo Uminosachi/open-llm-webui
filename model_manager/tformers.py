@@ -917,6 +917,7 @@ class TransformersLLM(BaseAbstractLLM):
 
 
 add_tfs_models_txt = os.path.join(os.path.dirname(os.path.realpath(__file__)), "add_tfs_models.txt")
+add_tfs_models_store_txt = os.path.join(os.path.dirname(os.path.realpath(__file__)), "add_tfs_models_store.txt")
 
 
 def get_ollm_model_ids():
@@ -945,12 +946,35 @@ def get_ollm_model_ids():
         "stabilityai/stablelm-tuned-alpha-7b",
         ]
 
+    add_tfs_model_ids = []
+    store_model_ids = []
+
     if os.path.isfile(add_tfs_models_txt):
         try:
             with open(add_tfs_models_txt, "r") as f:
-                tfs_model_ids = [repo for repo in f.read().splitlines() if len(repo) > 0]
-            ollm_model_ids = tfs_model_ids + ollm_model_ids
+                add_tfs_model_ids = [repo.strip() for repo in f.read().splitlines() if len(repo) > 0]
+
+            with open(add_tfs_models_txt, "w") as f:
+                pass
         except Exception:
             pass
+
+    if os.path.isfile(add_tfs_models_store_txt):
+        try:
+            with open(add_tfs_models_store_txt, "r") as f:
+                store_model_ids = [repo.strip() for repo in f.read().splitlines() if len(repo) > 0]
+        except Exception:
+            pass
+
+    combined_model_ids = list(set(add_tfs_model_ids + store_model_ids))
+    ollm_logging.debug(f"combined_model_ids: {combined_model_ids}")
+
+    try:
+        with open(add_tfs_models_store_txt, "w") as f:
+            f.write("\n".join(combined_model_ids) + "\n")
+    except Exception:
+        pass
+
+    ollm_model_ids = combined_model_ids + ollm_model_ids
 
     return ollm_model_ids
