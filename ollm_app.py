@@ -279,6 +279,8 @@ def on_ui_tabs():
             with gr.Column():
                 with gr.Row():
                     chatbot = gr.Chatbot(value=[], elem_id="chatbot", height=640)
+                with gr.Row():
+                    clear_btn = gr.Button("Clear chat", elem_id="clear_btn")
 
             with gr.Column():
                 with gr.Row():
@@ -371,8 +373,6 @@ def on_ui_tabs():
                 with gr.Row():
                     translated_output_text = gr.Textbox(
                         label="Translated output text", show_label=True, lines=1, interactive=False, visible=False)
-                with gr.Row():
-                    clear_btn = gr.Button("Clear text", elem_id="clear_btn")
 
             status_text_boxes = [status_text, cpp_status_text, llava_status_text]
             assert len(status_text_boxes) == len(methods_tabs), "Status text boxes length is not equal to methods tabs length"
@@ -400,7 +400,7 @@ def on_ui_tabs():
                 outputs=[input_text_box, chatbot]
                 ).then(fn=ollm_inference, inputs=generate_inputs, outputs=inference_outputs)
 
-            clear_btn.click(lambda: [None, None], None, [input_text_box, chatbot])
+            clear_btn.click(lambda: [], None, [chatbot])
 
     return [(ollm_interface, "Open LLM", "open_llm")]
 
