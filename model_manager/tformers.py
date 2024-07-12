@@ -42,7 +42,11 @@ class DefaultModel(LLMConfig):
     @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
-        prompt = input_text_box
+        if tokenizer is not None and hasattr(tokenizer, "chat_template"):
+            prompt = self.create_chat_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer,
+                                             check_assistant=True)
+        else:
+            prompt = input_text_box
 
         return prompt
 
