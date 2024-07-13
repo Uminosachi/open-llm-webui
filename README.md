@@ -94,15 +94,13 @@ To download the model:
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
 | Microsoft     | Phi-3-mini-4k-instruct, Phi-3-mini-128k-instruct                                           |
-| Google        | gemma-1.1-2b-it, gemma-1.1-7b-it                                                           |
+| Google        | gemma-2-9b-it, gemma-1.1-2b-it, gemma-1.1-7b-it                                            |
 | NVIDIA        | Llama3-ChatQA-1.5-8B                                                                       |
 | Qwen          | Qwen2-7B-Instruct                                                                          |
 | Mistral AI    | Mistral-7B-Instruct-v0.3                                                                   |
-| Apple         | OpenELM-1_1B-Instruct, OpenELM-3B-Instruct                                                 |
 | Rakuten       | RakutenAI-7B-chat, RakutenAI-7B-instruct                                                   |
-| rinna         | youri-7b-chat, bilingual-gpt-neox-4b-instruction-sft                                       |
+| rinna         | youri-7b-chat                                                                              |
 | TheBloke      | Llama-2-7b-Chat-GPTQ, Kunoichi-7B-GPTQ                                                     |
-| Stability AI  | stablelm-tuned-alpha-3b, stablelm-tuned-alpha-7b                                           |
 
 * 📋 Note: By adding the repository paths of models to `model_manager/add_tfs_models.txt`, they will be included in the list of Model IDs and displayed in the UI.
 * 🔍 Note: The downloaded model file will be stored in the `.cache/huggingface/hub` directory of your home directory.
@@ -150,6 +148,7 @@ To download the model:
 
 ### transformers tab
 * By enabling the `CPU execution` checkbox, the model will use the argument `device_map="cpu"`.
+* Some of the transformers models are loaded with the following 4-bit or 8-bit settings using the `bitsandbytes` package.
 
 ### llama.cpp tab
 * Use the radio buttons in the `Default chat template` to select the template that will be used if the GGUF model lacks a `chat_template`.
@@ -157,9 +156,6 @@ To download the model:
 ### LLaVA tab
 * You can upload an image to the LLaVA Image area of this tab and input a prompt related to the image.
 * Some of the LLaVA models are loaded with the following 4-bit or 8-bit settings using the `bitsandbytes` package.
-  ```python
-  quantization_config = BitsAndBytesConfig(load_in_4bit=True)
-  ```
 
 ### options
 * When you enable the `Translate (ja->en/en->ja)` checkbox:
@@ -179,13 +175,10 @@ To download the model:
 | NVIDIA              | Llama3-ChatQA                | [Llama 3 Community License](https://huggingface.co/meta-llama/Meta-Llama-3-8B/blob/main/LICENSE) |
 | Alibaba Group       | Qwen2-7B-Instruct            | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Mistral AI          | Mistral-7B-Instruct          | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
-| Apple               | OpenELM                      | [Apple sample code license](https://huggingface.co/apple/OpenELM-1_1B-Instruct/blob/main/LICENSE) |
 | Rakuten             | RakutenAI                    | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | rinna               | Youri                        | [Llama 2 Community License](https://ai.meta.com/llama/license/) |
-| rinna               | GPT-NeoX                     | [The MIT License](https://opensource.org/licenses/MIT) |
 | Meta AI             | Llama 2                      | [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE) |
 | Sanji Watsuki       | Kunoichi-7B                  | [CC-BY-NC-4.0](https://spdx.org/licenses/CC-BY-NC-4.0) |
-| Stability AI        | StableLM                     | [Apache License 2.0](https://github.com/Stability-AI/StableLM/blob/main/LICENSE) |
 
 | Developer           | Model                        | License                                                        |
 |---------------------|------------------------------|----------------------------------------------------------------|

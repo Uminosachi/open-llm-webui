@@ -173,23 +173,6 @@ class LlavaLlama3Model(LLMConfig):
 class MiniCPMLlama3Model(LLMConfig):
     include_name: str = "MiniCPM-Llama3"
 
-    quantization_8bit_config = BitsAndBytesConfig(**{
-        "bnb_4bit_compute_dtype": "float16",
-        "bnb_4bit_quant_storage": "uint8",
-        "bnb_4bit_quant_type": "nf4",
-        "bnb_4bit_use_double_quant": True,
-        "llm_int8_enable_fp32_cpu_offload": False,
-        "llm_int8_has_fp16_weight": False,
-        "llm_int8_skip_modules": [
-            "out_proj",
-            "kv_proj",
-            "lm_head"
-            ],
-        "llm_int8_threshold": 6.0,
-        "load_in_4bit": False,
-        "load_in_8bit": True,
-    })
-
     def __init__(self):
         model_kwargs = dict(
             device_map=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
@@ -288,23 +271,6 @@ class LlavaCALM2Model(LLMConfig):
 
     prompt_template = "USER: <image>\n{prompt}\nASSISTANT: "
     torch_dtype = torch.bfloat16
-
-    quantization_4bit_config = BitsAndBytesConfig(**{
-        "bnb_4bit_compute_dtype": "float16",
-        "bnb_4bit_quant_storage": "uint8",
-        "bnb_4bit_quant_type": "nf4",
-        "bnb_4bit_use_double_quant": True,
-        "llm_int8_enable_fp32_cpu_offload": False,
-        "llm_int8_has_fp16_weight": False,
-        "llm_int8_skip_modules": [
-            "out_proj",
-            "kv_proj",
-            "lm_head"
-            ],
-        "llm_int8_threshold": 6.0,
-        "load_in_4bit": True,
-        "load_in_8bit": False,
-    })
 
     def __init__(self):
         super().__init__(

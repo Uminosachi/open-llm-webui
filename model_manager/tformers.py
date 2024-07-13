@@ -1,3 +1,4 @@
+import copy
 import os
 import platform
 
@@ -502,14 +503,20 @@ class GemmaModel(LLMConfig):
     download_kwargs = dict(ignore_patterns=["*.gguf"])
 
     def __init__(self):
+        model_kwargs = dict(
+            device_map="auto",
+            torch_dtype=torch.bfloat16,
+            trust_remote_code=True,
+        )
+        if hasattr(self, "model_id") and "-9b" in self.model_id:
+            quantization_config = copy.deepcopy(self.quantization_4bit_config)
+            quantization_config.llm_int8_skip_modules = ["o_proj", "lm_head"]
+            model_kwargs.update(dict(quantization_config=quantization_config, torch_dtype=torch.float16))
+
         super().__init__(
             model_class=AutoModelForCausalLM,
             tokenizer_class=AutoTokenizer,
-            model_kwargs=dict(
-                device_map="auto",
-                torch_dtype=torch.bfloat16,
-                trust_remote_code=True,
-            ),
+            model_kwargs=model_kwargs,
             tokenizer_kwargs=dict(
             ),
             tokenizer_input_kwargs=dict(
@@ -933,21 +940,17 @@ def get_ollm_model_ids():
     ollm_model_ids = [
         "microsoft/Phi-3-mini-4k-instruct",
         "microsoft/Phi-3-mini-128k-instruct",
+        "google/gemma-2-9b-it",
         "google/gemma-1.1-2b-it",
         "google/gemma-1.1-7b-it",
         "nvidia/Llama3-ChatQA-1.5-8B",
         "Qwen/Qwen2-7B-Instruct",
         "mistralai/Mistral-7B-Instruct-v0.3",
-        "apple/OpenELM-1_1B-Instruct",
-        "apple/OpenELM-3B-Instruct",
         "Rakuten/RakutenAI-7B-chat",
         "Rakuten/RakutenAI-7B-instruct",
         "rinna/youri-7b-chat",
-        "rinna/bilingual-gpt-neox-4b-instruction-sft",
         "TheBloke/Llama-2-7b-Chat-GPTQ",
         "TheBloke/Kunoichi-7B-GPTQ",
-        "stabilityai/stablelm-tuned-alpha-3b",
-        "stabilityai/stablelm-tuned-alpha-7b",
         ]
 
     add_tfs_model_ids = []
