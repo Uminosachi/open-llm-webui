@@ -89,7 +89,7 @@ To download the model:
 * Click on the "Download model" button next to the LLM model ID.
 * Wait for the download to complete.
 
-### Model List (transformers)
+### 📜 Model List (transformers)
 
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
@@ -117,7 +117,7 @@ To download the model:
   huggingface-cli login
   ```
 
-### Model List (llama.cpp)
+### 🦙 Model List (llama.cpp)
 
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
@@ -129,7 +129,7 @@ To download the model:
 * 🔍 File Placement: Place files with the `.gguf` extension in the `models` directory within the `open-llm-webui` folder. These files will then appear in the model list on the `llama.cpp` tab of the web UI and can be used accordingly.
 * 📝 Metadata Usage: If the metadata of a GGUF model includes `tokenizer.chat_template`, this template will be used to create the prompts.
 
-### Model List (Multimodal LLaVA)
+### 🖼️ Model List (Multimodal LLaVA)
 
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
@@ -143,9 +143,10 @@ To download the model:
 
 * Enter your message into the "Input text" box. Adjust the slider for "Max new tokens" as needed.
 * Under "Advanced options" adjust the settings for "Temperature", "Top k", "Top p", and "Repetition Penalty" as needed.
+* If replacing the system message of the prompt, under "Advanced options" enable the checkbox and enter text.
 * Press "Enter" on your keyboard or click the "Generate" button.
    - ⚠️ Note: If the cloud-based model has been updated, it may be downloaded upon execution.
-* If you click the "Clear text" button, the chat history will be cleared.
+* If you click the "Clear chat" button, the chat history will be cleared.
 
 ### transformers tab
 * By enabling the `CPU execution` checkbox, the model will use the argument `device_map="cpu"`.
@@ -155,7 +156,7 @@ To download the model:
 
 ### LLaVA tab
 * You can upload an image to the LLaVA Image area of this tab and input a prompt related to the image.
-* Some of the LLaVA models are loaded with the following 4-bit settings using the `bitsandbytes` package.
+* Some of the LLaVA models are loaded with the following 4-bit or 8-bit settings using the `bitsandbytes` package.
   ```python
   quantization_config = BitsAndBytesConfig(load_in_4bit=True)
   ```

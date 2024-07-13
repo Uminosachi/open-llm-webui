@@ -353,6 +353,8 @@ def on_ui_tabs():
                         visible=False,
                     )
                 with gr.Row():
+                    generate_btn = gr.Button("Generate", elem_id="generate_btn", variant="primary")
+                with gr.Row():
                     max_new_tokens = gr.Slider(minimum=1, maximum=4096, step=1, value=512, label="Max new tokens", elem_id="max_new_tokens")
                 with gr.Row():
                     with gr.Accordion("Advanced options", open=False):
@@ -368,8 +370,6 @@ def on_ui_tabs():
                         top_p = gr.Slider(minimum=0.1, maximum=1.0, step=0.05, value=1.0, label="Top p", elem_id="top_p")
                         repetition_penalty = gr.Slider(minimum=1.0, maximum=10.0, step=0.1, value=1.1, label="Repetition penalty", elem_id="repetition_penalty")
                         translate_chk = gr.Checkbox(label="Translate (ja->en/en->ja)", elem_id="translate_chk", value=False, show_label=True)
-                with gr.Row():
-                    generate_btn = gr.Button("Generate", elem_id="generate_btn")
                 with gr.Row():
                     translated_output_text = gr.Textbox(
                         label="Translated output text", show_label=True, lines=1, interactive=False, visible=False)
