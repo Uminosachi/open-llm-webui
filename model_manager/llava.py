@@ -1,3 +1,4 @@
+import copy
 import importlib.util
 import platform
 
@@ -273,16 +274,20 @@ class LlavaCALM2Model(LLMConfig):
     torch_dtype = torch.bfloat16
 
     def __init__(self):
+        model_kwargs = dict(
+            device_map=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+            torch_dtype=self.torch_dtype,
+            low_cpu_mem_usage=True,
+            offload_buffers=True,
+        )
+        quantization_config = copy.deepcopy(self.quantization_4bit_config)
+        quantization_config.llm_int8_skip_modules = ["o_proj", "lm_head", "out_proj", "head"]
+        model_kwargs.update(dict(quantization_config=quantization_config))
+
         super().__init__(
             model_class=LlavaForConditionalGeneration,
             tokenizer_class=AutoProcessor,
-            model_kwargs=dict(
-                device_map=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
-                torch_dtype=self.torch_dtype,
-                low_cpu_mem_usage=True,
-                quantization_config=self.quantization_4bit_config,
-                offload_buffers=True,
-            ),
+            model_kwargs=model_kwargs,
             model_generate_name="generate",
             tokenizer_kwargs=dict(
             ),
