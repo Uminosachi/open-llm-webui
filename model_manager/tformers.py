@@ -736,13 +736,19 @@ class ChatQAModel(LLMConfig):
         "{% endif %}{% endfor %}")
 
     def __init__(self):
+        model_kwargs = dict(
+            device_map="auto",
+            torch_dtype=torch.float16,
+        )
+        if hasattr(self, "model_id") and "-8B" in self.model_id:
+            quantization_config = copy.deepcopy(self.quantization_4bit_config)
+            quantization_config.llm_int8_skip_modules = ["o_proj", "lm_head"]
+            model_kwargs.update(dict(quantization_config=quantization_config))
+
         super().__init__(
             model_class=AutoModelForCausalLM,
             tokenizer_class=AutoTokenizer,
-            model_kwargs=dict(
-                device_map="auto",
-                torch_dtype=torch.float16,
-            ),
+            model_kwargs=model_kwargs,
             tokenizer_kwargs=dict(
             ),
             tokenizer_input_kwargs=dict(
