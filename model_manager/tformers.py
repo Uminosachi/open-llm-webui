@@ -391,21 +391,28 @@ class KunoichiGPTQModel(LLMConfig):
 
 @register_model("phi-3")
 class PHI3Model(LLMConfig):
-    include_name: str = "Phi-3"
+    include_name: list = ["Phi-3-mini", "Phi-3-small"]
 
     system_message = "You are a helpful digital assistant. Please provide safe, ethical and accurate information to the user."
 
     def __init__(self):
+        model_kwargs = dict(
+            device_map="auto",
+            torch_dtype="auto",
+            trust_remote_code=True,
+        )
+        if hasattr(self, "model_id") and "-small" in self.model_id:
+            quantization_config = copy.deepcopy(self.quantization_4bit_config)
+            quantization_config.llm_int8_skip_modules = ["o_proj", "lm_head"]
+            model_kwargs.update(dict(quantization_config=quantization_config, torch_dtype=torch.float16))
+
         super().__init__(
             model_class=AutoModelForCausalLM,
             tokenizer_class=AutoTokenizer,
-            model_kwargs=dict(
-                device_map="auto",
-                torch_dtype="auto",
-                trust_remote_code=True,
-            ),
+            model_kwargs=model_kwargs,
             tokenizer_kwargs=dict(
                 use_fast=True,
+                trust_remote_code=True,
             ),
             tokenizer_input_kwargs=dict(
                 return_tensors="pt",
@@ -939,7 +946,7 @@ def get_ollm_model_ids():
     """
     ollm_model_ids = [
         "microsoft/Phi-3-mini-4k-instruct",
-        "microsoft/Phi-3-mini-128k-instruct",
+        "microsoft/Phi-3-small-8k-instruct",
         "google/gemma-2-9b-it",
         "google/gemma-1.1-2b-it",
         "google/gemma-1.1-7b-it",

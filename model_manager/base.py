@@ -79,6 +79,7 @@ class LLMConfig(ABC):
     output_text_only: bool = True
     require_tokenization: bool = True
     multimodal_image: bool = False
+    imagep_config: dict = field(default_factory=lambda: {"prompt_is_list": True, "image_is_list": False})
 
     enable_rag_text = False
     DOWNLOAD_COMPLETE = "Download complete"
@@ -128,6 +129,9 @@ class LLMConfig(ABC):
 
     def create_chat_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None,
                            check_assistant=False, remove_bos_token=False):
+        if not hasattr(tokenizer, "pad_token_id") and hasattr(tokenizer, "tokenizer"):
+            tokenizer = tokenizer.tokenizer
+
         if getattr(self, "system_message", None) is not None:
             messages = [{"role": "system", "content": self.system_message}]
         else:

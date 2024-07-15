@@ -13,7 +13,9 @@ def wildcard_to_regex(pattern):
 
 
 def is_match(pattern, target):
-    if "*" in pattern:
+    if isinstance(pattern, list):
+        return any(is_match(p, target) for p in pattern)
+    elif "*" in pattern:
         regex_pattern = wildcard_to_regex(pattern)
         return re.search(regex_pattern, target, re.IGNORECASE) is not None
     else:

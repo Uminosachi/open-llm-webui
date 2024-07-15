@@ -26,6 +26,13 @@ cd open-llm-webui
   pip install -r requirements.txt
   ```
 
+#### Installation for Flash Attention
+* Some models use Flash Attention, so install it if necessary:
+  ```bash
+  pip install packaging ninja
+  pip install flash-attn --no-build-isolation
+  ```
+
 #### Platform-Specific Instructions
 * **For Windows (with CUDA support):**
   - Install [Visual Studio](https://learn.microsoft.com/ja-jp/visualstudio/install/install-visual-studio?view=vs-2022):
@@ -93,7 +100,7 @@ To download the model:
 
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
-| Microsoft     | Phi-3-mini-4k-instruct, Phi-3-mini-128k-instruct                                           |
+| Microsoft     | Phi-3-mini-4k-instruct, microsoft/Phi-3-small-8k-instruct                                  |
 | Google        | gemma-2-9b-it, gemma-1.1-2b-it, gemma-1.1-7b-it                                            |
 | NVIDIA        | Llama3-ChatQA-1.5-8B                                                                       |
 | Qwen          | Qwen2-7B-Instruct                                                                          |
@@ -131,6 +138,7 @@ To download the model:
 
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
+| Microsoft     | Phi-3-vision-128k-instruct                                                                 |
 | llava-hf      | llava-v1.6-mistral-7b-hf, llava-v1.6-vicuna-7b-hf, llava-1.5-7b-hf                         |
 | tinyllava     | TinyLLaVA-Phi-2-SigLIP-3.1B                                                                |
 | openbmb       | MiniCPM-Llama3-V-2_5-int4, MiniCPM-Llama3-V-2_5                                            |

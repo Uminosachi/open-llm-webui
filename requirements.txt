@@ -18,3 +18,8 @@ auto-gptq
 einops
 llama-cpp-python
 bitsandbytes
+numpy
+Pillow
+requests
+tiktoken
+pytest

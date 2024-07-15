@@ -266,6 +266,61 @@ class Llava15Model(LLMConfig):
         return output_text
 
 
+@register_model("phi-3-vision")
+class Phi3VisionModel(LLMConfig):
+    include_name: str = "Phi-3-vision"
+
+    image_header = "<|image_1|>\n"
+    quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
+
+    def __init__(self):
+        super().__init__(
+            model_class=AutoModelForCausalLM,
+            tokenizer_class=AutoProcessor,
+            model_kwargs=dict(
+                device_map="cuda" if torch.cuda.is_available() else "cpu",
+                trust_remote_code=True,
+                torch_dtype=torch.float16,
+                quantization_config=self.quantization_config,
+                _attn_implementation="flash_attention_2",
+            ),
+            model_generate_name="generate",
+            tokenizer_kwargs=dict(
+                trust_remote_code=True,
+            ),
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+            output_text_only=True,
+            multimodal_image=True,
+            imagep_config=dict(prompt_is_list=False, image_is_list=True),
+        )
+
+    @replace_br_and_code
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
+        chatbot = copy.deepcopy(chatbot)
+        chatbot[-1][0] = self.image_header + chatbot[-1][0]
+        prompt = self.create_chat_prompt(
+            chatbot, ollm_model_id,
+            self.image_header + input_text_box,
+            rag_text_box, tokenizer=tokenizer, check_assistant=True,
+        )
+        return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        return generate_kwargs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        return output_text
+
+
 @register_model("llava-calm2")
 class LlavaCALM2Model(LLMConfig):
     include_name: str = "llava-calm2"
@@ -504,6 +559,7 @@ def get_llava_ollm_model_ids():
         list: List of model IDs for the LLaVA models.
     """
     llava_ollm_model_ids = [
+        "microsoft/Phi-3-vision-128k-instruct",
         "llava-hf/llava-v1.6-mistral-7b-hf",
         "llava-hf/llava-v1.6-vicuna-7b-hf",
         "llava-hf/llava-1.5-7b-hf",

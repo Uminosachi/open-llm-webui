@@ -147,8 +147,8 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
                     )
                 else:
                     inputs = tokenizer(
-                        [prompt],
-                        llava_image,
+                        [prompt] if model_params.imagep_config.get("prompt_is_list") else prompt,
+                        llava_image if not model_params.imagep_config.get("image_is_list") else [llava_image],
                         **model_params.tokenizer_input_kwargs,
                     )
                     # ollm_logging.debug(f"Tokenizer class: {tokenizer.tokenizer.__class__.__name__}")
