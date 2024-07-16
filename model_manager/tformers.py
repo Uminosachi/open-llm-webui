@@ -5,8 +5,8 @@ import platform
 import torch
 from auto_gptq import AutoGPTQForCausalLM
 from huggingface_hub import snapshot_download
-from transformers import (AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM,  # noqa: F401
-                          LlamaTokenizer, StoppingCriteriaList, TextIteratorStreamer)
+from transformers import (AutoModelForCausalLM, AutoTokenizer, StoppingCriteriaList,
+                          TextIteratorStreamer)
 
 from cache_manager import clear_cache_decorator, model_cache
 from custom_logging import ollm_logging
@@ -14,7 +14,7 @@ from registry import get_llm_class, register_model
 from start_messages import (StopOnTokens, chatqa_message, llama2_message, rakuten_message,
                             stablelm_message)
 
-from .base import BaseAbstractLLM, LLMConfig, replace_br_and_code
+from .base import BaseAbstractLLM, LLMConfig, check_package_installed, replace_br_and_code
 
 
 @register_model("default")
@@ -405,8 +405,8 @@ class PHI3Model(LLMConfig):
             quantization_config = copy.deepcopy(self.quantization_4bit_config)
             quantization_config.llm_int8_skip_modules = ["o_proj", "lm_head"]
             model_kwargs.update(dict(quantization_config=quantization_config, torch_dtype=torch.float16))
-        if not self.is_ampere_or_newer():
-            model_kwargs.update(dict(_attn_implementation="eager"))
+        if not self.is_ampere_or_newer() or not check_package_installed("flash_attn"):
+            model_kwargs.update(dict(dense_attention_every_n_layers=None))
 
         super().__init__(
             model_class=AutoModelForCausalLM,
@@ -954,7 +954,6 @@ def get_ollm_model_ids():
     """
     ollm_model_ids = [
         "microsoft/Phi-3-mini-4k-instruct",
-        "microsoft/Phi-3-small-8k-instruct",
         "google/gemma-2-9b-it",
         "google/gemma-1.1-2b-it",
         "google/gemma-1.1-7b-it",

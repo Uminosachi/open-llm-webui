@@ -1,3 +1,4 @@
+import importlib.util
 from abc import ABC, abstractmethod
 from collections import UserDict
 from dataclasses import dataclass, field
@@ -62,6 +63,11 @@ def ensure_tensor_dtype(inputs, torch_dtype):
         return inputs.to(torch_dtype)
     else:
         return inputs
+
+
+def check_package_installed(package_name):
+    package_spec = importlib.util.find_spec(package_name)
+    return package_spec is not None
 
 
 @dataclass

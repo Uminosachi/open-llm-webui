@@ -100,7 +100,7 @@ To download the model:
 
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
-| Microsoft     | Phi-3-mini-4k-instruct, microsoft/Phi-3-small-8k-instruct                                  |
+| Microsoft     | Phi-3-mini-4k-instruct                                                                     |
 | Google        | gemma-2-9b-it, gemma-1.1-2b-it, gemma-1.1-7b-it                                            |
 | NVIDIA        | Llama3-ChatQA-1.5-8B                                                                       |
 | Qwen          | Qwen2-7B-Instruct                                                                          |

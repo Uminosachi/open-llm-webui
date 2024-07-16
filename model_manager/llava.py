@@ -1,5 +1,4 @@
 import copy
-import importlib.util
 import platform
 
 import torch
@@ -13,14 +12,9 @@ from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
 from registry import get_llm_class, register_model
 
-from .base import BaseAbstractLLM, LLMConfig, ensure_tensor_dtype, replace_br_and_code
+from .base import (BaseAbstractLLM, LLMConfig, check_package_installed, ensure_tensor_dtype,
+                   replace_br_and_code)
 from .minicpm.modeling_minicpmv import MiniCPMV, PreTrainedTokenizerFastWrapper
-
-
-def check_package_installed(package_name):
-    package_spec = importlib.util.find_spec(package_name)
-    return package_spec is not None
-
 
 if not check_package_installed("bitsandbytes"):
     raise ModuleNotFoundError("Please install the bitsandbytes package to use the load_in_4bit option.")
@@ -281,7 +275,7 @@ class Phi3VisionModel(LLMConfig):
             quantization_config=self.quantization_config,
             _attn_implementation="flash_attention_2",
         )
-        if not self.is_ampere_or_newer():
+        if not self.is_ampere_or_newer() or not check_package_installed("flash_attn"):
             model_kwargs.update(dict(_attn_implementation="eager"))
 
         super().__init__(
