@@ -1,6 +1,9 @@
 pyproject.toml
 models
 add_tfs_models_store.txt
+input_prompts.txt
+model_outputs.txt
+prompt_header.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

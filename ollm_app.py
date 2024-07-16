@@ -131,84 +131,109 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
     if selected_tab == methods_tabs[1] and hasattr(model_params, "prepare_tokenizer"):
         tokenizer = model_params.prepare_tokenizer(tokenizer, model, cpp_chat_template)
 
-    prompt = model_params.create_prompt(chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer)
+    enable_loop = False
+    if input_text_box == "input_prompts.txt" and os.path.isfile("input_prompts.txt"):
+        enable_loop = True
 
-    ollm_logging.info(f"Input text: {prompt}")
-    ollm_logging.info("Generating...")
-    if model_params.multimodal_image:
-        with ClearCacheContext():
-            if model_params.image_processor_class is None:
-                if hasattr(model, "chat"):
-                    inputs = model.prepare_chat(
-                        llava_image,
-                        [prompt],
+        header = ""
+        if os.path.isfile("prompt_header.txt"):
+            with open("prompt_header.txt", "r", encoding="utf-8") as f:
+                header = f.read()
+
+        prompts = []
+        with open("input_prompts.txt", "r", encoding="utf-8") as f:
+            for line in f:
+                prompts.append(header + line.strip())
+    else:
+        prompts = [input_text_box]
+
+    for input_text in prompts:
+        if enable_loop:
+            chatbot[-1][0] = input_text
+            chatbot = [chatbot[-1]]
+
+        prompt = model_params.create_prompt(chatbot, ollm_model_id, input_text, rag_text_box, tokenizer)
+
+        ollm_logging.info(f"Input text: {prompt}")
+        ollm_logging.info("Generating...")
+        if model_params.multimodal_image:
+            with ClearCacheContext():
+                if model_params.image_processor_class is None:
+                    if hasattr(model, "chat"):
+                        inputs = model.prepare_chat(
+                            llava_image,
+                            [prompt],
+                            tokenizer,
+                            **model_params.tokenizer_input_kwargs,
+                        )
+                    else:
+                        inputs = tokenizer(
+                            [prompt] if model_params.imagep_config.get("prompt_is_list") else prompt,
+                            llava_image if not model_params.imagep_config.get("image_is_list") else [llava_image],
+                            **model_params.tokenizer_input_kwargs,
+                        )
+                        # ollm_logging.debug(f"Tokenizer class: {tokenizer.tokenizer.__class__.__name__}")
+                        # ollm_logging.debug(f"Processor class: {tokenizer.image_processor.__class__.__name__}")
+                elif hasattr(tokenizer, "image_processor"):
+                    input_ids = LlavaLLM.tokenizer_image_token(
+                        prompt,
                         tokenizer,
                         **model_params.tokenizer_input_kwargs,
-                    )
-                else:
-                    inputs = tokenizer(
-                        [prompt] if model_params.imagep_config.get("prompt_is_list") else prompt,
-                        llava_image if not model_params.imagep_config.get("image_is_list") else [llava_image],
-                        **model_params.tokenizer_input_kwargs,
-                    )
-                    # ollm_logging.debug(f"Tokenizer class: {tokenizer.tokenizer.__class__.__name__}")
+                    ).unsqueeze(0)
+                    images = tokenizer.image_processor(
+                        llava_image,
+                        **model_params.image_processor_input_kwargs,
+                    )["pixel_values"]
+                    # ollm_logging.debug(f"Tokenizer class: {tokenizer.__class__.__name__}")
                     # ollm_logging.debug(f"Processor class: {tokenizer.image_processor.__class__.__name__}")
-            elif hasattr(tokenizer, "image_processor"):
-                input_ids = LlavaLLM.tokenizer_image_token(
-                    prompt,
-                    tokenizer,
+                    inputs = dict(inputs=input_ids, images=images)
+                else:
+                    ollm_logging.error("Image processor is not exist.")
+                    return_status[methods_tabs.index(selected_tab)] = "Image processor is not exist."
+                    return (input_text, chatbot, *return_status, "")
+            if hasattr(model, "device"):
+                inputs = ensure_tensor_on_device(inputs, model.device)
+        elif model_params.require_tokenization:
+            with ClearCacheContext():
+                inputs = tokenizer(
+                    [prompt],
                     **model_params.tokenizer_input_kwargs,
-                ).unsqueeze(0)
-                images = tokenizer.image_processor(
-                    llava_image,
-                    **model_params.image_processor_input_kwargs,
-                )["pixel_values"]
-                # ollm_logging.debug(f"Tokenizer class: {tokenizer.__class__.__name__}")
-                # ollm_logging.debug(f"Processor class: {tokenizer.image_processor.__class__.__name__}")
-                inputs = dict(inputs=input_ids, images=images)
-            else:
-                ollm_logging.error("Image processor is not exist.")
-                return_status[methods_tabs.index(selected_tab)] = "Image processor is not exist."
-                return (input_text_box, chatbot, *return_status, "")
-        if hasattr(model, "device"):
-            inputs = ensure_tensor_on_device(inputs, model.device)
-    elif model_params.require_tokenization:
-        with ClearCacheContext():
-            inputs = tokenizer(
-                [prompt],
-                **model_params.tokenizer_input_kwargs,
-            )
-        if hasattr(model, "device"):
-            inputs = ensure_tensor_on_device(inputs, model.device)
-    else:
-        inputs = prompt
+                )
+            if hasattr(model, "device"):
+                inputs = ensure_tensor_on_device(inputs, model.device)
+        else:
+            inputs = prompt
 
-    generate_kwargs = model_params.get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        generate_kwargs = model_params.get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
 
-    t1 = time.time()
-    with ClearCacheContext(), torch.no_grad():
-        tokens = getattr(model, model_params.model_generate_name)(**generate_kwargs)
-    t2 = time.time()
-    elapsed_time = t2-t1
-    ollm_logging.info(f"Generation time: {elapsed_time} seconds")
+        t1 = time.time()
+        with ClearCacheContext(), torch.no_grad():
+            tokens = getattr(model, model_params.model_generate_name)(**generate_kwargs)
+        t2 = time.time()
+        elapsed_time = t2-t1
+        ollm_logging.info(f"Generation time: {elapsed_time} seconds")
 
-    if model_params.multimodal_image and model_params.image_processor_class is not None:
-        with ClearCacheContext():
-            output_text = tokenizer.batch_decode(tokens, **model_params.tokenizer_decode_kwargs)[0].strip()
-    elif model_params.require_tokenization:
-        input_ids = generate_kwargs["input_ids"]
-        with ClearCacheContext():
-            output_text = tokenizer.decode(
-                tokens[0] if not model_params.output_text_only else tokens[0][len(input_ids[0]):],
-                **model_params.tokenizer_decode_kwargs,
-            )
-    else:
-        output_text = tokens
+        if model_params.multimodal_image and model_params.image_processor_class is not None:
+            with ClearCacheContext():
+                output_text = tokenizer.batch_decode(tokens, **model_params.tokenizer_decode_kwargs)[0].strip()
+        elif model_params.require_tokenization:
+            input_ids = generate_kwargs["input_ids"]
+            with ClearCacheContext():
+                output_text = tokenizer.decode(
+                    tokens[0] if not model_params.output_text_only else tokens[0][len(input_ids[0]):],
+                    **model_params.tokenizer_decode_kwargs,
+                )
+        else:
+            output_text = tokens
 
-    output_text = model_params.retreive_output_text(prompt, output_text, ollm_model_id, tokenizer)
+        output_text = model_params.retreive_output_text(prompt, output_text, ollm_model_id, tokenizer)
 
-    ollm_logging.info("Generation complete")
-    ollm_logging.info("Output text: " + output_text)
+        ollm_logging.info("Generation complete")
+        ollm_logging.info("Output text: " + output_text)
+
+        if enable_loop:
+            with open("model_outputs.txt", "a", encoding="utf-8") as f:
+                f.write(output_text + "\n")
 
     if translate_chk:
         translated_output_text = translate(output_text, "en", "ja")
