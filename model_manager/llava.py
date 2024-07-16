@@ -274,16 +274,20 @@ class Phi3VisionModel(LLMConfig):
     quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
 
     def __init__(self):
+        model_kwargs = dict(
+            device_map="cuda" if torch.cuda.is_available() else "cpu",
+            trust_remote_code=True,
+            torch_dtype=torch.float16,
+            quantization_config=self.quantization_config,
+            _attn_implementation="flash_attention_2",
+        )
+        if not self.is_ampere_or_newer():
+            model_kwargs.update(dict(_attn_implementation="eager"))
+
         super().__init__(
             model_class=AutoModelForCausalLM,
             tokenizer_class=AutoProcessor,
-            model_kwargs=dict(
-                device_map="cuda" if torch.cuda.is_available() else "cpu",
-                trust_remote_code=True,
-                torch_dtype=torch.float16,
-                quantization_config=self.quantization_config,
-                _attn_implementation="flash_attention_2",
-            ),
+            model_kwargs=model_kwargs,
             model_generate_name="generate",
             tokenizer_kwargs=dict(
                 trust_remote_code=True,

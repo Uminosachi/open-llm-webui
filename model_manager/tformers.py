@@ -405,6 +405,8 @@ class PHI3Model(LLMConfig):
             quantization_config = copy.deepcopy(self.quantization_4bit_config)
             quantization_config.llm_int8_skip_modules = ["o_proj", "lm_head"]
             model_kwargs.update(dict(quantization_config=quantization_config, torch_dtype=torch.float16))
+        if not self.is_ampere_or_newer():
+            model_kwargs.update(dict(_attn_implementation="eager"))
 
         super().__init__(
             model_class=AutoModelForCausalLM,

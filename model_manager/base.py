@@ -181,6 +181,17 @@ class LLMConfig(ABC):
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         pass
 
+    def is_ampere_or_newer(self):
+        if not torch.cuda.is_available():
+            # raise RuntimeError("CUDA is not available")
+            return False
+
+        major, minor = torch.cuda.get_device_capability()
+        ollm_logging.info(f"CUDA compute capability: {major}.{minor}")
+
+        # Ampere GPUs have a compute capability of 8.0 or higher
+        return major >= 8
+
 
 class BaseAbstractLLM(ABC):
     @staticmethod
