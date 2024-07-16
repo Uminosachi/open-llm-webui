@@ -27,7 +27,7 @@ cd open-llm-webui
   ```
 
 #### Installation for Flash Attention
-* Some models use Flash Attention, so install it if necessary:
+* To enable Flash Attention in some models, if CUDA is available, install Flash Attention:
   ```bash
   pip install packaging ninja
   pip install flash-attn --no-build-isolation
