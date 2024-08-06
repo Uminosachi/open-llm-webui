@@ -142,6 +142,7 @@ To download the model:
 | llava-hf      | llava-v1.6-mistral-7b-hf, llava-v1.6-vicuna-7b-hf, llava-1.5-7b-hf                         |
 | tinyllava     | TinyLLaVA-Phi-2-SigLIP-3.1B                                                                |
 | openbmb       | MiniCPM-Llama3-V-2_5-int4, MiniCPM-Llama3-V-2_5                                            |
+| SakanaAI      | EvoVLM-JP-v1-7B                                                                            |
 | xtuner        | llava-llama-3-8b-v1_1-transformers                                                         |
 | cyberagent    | llava-calm2-siglip                                                                         |
 
@@ -194,5 +195,6 @@ To download the model:
 | Hugging Face        | llava-v1.6-vicuna-7b-hf, llava-1.5-7b-hf | [Llama 2 Community License](https://ai.meta.com/llama/license/) |
 | TinyLLaVA           | TinyLLaVA-Phi-2-SigLIP-3.1B  | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | OpenBMB             | MiniCPM                      | [MiniCPM Model License](https://github.com/OpenBMB/MiniCPM/blob/main/MiniCPM%20Model%20License.md) |
+| Sakana AI           | EvoVLM-JP-v1-7B              | [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) |
 | XTuner              | llava-llama-3-8b-v1_1-hf     | [Llama 3 Community License](https://huggingface.co/meta-llama/Meta-Llama-3-8B/blob/main/LICENSE) |
 | CyberAgent          | llava-calm2-siglip           | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
