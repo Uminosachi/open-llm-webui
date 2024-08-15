@@ -62,7 +62,7 @@ class CPPChatTemplates:
     llama2_template = (
         "{% for message in messages %}"
         "{% if message['role'] == 'system' %}"
-        "{{ '<<SYS>>\\n' + message['content'] + '\\n<</SYS>>\\n\\n' }}"
+        "{{ '<<SYS>>\n' + message['content'] + '\n<</SYS>>\n\n' }}"
         "{% elif message['role'] == 'user' %}"
         "{{ bos_token + '[INST] ' + message['content'] + ' [/INST]' }}"
         "{% elif message['role'] == 'assistant' %}"
@@ -72,13 +72,13 @@ class CPPChatTemplates:
     llama3_template = (
         "{% set loop_messages = messages %}"
         "{% for message in loop_messages %}"
-        "{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n' + message['content'] | trim + '<|eot_id|>' %}"
+        "{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n' + message['content'] | trim + '<|eot_id|>' %}"
         "{% if loop.index0 == 0 %}"
         "{% set content = bos_token + content %}"
         "{% endif %}"
         "{{ content }}"
         "{% endfor %}"
-        "{{ '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}")
+        "{{ '<|start_header_id|>assistant<|end_header_id|>\n\n' }}")
 
     gemma_template = (
         "{{ bos_token }}"
@@ -94,21 +94,21 @@ class CPPChatTemplates:
         "{% else %}"
         "{% set role = message['role'] %}"
         "{% endif %}"
-        "{{ '<start_of_turn>' + role + '\\n' + message['content'] | trim + '<end_of_turn>\\n' }}"
+        "{{ '<start_of_turn>' + role + '\n' + message['content'] | trim + '<end_of_turn>\n' }}"
         "{% endfor %}"
         "{% if add_generation_prompt %}"
-        "{{ '<start_of_turn>model\\n' }}"
+        "{{ '<start_of_turn>model\n' }}"
         "{% endif %}")
 
     phi3_template = (
         "{{ bos_token }}"
         "{% for message in messages %}"
         "{% if (message['role'] == 'system') %}"
-        "{{'<|system|>' + '\\n' + message['content'] + '<|end|>' + '\\n'}}"
+        "{{'<|system|>' + '\n' + message['content'] + '<|end|>' + '\n'}}"
         "{% elif (message['role'] == 'user') %}"
-        "{{'<|user|>' + '\\n' + message['content'] + '<|end|>' + '\\n' + '<|assistant|>' + '\\n'}}"
+        "{{'<|user|>' + '\n' + message['content'] + '<|end|>' + '\n' + '<|assistant|>' + '\n'}}"
         "{% elif (message['role'] == 'assistant') %}"
-        "{{message['content'] + '<|end|>' + '\\n'}}"
+        "{{message['content'] + '<|end|>' + '\n'}}"
         "{% endif %}"
         "{% endfor %}")
 
@@ -129,11 +129,11 @@ class CPPChatTemplates:
     zephyr_template = (
         "{% for message in messages %}\n"
         "{% if message['role'] == 'user' %}\n"
-        "{{ '<|user|>\\n' + message['content'] + eos_token }}\n"
+        "{{ '<|user|>\n' + message['content'] + eos_token }}\n"
         "{% elif message['role'] == 'system' %}\n"
-        "{{ '<|system|>\\n' + message['content'] + eos_token }}\n"
+        "{{ '<|system|>\n' + message['content'] + eos_token }}\n"
         "{% elif message['role'] == 'assistant' %}\n"
-        "{{ '<|assistant|>\\n'  + message['content'] + eos_token }}\n"
+        "{{ '<|assistant|>\n'  + message['content'] + eos_token }}\n"
         "{% endif %}\n"
         "{% if loop.last and add_generation_prompt %}\n"
         "{{ '<|assistant|>' }}\n"
@@ -143,12 +143,12 @@ class CPPChatTemplates:
     qwen_template = (
         "{% for message in messages %}"
         "{% if loop.first and messages[0]['role'] != 'system' %}"
-        "{{ '<|im_start|>system\\nYou are a helpful assistant.<|im_end|>\\n' }}"
+        "{{ '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n' }}"
         "{% endif %}"
-        "{{'<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>' + '\\n'}}"
+        "{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}"
         "{% endfor %}"
         "{% if add_generation_prompt %}"
-        "{{ '<|im_start|>assistant\\n' }}"
+        "{{ '<|im_start|>assistant\n' }}"
         "{% endif %}")
 
     chat_templates_map = {
@@ -389,7 +389,7 @@ def get_cpp_ollm_model_ids():
         "Phi-3-mini-4k-instruct-fp16.gguf",
         "llama-2-7b-chat.Q4_K_M.gguf",
         "Meta-Llama-3-8B-Instruct.Q4_K_M.gguf",
-        ]
+    ]
     list_model_ids = list_files(cpp_models_dir, ".gguf")
     list_model_ids += list_files(cpp_models_dir, ".bin")
     for model_id in list_model_ids:

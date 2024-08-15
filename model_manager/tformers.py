@@ -112,16 +112,16 @@ class GPTNeoXModel(LLMConfig):
     chat_template1 = (
         "{% for message in messages %}"
         "{% if message['role'] == 'user' %}"
-        "{{ 'ユーザー: ' + message['content'] + '\\n' }}"
+        "{{ 'ユーザー: ' + message['content'] + '\n' }}"
         "{% elif message['role'] == 'assistant' %}"
         "{% if not loop.last or message['content'] %}"
-        "{{ 'システム: '  + message['content'] + '\\n' }}"
+        "{{ 'システム: '  + message['content'] + '\n' }}"
         "{% else %}"
         "{{ 'システム: ' }}"
         "{% endif %}"
         "{% endif %}{% endfor %}")
 
-    chat_template2 = chat_template1.replace("\\n", "<NL>")
+    chat_template2 = chat_template1.replace("'\n'", "'<NL>'")
 
     def __init__(self):
         super().__init__(
@@ -452,12 +452,12 @@ class OpenELMModel(LLMConfig):
     chat_template = (
         "{% for message in messages %}"
         "{% if message['role'] == 'system' %}"
-        "{{ 'System: ' + message['content'] + '\\n' }}"
+        "{{ 'System: ' + message['content'] + '\n' }}"
         "{% elif message['role'] == 'user' %}"
-        "{{ 'User: ' + message['content'] + '\\n' }}"
+        "{{ 'User: ' + message['content'] + '\n' }}"
         "{% elif message['role'] == 'assistant' %}"
         "{% if not loop.last or message['content'] %}"
-        "{{ 'Assistant: ' + message['content'] + '\\n' }}"
+        "{{ 'Assistant: ' + message['content'] + '\n' }}"
         "{% else %}"
         "{{ 'Assistant: ' }}"
         "{% endif %}"
@@ -666,12 +666,12 @@ class RinnaYouriModel(LLMConfig):
     chat_template = (
         "{% for message in messages %}"
         "{% if message['role'] == 'system' %}"
-        "{{ '設定: ' + message['content'] + '\\n' }}"
+        "{{ '設定: ' + message['content'] + '\n' }}"
         "{% elif message['role'] == 'user' %}"
-        "{{ 'ユーザー: ' + message['content'] + '\\n' }}"
+        "{{ 'ユーザー: ' + message['content'] + '\n' }}"
         "{% elif message['role'] == 'assistant' %}"
         "{% if not loop.last or message['content'] %}"
-        "{{ 'システム: ' + message['content'] + '\\n' }}"
+        "{{ 'システム: ' + message['content'] + '\n' }}"
         "{% else %}"
         "{{ 'システム: ' }}"
         "{% endif %}"
@@ -726,12 +726,12 @@ class ChatQAModel(LLMConfig):
     chat_template = (
         "{% for message in messages %}"
         "{% if message['role'] == 'system' %}"
-        "{{ 'System: ' + message['content'] + '\\n\\n' }}"
+        "{{ 'System: ' + message['content'] + '\n\n' }}"
         "{% elif message['role'] == 'user' %}"
-        "{{ 'User: ' + message['content'] + '\\n\\n' }}"
+        "{{ 'User: ' + message['content'] + '\n\n' }}"
         "{% elif message['role'] == 'assistant' %}"
         "{% if not loop.last or message['content'] %}"
-        "{{ 'Assistant: ' + message['content'] + '\\n\\n' }}"
+        "{{ 'Assistant: ' + message['content'] + '\n\n' }}"
         "{% else %}"
         "{{ 'Assistant: ' }}"
         "{% endif %}"
@@ -773,9 +773,9 @@ class ChatQAModel(LLMConfig):
             messages.append({"role": "user", "content": user_text})
             messages.append({"role": "assistant", "content": assistant_text})
         prompt = tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True,
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
         )
         return prompt
 
@@ -965,7 +965,7 @@ def get_ollm_model_ids():
         "rinna/youri-7b-chat",
         "TheBloke/Llama-2-7b-Chat-GPTQ",
         "TheBloke/Kunoichi-7B-GPTQ",
-        ]
+    ]
 
     add_tfs_model_ids = []
     store_model_ids = []
