@@ -56,7 +56,7 @@ cd open-llm-webui
     set PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin;%PATH%
     "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
     set FORCE_CMAKE=1
-    set CMAKE_ARGS="-DCMAKE_CXX_FLAGS=/utf-8 -DCMAKE_C_FLAGS=/utf-8 -DLLAMA_CUDA=on"
+    set CMAKE_ARGS="-DGGML_CUDA=ON -DCMAKE_CXX_FLAGS=/utf-8 -DCMAKE_C_FLAGS=/utf-8"
     ```
 
   * Install the necessary Python packages (this process may take some time):
@@ -82,7 +82,8 @@ cd open-llm-webui
 
     ```bash
     pip install ninja cmake scikit-build-core[pyproject]
-    CMAKE_ARGS="-DLLAMA_CUDA=on" pip install --force-reinstall --no-cache-dir llama-cpp-python
+    export CMAKE_ARGS="-DGGML_CUDA=ON"
+    pip install --force-reinstall --no-cache-dir llama-cpp-python
     pip install -r requirements.txt
     ```
 
