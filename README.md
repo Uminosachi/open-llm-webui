@@ -57,6 +57,7 @@ cd open-llm-webui
     "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
     set FORCE_CMAKE=1
     set CMAKE_ARGS="-DGGML_CUDA=ON -DCMAKE_CXX_FLAGS=/utf-8 -DCMAKE_C_FLAGS=/utf-8"
+    set CMAKE_BUILD_PARALLEL_LEVEL=16
     ```
 
   * Install the necessary Python packages (this process may take some time):
@@ -73,7 +74,11 @@ cd open-llm-webui
     ```bash
     export PATH=/usr/local/cuda/bin:${PATH}
     export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
+    ```
 
+  * Install the OpenMP libraries used for the build:
+
+    ```bash
     sudo apt-get update
     sudo apt-get install libgomp1 libomp-dev
     ```
