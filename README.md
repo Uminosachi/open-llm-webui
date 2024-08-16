@@ -55,7 +55,8 @@ cd open-llm-webui
     ```bash
     set PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin;%PATH%
     "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-    set FORCE_CMAKE=1 && set CMAKE_ARGS="-DLLAMA_CUDA=on"
+    set FORCE_CMAKE=1
+    set CMAKE_ARGS="-DCMAKE_CXX_FLAGS=/utf-8 -DCMAKE_C_FLAGS=/utf-8 -DLLAMA_CUDA=on"
     ```
 
   * Install the necessary Python packages (this process may take some time):
