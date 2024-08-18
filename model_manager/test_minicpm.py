@@ -4,7 +4,7 @@ import sys  # noqa: F401
 
 import matplotlib.pyplot as plt
 # First, import the slice_image function
-from minicpm.modeling_minicpmv import slice_image
+from minicpm25.modeling_minicpmv import slice_image
 from PIL import Image
 
 

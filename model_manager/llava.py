@@ -14,7 +14,9 @@ from registry import get_llm_class, register_model
 
 from .base import (BaseAbstractLLM, LLMConfig, check_package_installed, ensure_tensor_dtype,
                    replace_br_and_code)
-from .minicpm.modeling_minicpmv import MiniCPMV, PreTrainedTokenizerFastWrapper
+from .minicpm25.modeling_minicpmv import MiniCPMV, PreTrainedTokenizerFastWrapper
+from .minicpm26.modeling_minicpmv import MiniCPMV as MiniCPMV26
+from .minicpm26.tokenization_minicpmv_fast import MiniCPMVTokenizerFast as MiniCPMVTokenizerFast26
 
 if not check_package_installed("bitsandbytes"):
     raise ModuleNotFoundError("Please install the bitsandbytes package to use the load_in_4bit option.")
@@ -181,6 +183,55 @@ class MiniCPMLlama3Model(LLMConfig):
         super().__init__(
             model_class=MiniCPMV,
             tokenizer_class=PreTrainedTokenizerFastWrapper,
+            model_kwargs=model_kwargs,
+            model_generate_name="generate",
+            tokenizer_kwargs=dict(
+            ),
+            tokenizer_input_kwargs=dict(
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+            output_text_only=True,
+            multimodal_image=True,
+            require_tokenization=False,
+        )
+
+    @replace_br_and_code
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
+        prompt = {"role": "user", "content": input_text_box}
+        return prompt
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        inputs.update(generate_params)
+        inputs["return_vision_hidden_states"] = False
+        return inputs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        generated_text = "".join(output_text)
+        return generated_text
+
+
+@register_model("minicpm-v")
+class MiniCPMVModel(LLMConfig):
+    include_name: str = "MiniCPM-V"
+
+    def __init__(self):
+        model_kwargs = dict(
+            device_map=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+            torch_dtype=torch.float16,
+            low_cpu_mem_usage=True,
+            offload_buffers=True,
+        )
+        if hasattr(self, "model_id") and "int4" not in self.model_id:
+            model_kwargs.update(dict(quantization_config=self.quantization_8bit_config))
+
+        super().__init__(
+            model_class=MiniCPMV26,
+            tokenizer_class=MiniCPMVTokenizerFast26,
             model_kwargs=model_kwargs,
             model_generate_name="generate",
             tokenizer_kwargs=dict(
@@ -609,6 +660,8 @@ def get_llava_ollm_model_ids():
         "llava-hf/llava-v1.6-vicuna-7b-hf",
         "llava-hf/llava-1.5-7b-hf",
         "tinyllava/TinyLLaVA-Phi-2-SigLIP-3.1B",
+        "openbmb/MiniCPM-V-2_6-int4",
+        "openbmb/MiniCPM-V-2_6",
         "openbmb/MiniCPM-Llama3-V-2_5-int4",
         "openbmb/MiniCPM-Llama3-V-2_5",
         "SakanaAI/EvoVLM-JP-v1-7B",
