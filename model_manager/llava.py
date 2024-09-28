@@ -3,9 +3,10 @@ import platform
 
 import torch
 from huggingface_hub import snapshot_download
-from transformers import (AutoModelForCausalLM, AutoProcessor, AutoTokenizer, BitsAndBytesConfig,
-                          LlavaForConditionalGeneration, LlavaNextForConditionalGeneration,
-                          LlavaNextProcessor, SiglipImageProcessor)
+from transformers import (AutoConfig, AutoModelForCausalLM, AutoProcessor, AutoTokenizer,
+                          BitsAndBytesConfig, LlavaForConditionalGeneration,
+                          LlavaNextForConditionalGeneration, LlavaNextProcessor,
+                          SiglipImageProcessor)
 
 from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
@@ -219,13 +220,21 @@ class MiniCPMVModel(LLMConfig):
     include_name: str = "MiniCPM-V"
 
     def __init__(self):
+        custom_config = AutoConfig.from_pretrained(self.model_id, trust_remote_code=True)
+        custom_config.auto_map = {
+            "AutoConfig": "model_manager.minicpm26.configuration_minicpm",
+            "AutoModelForCausalLM": "model_manager.minicpm26.modeling_minicpmv"
+        }
         model_kwargs = dict(
             device_map=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
-            torch_dtype=torch.float16,
+            torch_dtype=torch.bfloat16,
             low_cpu_mem_usage=True,
             offload_buffers=True,
+            config=custom_config,
         )
         if hasattr(self, "model_id") and "int4" not in self.model_id:
+            quantization_8bit_config = copy.deepcopy(self.quantization_8bit_config)
+            quantization_8bit_config.bnb_4bit_compute_dtype = "bfloat16"
             model_kwargs.update(dict(quantization_config=self.quantization_8bit_config))
 
         super().__init__(

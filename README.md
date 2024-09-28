@@ -44,16 +44,16 @@ cd open-llm-webui
 * **For Windows (with CUDA support):**
   * Install [Visual Studio](https://learn.microsoft.com/ja-jp/visualstudio/install/install-visual-studio?view=vs-2022):
     * ⚠️ Important: Make sure to select `Desktop development with C++` during the installation process.
-  * Copy MSBuild extensions for CUDA as an administrator (adjust the CUDA version as necessary):
+  * Copy MSBuild extensions for CUDA as an administrator (adjust the CUDA version `v12.1` as necessary):
 
     ```bash
-    xcopy /e "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\extras\visual_studio_integration\MSBuildExtensions" "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\BuildCustomizations"
+    xcopy /e "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\extras\visual_studio_integration\MSBuildExtensions" "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\BuildCustomizations"
     ```
 
   * Configure the required environment variables for the build (adjust the CUDA version as necessary):
 
     ```bash
-    set PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin;%PATH%
+    set PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\bin;%PATH%
     "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
     set FORCE_CMAKE=1
     set CMAKE_ARGS="-DGGML_CUDA=ON -DCMAKE_CXX_FLAGS=/utf-8 -DCMAKE_C_FLAGS=/utf-8"
