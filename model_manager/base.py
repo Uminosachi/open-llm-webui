@@ -85,7 +85,8 @@ class LLMConfig(ABC):
     output_text_only: bool = True
     require_tokenization: bool = True
     multimodal_image: bool = False
-    imagep_config: dict = field(default_factory=lambda: {"prompt_is_list": True, "image_is_list": False})
+    imagep_config: dict = field(
+        default_factory=lambda: {"prompt_is_list": True, "image_is_list": False, "image_is_first": False})
 
     enable_rag_text = False
     DOWNLOAD_COMPLETE = "Download complete"
@@ -101,7 +102,7 @@ class LLMConfig(ABC):
             "out_proj",
             "kv_proj",
             "lm_head"
-            ],
+        ],
         "llm_int8_threshold": 6.0,
         "load_in_4bit": True,
         "load_in_8bit": False,
@@ -118,7 +119,7 @@ class LLMConfig(ABC):
             "out_proj",
             "kv_proj",
             "lm_head"
-            ],
+        ],
         "llm_int8_threshold": 6.0,
         "load_in_4bit": False,
         "load_in_8bit": True,
@@ -151,17 +152,17 @@ class LLMConfig(ABC):
                 messages.append({"role": "assistant", "content": assistant_text})
         try:
             prompt = tokenizer.apply_chat_template(
-                    messages,
-                    tokenize=False,
-                    add_generation_prompt=True,
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
             )
         except Exception:
             ollm_logging.warning("Failed to apply chat template. Removing system message.")
             messages = [message for message in messages if message["role"] != "system"]
             prompt = tokenizer.apply_chat_template(
-                    messages,
-                    tokenize=False,
-                    add_generation_prompt=True,
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
             )
         if remove_bos_token:
             if getattr(tokenizer, "bos_token", None) is not None and prompt.startswith(tokenizer.bos_token):

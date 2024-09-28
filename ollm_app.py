@@ -167,9 +167,14 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
                             **model_params.tokenizer_input_kwargs,
                         )
                     else:
-                        inputs = tokenizer(
+                        input_args = [
                             [prompt] if model_params.imagep_config.get("prompt_is_list") else prompt,
                             llava_image if not model_params.imagep_config.get("image_is_list") else [llava_image],
+                        ]
+                        if model_params.imagep_config.get("image_is_first"):
+                            input_args = input_args[::-1]
+                        inputs = tokenizer(
+                            *input_args,
                             **model_params.tokenizer_input_kwargs,
                         )
                         # ollm_logging.debug(f"Tokenizer class: {tokenizer.tokenizer.__class__.__name__}")
@@ -419,11 +424,11 @@ def on_ui_tabs():
             inference_outputs = [input_text_box, chatbot] + status_text_boxes + [translated_output_text]
             generate_btn.click(
                 fn=user, inputs=[input_text_box, chatbot, translate_chk], outputs=[input_text_box, chatbot]
-                ).then(fn=ollm_inference, inputs=generate_inputs, outputs=inference_outputs)
+            ).then(fn=ollm_inference, inputs=generate_inputs, outputs=inference_outputs)
             input_text_box.submit(
                 fn=user, inputs=[input_text_box, chatbot, translate_chk],
                 outputs=[input_text_box, chatbot]
-                ).then(fn=ollm_inference, inputs=generate_inputs, outputs=inference_outputs)
+            ).then(fn=ollm_inference, inputs=generate_inputs, outputs=inference_outputs)
 
             clear_btn.click(lambda: [], None, [chatbot])
 

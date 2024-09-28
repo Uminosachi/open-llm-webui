@@ -3,10 +3,9 @@ import platform
 
 import torch
 from huggingface_hub import snapshot_download
-from transformers import (AutoModel, AutoModelForCausalLM, AutoProcessor,  # noqa: F401
-                          AutoTokenizer, BitsAndBytesConfig, LlavaForConditionalGeneration,
-                          LlavaNextForConditionalGeneration, LlavaNextProcessor,
-                          SiglipImageProcessor)
+from transformers import (AutoModelForCausalLM, AutoProcessor, AutoTokenizer, BitsAndBytesConfig,
+                          LlavaForConditionalGeneration, LlavaNextForConditionalGeneration,
+                          LlavaNextProcessor, SiglipImageProcessor)
 
 from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
@@ -311,6 +310,75 @@ class Llava15Model(LLMConfig):
         return output_text
 
 
+# @register_model("llama-3.2-vision")
+# class Llama3VisionModel(LLMConfig):
+#     include_name: str = "Llama-3.2-*-Vision"
+
+#     download_kwargs = dict(ignore_patterns=["*.pth"])
+
+#     quantization_4bit_config = {
+#         "bnb_4bit_compute_dtype": "bfloat16",
+#         "bnb_4bit_quant_storage": "uint8",
+#         "bnb_4bit_quant_type": "nf4",
+#         "bnb_4bit_use_double_quant": True,
+#         "llm_int8_enable_fp32_cpu_offload": False,
+#         "llm_int8_has_fp16_weight": False,
+#         "llm_int8_skip_modules": None,
+#         "llm_int8_threshold": 6.0,
+#         "load_in_4bit": True,
+#         "load_in_8bit": False,
+#     }
+
+#     def __init__(self):
+#         model_kwargs = dict(
+#             device_map="auto",
+#             torch_dtype="auto",
+#             low_cpu_mem_usage=True,
+#             offload_buffers=True,
+#             attn_implementation="eager",
+#         )
+#         model_kwargs.update(dict(quantization_config=self.quantization_4bit_config))
+
+#         super().__init__(
+#             model_class=MllamaForConditionalGeneration,
+#             tokenizer_class=AutoProcessor,
+#             model_kwargs=model_kwargs,
+#             model_generate_name="generate",
+#             tokenizer_kwargs=dict(
+#             ),
+#             tokenizer_input_kwargs=dict(
+#                 return_tensors="pt",
+#             ),
+#             tokenizer_decode_kwargs=dict(
+#                 skip_special_tokens=True,
+#             ),
+#             output_text_only=True,
+#             multimodal_image=True,
+#             imagep_config=dict(prompt_is_list=False, image_is_list=False, image_is_first=True),
+#         )
+
+#     @replace_br_and_code
+#     @clear_cache_decorator
+#     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
+#         messages = [
+#             {"role": "user", "content": [
+#                 {"type": "image"},
+#                 {"type": "text", "text": input_text_box}
+#             ]}
+#         ]
+#         input_text = tokenizer.apply_chat_template(messages, add_generation_prompt=True)
+#         return input_text
+
+#     @clear_cache_decorator
+#     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+#         generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+#         return generate_kwargs
+
+#     @clear_cache_decorator
+#     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+#         return output_text
+
+
 @register_model("phi-3-vision")
 class Phi3VisionModel(LLMConfig):
     include_name: str = "Phi-3-vision"
@@ -345,7 +413,7 @@ class Phi3VisionModel(LLMConfig):
             ),
             output_text_only=True,
             multimodal_image=True,
-            imagep_config=dict(prompt_is_list=False, image_is_list=True),
+            imagep_config=dict(prompt_is_list=False, image_is_list=True, image_is_first=False),
         )
 
     @replace_br_and_code

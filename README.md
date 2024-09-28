@@ -144,10 +144,12 @@ To download the model:
 * 📋 Note: By adding the repository paths of models to `model_manager/add_tfs_models.txt`, they will be included in the list of Model IDs and displayed in the UI.
 * 🔍 Note: The downloaded model file will be stored in the `.cache/huggingface/hub` directory of your home directory.
 
-#### Access and Download Models
+#### Access and Download Gemma and Llama Models
 
-* Ensure you have obtained the necessary access rights via Hugging Face before downloading any models. Visit the following pages to obtain access:
-  * [Gemma model by Google](https://huggingface.co/google/gemma-1.1-2b-it), [Llama 2 model by Meta](https://huggingface.co/meta-llama/Llama-2-7b-hf), [Llama 3 model by Meta](https://huggingface.co/meta-llama/Meta-Llama-3-8B)
+* Before downloading any models, ensure that you have obtained the necessary access rights through Hugging Face. Please visit the following pages to request access:
+  * [Llama 3 model by Meta](https://huggingface.co/meta-llama/Meta-Llama-3-8B)
+  * [Llama 2 model by Meta](https://huggingface.co/meta-llama/Llama-2-7b-hf)
+  * [Gemma 1.1 model by Google](https://huggingface.co/google/gemma-1.1-2b-it)
 
 #### Login to Hugging Face
 
@@ -181,6 +183,11 @@ To download the model:
 | SakanaAI      | EvoVLM-JP-v1-7B                                                                            |
 | xtuner        | llava-llama-3-8b-v1_1-transformers                                                         |
 | cyberagent    | llava-calm2-siglip                                                                         |
+
+#### Access and Download Llama 3 Models
+
+* Before downloading any models, ensure that you have obtained the necessary access rights through Hugging Face. Please visit the following pages to request access:
+  * [Llama 3 model by Meta](https://huggingface.co/meta-llama/Meta-Llama-3-8B)
 
 ## Usage
 
@@ -217,22 +224,22 @@ To download the model:
 
 | Developer           | Model                        | License                                                        |
 |---------------------|------------------------------|----------------------------------------------------------------|
-| Microsoft           | Phi-3                        | [The MIT License](https://opensource.org/licenses/MIT) |
-| Google              | Gemma                        | [Gemma Terms of Use](https://ai.google.dev/gemma/terms) |
-| NVIDIA              | Llama3-ChatQA                | [Llama 3 Community License](https://huggingface.co/meta-llama/Meta-Llama-3-8B/blob/main/LICENSE) |
+| Meta                | Llama-3.2                    | [Llama 3.2 Community License](https://github.com/meta-llama/llama-models/blob/main/models/llama3_2/LICENSE) |
+| Meta                | Llama-3.1                    | [Llama 3.1 Community License](https://github.com/meta-llama/llama-models/blob/main/models/llama3_1/LICENSE) |
+| Meta                | Llama-3                      | [Llama 3 Community License](https://github.com/meta-llama/llama3/blob/main/LICENSE) |
+| Meta                | Llama-2                      | [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE) |
+| Microsoft           | Phi-3.5, Phi-3               | [The MIT License](https://opensource.org/licenses/MIT)         |
+| Google              | Gemma                        | [Gemma Terms of Use](https://ai.google.dev/gemma/terms)        |
+| NVIDIA              | Llama3-ChatQA                | [Llama 3 Community License](hhttps://github.com/meta-llama/llama3/blob/main/LICENSE) |
 | Alibaba Group       | Qwen2-7B-Instruct            | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Mistral AI          | Mistral-7B-Instruct          | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Rakuten             | RakutenAI                    | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | rinna               | Youri                        | [Llama 2 Community License](https://ai.meta.com/llama/license/) |
-| Meta AI             | Llama 2                      | [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE) |
-| Sanji Watsuki       | Kunoichi-7B                  | [CC-BY-NC-4.0](https://spdx.org/licenses/CC-BY-NC-4.0) |
-
-| Developer           | Model                        | License                                                        |
-|---------------------|------------------------------|----------------------------------------------------------------|
+| Sanji Watsuki       | Kunoichi-7B                  | [CC-BY-NC-4.0](https://spdx.org/licenses/CC-BY-NC-4.0)         |
 | Hugging Face        | llava-v1.6-mistral-7b-hf     | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Hugging Face        | llava-v1.6-vicuna-7b-hf, llava-1.5-7b-hf | [Llama 2 Community License](https://ai.meta.com/llama/license/) |
 | TinyLLaVA           | TinyLLaVA-Phi-2-SigLIP-3.1B  | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | OpenBMB             | MiniCPM                      | [MiniCPM Model License](https://github.com/OpenBMB/MiniCPM/blob/main/MiniCPM%20Model%20License.md) |
 | Sakana AI           | EvoVLM-JP-v1-7B              | [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) |
-| XTuner              | llava-llama-3-8b-v1_1-hf     | [Llama 3 Community License](https://huggingface.co/meta-llama/Meta-Llama-3-8B/blob/main/LICENSE) |
+| XTuner              | llava-llama-3-8b-v1_1-hf     | [Llama 3 Community License](https://github.com/meta-llama/llama3/blob/main/LICENSE) |
 | CyberAgent          | llava-calm2-siglip           | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
