@@ -181,7 +181,6 @@ To download the model:
 | tinyllava     | TinyLLaVA-Phi-2-SigLIP-3.1B                                                                |
 | openbmb       | MiniCPM-V-2_6-int4, MiniCPM-V-2_6, MiniCPM-Llama3-V-2_5-int4, MiniCPM-Llama3-V-2_5         |
 | SakanaAI      | EvoVLM-JP-v1-7B                                                                            |
-| xtuner        | llava-llama-3-8b-v1_1-transformers                                                         |
 | cyberagent    | llava-calm2-siglip                                                                         |
 
 #### Access and Download Llama 3 Models
@@ -241,5 +240,4 @@ To download the model:
 | TinyLLaVA           | TinyLLaVA-Phi-2-SigLIP-3.1B  | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | OpenBMB             | MiniCPM                      | [MiniCPM Model License](https://github.com/OpenBMB/MiniCPM/blob/main/MiniCPM%20Model%20License.md) |
 | Sakana AI           | EvoVLM-JP-v1-7B              | [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) |
-| XTuner              | llava-llama-3-8b-v1_1-hf     | [Llama 3 Community License](https://github.com/meta-llama/llama3/blob/main/LICENSE) |
 | CyberAgent          | llava-calm2-siglip           | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |

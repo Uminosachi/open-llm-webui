@@ -126,7 +126,8 @@ class LlavaLlama3Model(LLMConfig):
 
     prompt_template = ("<|start_header_id|>user<|end_header_id|>\n\n<image>\n{prompt}<|eot_id|>"
                        "<|start_header_id|>assistant<|end_header_id|>\n\n")
-    quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
+    quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16)
+    quantization_config.bnb_4bit_quant_type = "nf4"
 
     def __init__(self):
         super().__init__(
@@ -134,7 +135,7 @@ class LlavaLlama3Model(LLMConfig):
             tokenizer_class=AutoProcessor,
             model_kwargs=dict(
                 device_map="auto",
-                torch_dtype=torch.float16,
+                torch_dtype=torch.bfloat16,
                 low_cpu_mem_usage=True,
                 quantization_config=self.quantization_config,
                 offload_buffers=True,
@@ -484,6 +485,7 @@ class LlavaCALM2Model(LLMConfig):
             ),
             output_text_only=True,
             multimodal_image=True,
+            imagep_config=dict(prompt_is_list=True, image_is_list=False, image_is_first=True),
         )
 
     @replace_br_and_code
@@ -746,7 +748,6 @@ def get_llava_ollm_model_ids():
         "openbmb/MiniCPM-Llama3-V-2_5-int4",
         "openbmb/MiniCPM-Llama3-V-2_5",
         "SakanaAI/EvoVLM-JP-v1-7B",
-        "xtuner/llava-llama-3-8b-v1_1-transformers",
         "cyberagent/llava-calm2-siglip",
     ]
 
