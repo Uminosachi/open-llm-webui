@@ -51,6 +51,7 @@ class LlavaMistralModel(LLMConfig):
             ),
             output_text_only=True,
             multimodal_image=True,
+            imagep_config=dict(prompt_is_list=True, image_is_list=False, image_is_first=True),
         )
 
     @replace_br_and_code
@@ -100,6 +101,7 @@ class LlavaVicunaModel(LLMConfig):
             ),
             output_text_only=True,
             multimodal_image=True,
+            imagep_config=dict(prompt_is_list=True, image_is_list=False, image_is_first=True),
         )
 
     @replace_br_and_code
@@ -148,6 +150,7 @@ class LlavaLlama3Model(LLMConfig):
             ),
             output_text_only=True,
             multimodal_image=True,
+            imagep_config=dict(prompt_is_list=True, image_is_list=False, image_is_first=True),
         )
 
     @replace_br_and_code
@@ -301,6 +304,7 @@ class Llava15Model(LLMConfig):
             ),
             output_text_only=True,
             multimodal_image=True,
+            imagep_config=dict(prompt_is_list=True, image_is_list=False, image_is_first=True),
         )
 
     @replace_br_and_code
