@@ -42,9 +42,9 @@ cd open-llm-webui
 #### Platform-Specific Instructions
 
 * **For Windows (with CUDA support):**
-  * Install [Visual Studio](https://learn.microsoft.com/ja-jp/visualstudio/install/install-visual-studio?view=vs-2022):
+  * Install [Visual Studio](https://learn.microsoft.com/en-us/visualstudio/install/install-visual-studio?view=vs-2022):
     * ⚠️ Important: Make sure to select `Desktop development with C++` during the installation process.
-  * Copy MSBuild extensions for CUDA as an administrator (adjust the CUDA version `v12.1` as necessary):
+  * Copy MSBuild extensions for CUDA as an administrator (adjust the CUDA version `v12.1` as needed):
 
     ```bash
     xcopy /e "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\extras\visual_studio_integration\MSBuildExtensions" "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\BuildCustomizations"
@@ -230,7 +230,7 @@ To download the model:
 | Meta                | Llama-2                      | [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE) |
 | Microsoft           | Phi-3.5, Phi-3               | [The MIT License](https://opensource.org/licenses/MIT)         |
 | Google              | Gemma                        | [Gemma Terms of Use](https://ai.google.dev/gemma/terms)        |
-| NVIDIA              | Llama3-ChatQA                | [Llama 3 Community License](hhttps://github.com/meta-llama/llama3/blob/main/LICENSE) |
+| NVIDIA              | Llama3-ChatQA                | [Llama 3 Community License](https://github.com/meta-llama/llama3/blob/main/LICENSE) |
 | Alibaba Group       | Qwen2-7B-Instruct            | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Mistral AI          | Mistral-7B-Instruct          | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Rakuten             | RakutenAI                    | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
