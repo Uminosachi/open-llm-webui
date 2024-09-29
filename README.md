@@ -30,7 +30,7 @@ cd open-llm-webui
   pip install -r requirements.txt
   ```
 
-#### Installation for Flash Attention
+#### Installation for Flash Attention (Optional)
 
 * To enable Flash Attention in some models, if CUDA is available, install Flash Attention:
 

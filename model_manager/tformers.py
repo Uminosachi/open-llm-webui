@@ -406,7 +406,7 @@ class PHI3Model(LLMConfig):
             quantization_config.llm_int8_skip_modules = ["o_proj", "lm_head"]
             model_kwargs.update(dict(quantization_config=quantization_config, torch_dtype=torch.float16))
         if not self.is_ampere_or_newer() or not check_package_installed("flash_attn"):
-            model_kwargs.update(dict(dense_attention_every_n_layers=None))
+            model_kwargs.update(dict(attn_implementation="eager"))
 
         super().__init__(
             model_class=AutoModelForCausalLM,
