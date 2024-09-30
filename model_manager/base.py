@@ -3,13 +3,35 @@ from abc import ABC, abstractmethod
 from collections import UserDict
 from dataclasses import dataclass, field
 from functools import wraps
+from importlib.metadata import version as implib_version
 
 import torch
+from packaging.version import parse
 from transformers import BitsAndBytesConfig
 from transformers.utils import ModelOutput
 
 from chat_utils import convert_code_tags_to_md
 from custom_logging import ollm_logging
+
+
+def compare_versions(version1: str, version2: str) -> int:
+    v1 = parse(version1)
+    v2 = parse(version2)
+    if v1 > v2:
+        return 1
+    elif v1 == v2:
+        return 0
+    else:
+        return -1
+
+
+def compare_package_version(package_name: str, version: str) -> int:
+    try:
+        installed_version = implib_version(package_name)
+        return compare_versions(installed_version, version)
+    except Exception:
+        ollm_logging.warning(f"Failed to get version of {package_name}")
+        return -1
 
 
 def replace_br_and_code(func):

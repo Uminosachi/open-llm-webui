@@ -12,8 +12,8 @@ from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
 from registry import get_llm_class, register_model
 
-from .base import (BaseAbstractLLM, LLMConfig, check_package_installed, ensure_tensor_dtype,
-                   replace_br_and_code)
+from .base import (BaseAbstractLLM, LLMConfig, check_package_installed, compare_package_version,
+                   ensure_tensor_dtype, replace_br_and_code)
 from .minicpm25.modeling_minicpmv import MiniCPMV, PreTrainedTokenizerFastWrapper
 from .minicpm26.modeling_minicpmv import MiniCPMV as MiniCPMV26
 from .minicpm26.tokenization_minicpmv_fast import MiniCPMVTokenizerFast as MiniCPMVTokenizerFast26
@@ -51,7 +51,8 @@ class LlavaMistralModel(LLMConfig):
             ),
             output_text_only=True,
             multimodal_image=True,
-            imagep_config=dict(prompt_is_list=True, image_is_list=False, image_is_first=True),
+            imagep_config=dict(prompt_is_list=True, image_is_list=False,
+                               image_is_first=(compare_package_version("transformers", "4.45.0") >= 0)),
         )
 
     @replace_br_and_code
@@ -101,7 +102,8 @@ class LlavaVicunaModel(LLMConfig):
             ),
             output_text_only=True,
             multimodal_image=True,
-            imagep_config=dict(prompt_is_list=True, image_is_list=False, image_is_first=True),
+            imagep_config=dict(prompt_is_list=True, image_is_list=False,
+                               image_is_first=(compare_package_version("transformers", "4.45.0") >= 0)),
         )
 
     @replace_br_and_code
@@ -151,7 +153,8 @@ class LlavaLlama3Model(LLMConfig):
             ),
             output_text_only=True,
             multimodal_image=True,
-            imagep_config=dict(prompt_is_list=True, image_is_list=False, image_is_first=True),
+            imagep_config=dict(prompt_is_list=True, image_is_list=False,
+                               image_is_first=(compare_package_version("transformers", "4.45.0") >= 0)),
         )
 
     @replace_br_and_code
@@ -305,7 +308,8 @@ class Llava15Model(LLMConfig):
             ),
             output_text_only=True,
             multimodal_image=True,
-            imagep_config=dict(prompt_is_list=True, image_is_list=False, image_is_first=True),
+            imagep_config=dict(prompt_is_list=True, image_is_list=False,
+                               image_is_first=(compare_package_version("transformers", "4.45.0") >= 0)),
         )
 
     @replace_br_and_code
@@ -368,7 +372,8 @@ class Llava15Model(LLMConfig):
 #             ),
 #             output_text_only=True,
 #             multimodal_image=True,
-#             imagep_config=dict(prompt_is_list=False, image_is_list=False, image_is_first=True),
+#             imagep_config=dict(prompt_is_list=False, image_is_list=False,
+#                                image_is_first=(compare_package_version("transformers", "4.45.0") >= 0)),
 #         )
 
 #     @replace_br_and_code
@@ -485,7 +490,8 @@ class LlavaCALM2Model(LLMConfig):
             ),
             output_text_only=True,
             multimodal_image=True,
-            imagep_config=dict(prompt_is_list=True, image_is_list=False, image_is_first=True),
+            imagep_config=dict(prompt_is_list=True, image_is_list=False,
+                               image_is_first=(compare_package_version("transformers", "4.45.0") >= 0)),
         )
 
     @replace_br_and_code
