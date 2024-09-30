@@ -30,6 +30,10 @@ class LlavaMistralModel(LLMConfig):
     quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
 
     def __init__(self):
+        tokenizer_kwargs = {}
+        if compare_package_version("transformers", "4.45.0") >= 0:
+            tokenizer_kwargs.update(dict(patch_size=14, vision_feature_select_strategy="default"))
+
         super().__init__(
             model_class=LlavaNextForConditionalGeneration,
             tokenizer_class=LlavaNextProcessor,
@@ -41,8 +45,7 @@ class LlavaMistralModel(LLMConfig):
                 offload_buffers=True,
             ),
             model_generate_name="generate",
-            tokenizer_kwargs=dict(
-            ),
+            tokenizer_kwargs=tokenizer_kwargs,
             tokenizer_input_kwargs=dict(
                 return_tensors="pt",
             ),
@@ -81,6 +84,10 @@ class LlavaVicunaModel(LLMConfig):
     quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
 
     def __init__(self):
+        tokenizer_kwargs = {}
+        if compare_package_version("transformers", "4.45.0") >= 0:
+            tokenizer_kwargs.update(dict(patch_size=14, vision_feature_select_strategy="default"))
+
         super().__init__(
             model_class=LlavaNextForConditionalGeneration,
             tokenizer_class=LlavaNextProcessor,
@@ -92,8 +99,7 @@ class LlavaVicunaModel(LLMConfig):
                 offload_buffers=True,
             ),
             model_generate_name="generate",
-            tokenizer_kwargs=dict(
-            ),
+            tokenizer_kwargs=tokenizer_kwargs,
             tokenizer_input_kwargs=dict(
                 return_tensors="pt",
             ),
@@ -132,6 +138,10 @@ class LlavaLlama3Model(LLMConfig):
     quantization_config.bnb_4bit_quant_type = "nf4"
 
     def __init__(self):
+        tokenizer_kwargs = {}
+        if compare_package_version("transformers", "4.45.0") >= 0:
+            tokenizer_kwargs.update(dict(patch_size=14, vision_feature_select_strategy="default"))
+
         super().__init__(
             model_class=LlavaForConditionalGeneration,
             tokenizer_class=AutoProcessor,
@@ -143,8 +153,7 @@ class LlavaLlama3Model(LLMConfig):
                 offload_buffers=True,
             ),
             model_generate_name="generate",
-            tokenizer_kwargs=dict(
-            ),
+            tokenizer_kwargs=tokenizer_kwargs,
             tokenizer_input_kwargs=dict(
                 return_tensors="pt",
             ),
@@ -287,6 +296,10 @@ class Llava15Model(LLMConfig):
     quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
 
     def __init__(self):
+        tokenizer_kwargs = {}
+        if compare_package_version("transformers", "4.45.0") >= 0:
+            tokenizer_kwargs.update(dict(patch_size=14, vision_feature_select_strategy="default"))
+
         super().__init__(
             model_class=LlavaForConditionalGeneration,
             tokenizer_class=AutoProcessor,
@@ -298,8 +311,7 @@ class Llava15Model(LLMConfig):
                 offload_buffers=True,
             ),
             model_generate_name="generate",
-            tokenizer_kwargs=dict(
-            ),
+            tokenizer_kwargs=tokenizer_kwargs,
             tokenizer_input_kwargs=dict(
                 return_tensors="pt",
             ),
@@ -475,13 +487,16 @@ class LlavaCALM2Model(LLMConfig):
         quantization_config.llm_int8_skip_modules = ["o_proj", "lm_head", "out_proj", "head"]
         model_kwargs.update(dict(quantization_config=quantization_config))
 
+        tokenizer_kwargs = {}
+        # if compare_package_version("transformers", "4.45.0") >= 0:
+        #     tokenizer_kwargs.update(dict(patch_size=14, vision_feature_select_strategy="default"))
+
         super().__init__(
             model_class=LlavaForConditionalGeneration,
             tokenizer_class=AutoProcessor,
             model_kwargs=model_kwargs,
             model_generate_name="generate",
-            tokenizer_kwargs=dict(
-            ),
+            tokenizer_kwargs=tokenizer_kwargs,
             tokenizer_input_kwargs=dict(
                 return_tensors="pt",
             ),
@@ -575,6 +590,10 @@ class EvoVLMModel(LLMConfig):
     quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
 
     def __init__(self):
+        tokenizer_kwargs = {}
+        if compare_package_version("transformers", "4.45.0") >= 0:
+            tokenizer_kwargs.update(dict(patch_size=14, vision_feature_select_strategy="default"))
+
         super().__init__(
             model_class=LlavaForConditionalGeneration,
             tokenizer_class=AutoProcessor,
@@ -586,8 +605,7 @@ class EvoVLMModel(LLMConfig):
                 offload_buffers=True,
             ),
             model_generate_name="generate",
-            tokenizer_kwargs=dict(
-            ),
+            tokenizer_kwargs=tokenizer_kwargs,
             tokenizer_input_kwargs=dict(
                 return_tensors="pt",
             ),
@@ -596,6 +614,8 @@ class EvoVLMModel(LLMConfig):
             ),
             output_text_only=True,
             multimodal_image=True,
+            imagep_config=dict(prompt_is_list=True, image_is_list=False,
+                               image_is_first=(compare_package_version("transformers", "4.45.0") >= 0)),
         )
 
     @replace_br_and_code
