@@ -774,7 +774,6 @@ def get_llava_ollm_model_ids():
         "openbmb/MiniCPM-Llama3-V-2_5-int4",
         "openbmb/MiniCPM-Llama3-V-2_5",
         "SakanaAI/EvoVLM-JP-v1-7B",
-        "cyberagent/llava-calm2-siglip",
     ]
 
     return llava_ollm_model_ids
