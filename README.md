@@ -176,7 +176,7 @@ To download the model:
 
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
-| Microsoft     | Phi-3-vision-128k-instruct                                                                 |
+| Microsoft     | Phi-3.5-vision-instruct, Phi-3-vision-128k-instruct                                        |
 | llava-hf      | llava-v1.6-mistral-7b-hf, llava-v1.6-vicuna-7b-hf, llava-1.5-7b-hf                         |
 | tinyllava     | TinyLLaVA-Phi-2-SigLIP-3.1B                                                                |
 | openbmb       | MiniCPM-V-2_6-int4, MiniCPM-V-2_6, MiniCPM-Llama3-V-2_5-int4, MiniCPM-Llama3-V-2_5         |

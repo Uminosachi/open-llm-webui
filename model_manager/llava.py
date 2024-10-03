@@ -17,6 +17,8 @@ from .base import (BaseAbstractLLM, LLMConfig, check_package_installed, compare_
 from .minicpm25.modeling_minicpmv import MiniCPMV, PreTrainedTokenizerFastWrapper
 from .minicpm26.modeling_minicpmv import MiniCPMV as MiniCPMV26
 from .minicpm26.tokenization_minicpmv_fast import MiniCPMVTokenizerFast as MiniCPMVTokenizerFast26
+from .phi35vision.modeling_phi3_v import Phi3VForCausalLM
+from .phi35vision.processing_phi3_v import Phi3VProcessor
 
 if not check_package_installed("bitsandbytes"):
     raise ModuleNotFoundError("Please install the bitsandbytes package to use the load_in_4bit option.")
@@ -340,79 +342,9 @@ class Llava15Model(LLMConfig):
         return output_text
 
 
-# @register_model("llama-3.2-vision")
-# class Llama3VisionModel(LLMConfig):
-#     include_name: str = "Llama-3.2-*-Vision"
-
-#     download_kwargs = dict(ignore_patterns=["*.pth"])
-
-#     quantization_4bit_config = {
-#         "bnb_4bit_compute_dtype": "bfloat16",
-#         "bnb_4bit_quant_storage": "uint8",
-#         "bnb_4bit_quant_type": "nf4",
-#         "bnb_4bit_use_double_quant": True,
-#         "llm_int8_enable_fp32_cpu_offload": False,
-#         "llm_int8_has_fp16_weight": False,
-#         "llm_int8_skip_modules": None,
-#         "llm_int8_threshold": 6.0,
-#         "load_in_4bit": True,
-#         "load_in_8bit": False,
-#     }
-
-#     def __init__(self):
-#         model_kwargs = dict(
-#             device_map="auto",
-#             torch_dtype="auto",
-#             low_cpu_mem_usage=True,
-#             offload_buffers=True,
-#             attn_implementation="eager",
-#         )
-#         model_kwargs.update(dict(quantization_config=self.quantization_4bit_config))
-
-#         super().__init__(
-#             model_class=MllamaForConditionalGeneration,
-#             tokenizer_class=AutoProcessor,
-#             model_kwargs=model_kwargs,
-#             model_generate_name="generate",
-#             tokenizer_kwargs=dict(
-#             ),
-#             tokenizer_input_kwargs=dict(
-#                 return_tensors="pt",
-#             ),
-#             tokenizer_decode_kwargs=dict(
-#                 skip_special_tokens=True,
-#             ),
-#             output_text_only=True,
-#             multimodal_image=True,
-#             imagep_config=dict(prompt_is_list=False, image_is_list=False,
-#                                image_is_first=(compare_package_version("transformers", "4.45.0") >= 0)),
-#         )
-
-#     @replace_br_and_code
-#     @clear_cache_decorator
-#     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
-#         messages = [
-#             {"role": "user", "content": [
-#                 {"type": "image"},
-#                 {"type": "text", "text": input_text_box}
-#             ]}
-#         ]
-#         input_text = tokenizer.apply_chat_template(messages, add_generation_prompt=True)
-#         return input_text
-
-#     @clear_cache_decorator
-#     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
-#         generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
-#         return generate_kwargs
-
-#     @clear_cache_decorator
-#     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
-#         return output_text
-
-
 @register_model("phi-3-vision")
 class Phi3VisionModel(LLMConfig):
-    include_name: str = "Phi-3-vision"
+    include_name: str = "Phi-3*-vision"
 
     image_header = "<|image_1|>\n"
     quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16)
@@ -428,14 +360,21 @@ class Phi3VisionModel(LLMConfig):
         if not self.is_ampere_or_newer() or not check_package_installed("flash_attn"):
             model_kwargs.update(dict(_attn_implementation="eager"))
 
+        if "Phi-3.5" in self.model_id:
+            model_class = Phi3VForCausalLM
+            tokenizer_class = Phi3VProcessor
+            tokenizer_kwargs = dict(trust_remote_code=True, num_crops=4)
+        else:
+            model_class = AutoModelForCausalLM
+            tokenizer_class = AutoProcessor
+            tokenizer_kwargs = dict(trust_remote_code=True)
+
         super().__init__(
-            model_class=AutoModelForCausalLM,
-            tokenizer_class=AutoProcessor,
+            model_class=model_class,
+            tokenizer_class=tokenizer_class,
             model_kwargs=model_kwargs,
             model_generate_name="generate",
-            tokenizer_kwargs=dict(
-                trust_remote_code=True,
-            ),
+            tokenizer_kwargs=tokenizer_kwargs,
             tokenizer_input_kwargs=dict(
                 return_tensors="pt",
             ),
@@ -450,18 +389,21 @@ class Phi3VisionModel(LLMConfig):
     @replace_br_and_code
     @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
-        chatbot = copy.deepcopy(chatbot)
-        chatbot[-1][0] = self.image_header + chatbot[-1][0]
-        prompt = self.create_chat_prompt(
-            chatbot, ollm_model_id,
-            self.image_header + input_text_box,
-            rag_text_box, tokenizer=tokenizer, check_assistant=True,
+        messages = [
+            {"role": "user", "content": self.image_header + input_text_box},
+        ]
+        prompt = tokenizer.tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
         )
         return prompt
 
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
         generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        if "Phi-3.5" in self.model_id:
+            generate_kwargs.pop("repetition_penalty")
         return generate_kwargs
 
     @clear_cache_decorator
@@ -764,6 +706,7 @@ def get_llava_ollm_model_ids():
         list: List of model IDs for the LLaVA models.
     """
     llava_ollm_model_ids = [
+        "microsoft/Phi-3.5-vision-instruct",
         "microsoft/Phi-3-vision-128k-instruct",
         "llava-hf/llava-v1.6-mistral-7b-hf",
         "llava-hf/llava-v1.6-vicuna-7b-hf",
