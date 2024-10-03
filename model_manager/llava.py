@@ -1,5 +1,6 @@
 import copy
 import platform
+import warnings
 
 import torch
 from huggingface_hub import snapshot_download
@@ -362,12 +363,14 @@ class Phi3VisionModel(LLMConfig):
 
         if "Phi-3.5" in self.model_id:
             model_class = Phi3VForCausalLM
+            model_kwargs.pop("trust_remote_code")
             tokenizer_class = Phi3VProcessor
-            tokenizer_kwargs = dict(trust_remote_code=True, num_crops=4)
+            tokenizer_kwargs = dict(num_crops=4)
         else:
             model_class = AutoModelForCausalLM
             tokenizer_class = AutoProcessor
             tokenizer_kwargs = dict(trust_remote_code=True)
+            warnings.filterwarnings(action="ignore", category=UserWarning, message="Phi-3-V modifies")
 
         super().__init__(
             model_class=model_class,
