@@ -186,6 +186,7 @@ To download the model:
 #### Access and Download Llama 3 Models
 
 * Before downloading any models, ensure that you have obtained the necessary access rights through Hugging Face. Please visit the following pages to request access:
+  * [Llama 3.2 Vision model by Meta](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision)
   * [Llama 3 model by Meta](https://huggingface.co/meta-llama/Meta-Llama-3-8B)
 
 ## Usage
