@@ -15,6 +15,8 @@ from registry import get_llm_class, register_model
 
 from .base import (BaseAbstractLLM, LLMConfig, check_package_installed, compare_package_version,
                    ensure_tensor_dtype, replace_br_and_code)
+from .llama32vision.configuration_mllama import MllamaConfig
+from .llama32vision.modeling_mllama import MllamaForConditionalGeneration
 from .minicpm25.modeling_minicpmv import MiniCPMV, PreTrainedTokenizerFastWrapper
 from .minicpm26.modeling_minicpmv import MiniCPMV as MiniCPMV26
 from .minicpm26.tokenization_minicpmv_fast import MiniCPMVTokenizerFast as MiniCPMVTokenizerFast26
@@ -343,6 +345,75 @@ class Llava15Model(LLMConfig):
         return output_text
 
 
+@register_model("llama-3.2-vision")
+class Llama3VisionModel(LLMConfig):
+    include_name: str = "Llama-3.2-*-Vision"
+
+    download_kwargs = dict(ignore_patterns=["*.pth"])
+
+    prompt_template = "<|image|><|begin_of_text|>{prompt}"
+
+    layer_device = "cuda" if torch.cuda.is_available() else "cpu"
+    max_new_tokens = 32
+
+    def __init__(self):
+        model_kwargs = dict(
+            device_map="cpu",
+            torch_dtype="auto",
+            low_cpu_mem_usage=True,
+            offload_buffers=True,
+        )
+        tokenizer_kwargs = {}
+        if compare_package_version("transformers", "4.45.0") >= 0:
+            tokenizer_kwargs.update(dict(patch_size=14, vision_feature_select_strategy="default"))
+
+        config = MllamaConfig.from_pretrained(self.model_id)
+        config.layer_device = self.layer_device
+        config.text_config.layer_device = self.layer_device
+        config.text_config.max_new_tokens = self.max_new_tokens
+        model_kwargs.update(dict(config=config))
+
+        super().__init__(
+            model_class=MllamaForConditionalGeneration,
+            tokenizer_class=AutoProcessor,
+            model_kwargs=model_kwargs,
+            model_generate_name="generate",
+            tokenizer_kwargs=tokenizer_kwargs,
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+            output_text_only=True,
+            multimodal_image=True,
+            imagep_config=dict(prompt_is_list=False, image_is_list=False,
+                               image_is_first=(compare_package_version("transformers", "4.45.0") >= 0)),
+        )
+
+    @replace_br_and_code
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
+        input_text = self.prompt_template.format(prompt=input_text_box)
+        return input_text
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        generate_kwargs.pop("repetition_penalty")
+
+        generate_kwargs["do_sample"] = False
+        generate_kwargs.pop("temperature")
+        generate_kwargs["max_new_tokens"] = self.max_new_tokens
+        ollm_logging.info(f"`do_sample` set to False and `max_new_tokens` set to {self.max_new_tokens} for Llama-3.2 Vision model to save time.")
+
+        return generate_kwargs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        return output_text
+
+
 @register_model("phi-3-vision")
 class Phi3VisionModel(LLMConfig):
     include_name: str = "Phi-3*-vision"
@@ -405,8 +476,7 @@ class Phi3VisionModel(LLMConfig):
     @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
         generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
-        if "Phi-3.5" in self.model_id:
-            generate_kwargs.pop("repetition_penalty")
+        generate_kwargs.pop("repetition_penalty")
         return generate_kwargs
 
     @clear_cache_decorator
@@ -711,6 +781,7 @@ def get_llava_ollm_model_ids():
     llava_ollm_model_ids = [
         "microsoft/Phi-3.5-vision-instruct",
         "microsoft/Phi-3-vision-128k-instruct",
+        "meta-llama/Llama-3.2-11B-Vision",
         "llava-hf/llava-v1.6-mistral-7b-hf",
         "llava-hf/llava-v1.6-vicuna-7b-hf",
         "llava-hf/llava-1.5-7b-hf",

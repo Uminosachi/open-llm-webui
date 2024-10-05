@@ -16,23 +16,23 @@
 """
 Processor class for Phi3-V.
 """
-import torchvision
-from transformers.utils import TensorType, is_vision_available, logging
-from transformers.image_utils import (OPENAI_CLIP_MEAN, OPENAI_CLIP_STD, ImageInput,
-                                      make_list_of_images, valid_images)
-from transformers.image_transforms import convert_to_rgb
-from transformers.image_processing_utils import BaseImageProcessor, BatchFeature
-from transformers import AutoImageProcessor
-import numpy as np
 import re
 from typing import List, Optional, Union
 
+import numpy as np
 import torch
+import torchvision
 import transformers
-from transformers.feature_extraction_utils import BatchFeature  # noqa: F811
+from transformers import AutoImageProcessor
+from transformers.feature_extraction_utils import BatchFeature
+from transformers.image_processing_utils import BaseImageProcessor
+from transformers.image_transforms import convert_to_rgb
+from transformers.image_utils import (OPENAI_CLIP_MEAN, OPENAI_CLIP_STD, ImageInput,
+                                      make_list_of_images, valid_images)
 from transformers.processing_utils import ProcessorMixin
 from transformers.tokenization_utils_base import PaddingStrategy, TextInput, TruncationStrategy
 from transformers.utils import TensorType  # noqa: F811
+from transformers.utils import is_vision_available, logging
 
 """Image processor class for Phi3-V."""
 
