@@ -17,6 +17,7 @@ from .base import (BaseAbstractLLM, LLMConfig, check_package_installed, compare_
                    ensure_tensor_dtype, replace_br_and_code)
 from .llama32vision.configuration_mllama import MllamaConfig
 from .llama32vision.modeling_mllama import MllamaForConditionalGeneration
+from .llama32vision.processing_mllama import MllamaProcessor
 from .minicpm25.modeling_minicpmv import MiniCPMV, PreTrainedTokenizerFastWrapper
 from .minicpm26.modeling_minicpmv import MiniCPMV as MiniCPMV26
 from .minicpm26.tokenization_minicpmv_fast import MiniCPMVTokenizerFast as MiniCPMVTokenizerFast26
@@ -375,7 +376,7 @@ class Llama3VisionModel(LLMConfig):
 
         super().__init__(
             model_class=MllamaForConditionalGeneration,
-            tokenizer_class=AutoProcessor,
+            tokenizer_class=MllamaProcessor,
             model_kwargs=model_kwargs,
             model_generate_name="generate",
             tokenizer_kwargs=tokenizer_kwargs,
