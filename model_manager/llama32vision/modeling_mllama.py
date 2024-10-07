@@ -1550,7 +1550,7 @@ class MllamaTextModel(MllamaPreTrainedModel):
         self.gradient_checkpointing = False
 
         self.total_iterations = config.max_new_tokens if hasattr(config, "max_new_tokens") else 32
-        self.progress_bar = tqdm(total=self.total_iterations, desc="Processing")
+        self.progress_bar = tqdm(total=self.total_iterations, desc="Text processing")
 
         self.post_init()
 
@@ -1711,8 +1711,6 @@ class MllamaTextModel(MllamaPreTrainedModel):
         next_cache = next_decoder_cache if use_cache else None
 
         self.progress_bar.update(1)
-        if self.progress_bar.n >= self.total_iterations:
-            self.progress_bar.reset()
 
         if not return_dict:
             return tuple(v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns] if v is not None)

@@ -210,6 +210,8 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
             inputs = prompt
 
         generate_kwargs = model_params.get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        if hasattr(model_params, "reset_model") and callable(model_params.reset_model):
+            model_params.reset_model(model)
 
         t1 = time.time()
         with ClearCacheContext(), torch.no_grad():

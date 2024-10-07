@@ -411,6 +411,12 @@ class Llama3VisionModel(LLMConfig):
         return generate_kwargs
 
     @clear_cache_decorator
+    def reset_model(self, model):
+        if (hasattr(model, "language_model") and hasattr(model.language_model, "model")
+                and hasattr(model.language_model.model, "progress_bar")):
+            model.language_model.model.progress_bar.reset()
+
+    @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         return output_text
 
