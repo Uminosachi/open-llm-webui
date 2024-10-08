@@ -352,7 +352,10 @@ class Llama3VisionModel(LLMConfig):
 
     download_kwargs = dict(ignore_patterns=["*.pth"])
 
-    prompt_template = "<|image|><|begin_of_text|>{prompt}"
+    # prompt_template = "<|image|><|begin_of_text|>{prompt}"
+    prompt_template = (
+        "<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n"
+        "<|image|>{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n")
 
     layer_device = "cuda" if torch.cuda.is_available() else "cpu"
     max_new_tokens = 32
