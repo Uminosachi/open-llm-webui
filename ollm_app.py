@@ -1,6 +1,9 @@
 import functools
 import os
 import time
+import warnings
+
+warnings.filterwarnings(action="ignore", category=UserWarning, module="gradio")  # noqa: E402
 
 import gradio as gr
 import torch

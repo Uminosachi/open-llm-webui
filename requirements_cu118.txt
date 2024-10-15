@@ -3,7 +3,7 @@
 torch==2.2.2
 torchvision
 accelerate
-gradio
+gradio<5.0.0
 gradio-client
 huggingface-hub
 transformers>=4.42.0
