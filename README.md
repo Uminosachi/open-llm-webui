@@ -30,7 +30,7 @@ cd open-llm-webui
   pip install -r requirements.txt
   ```
 
-#### Installation for Flash Attention (Optional)
+#### (Optional) Installation for Flash Attention
 
 * To enable Flash Attention in some models, if CUDA is available, install Flash Attention:
 
@@ -42,6 +42,20 @@ cd open-llm-webui
 #### Platform-Specific Instructions
 
 * **For Windows (with CUDA support):**
+
+  ##### Install pre-build wheel for Windows
+
+  * It is possible to install a pre-built wheel with CUDA support.
+    * Source URL: [https://abetlen.github.io/llama-cpp-python/whl/cu121/llama-cpp-python/](https://abetlen.github.io/llama-cpp-python/whl/cu121/llama-cpp-python/)
+
+  ```bash
+  wget https://github.com/abetlen/llama-cpp-python/releases/download/v0.3.4-cu121/llama_cpp_python-0.3.4-cp310-cp310-win_amd64.whl
+  pip install llama_cpp_python-0.3.4-cp310-cp310-win_amd64.whl
+  pip install -r requirements.txt
+  ```
+
+  ##### (Optional) Build with CUDA for Windows
+
   * Install [Visual Studio](https://learn.microsoft.com/en-us/visualstudio/install/install-visual-studio?view=vs-2022):
     * ⚠️ Important: Make sure to select `Desktop development with C++` during the installation process.
   * Copy MSBuild extensions for CUDA as an administrator (adjust the CUDA version `v12.1` as needed):
@@ -69,6 +83,20 @@ cd open-llm-webui
     ```
 
 * **For Linux (with CUDA support):**
+
+  ##### Install pre-build wheel for Linux
+
+  * It is possible to install a pre-built wheel with CUDA support.
+    * Source URL: [https://abetlen.github.io/llama-cpp-python/whl/cu121/llama-cpp-python/](https://abetlen.github.io/llama-cpp-python/whl/cu121/llama-cpp-python/)
+
+  ```bash
+  wget https://github.com/abetlen/llama-cpp-python/releases/download/v0.3.4-cu121/llama_cpp_python-0.3.4-cp310-cp310-linux_x86_64.whl
+  pip install llama_cpp_python-0.3.4-cp310-cp310-linux_x86_64.whl
+  pip install -r requirements.txt
+  ```
+
+  ##### (Optional) Build with CUDA for Linux
+
   * Configure the required environment variables for the build (if not already set):
 
     ```bash

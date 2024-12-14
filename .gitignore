@@ -4,6 +4,7 @@ add_tfs_models_store.txt
 input_prompts.txt
 model_outputs.txt
 prompt_header.txt
+*.whl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
