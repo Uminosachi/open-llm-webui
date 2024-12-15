@@ -240,6 +240,24 @@ To download the model:
 * You can upload an image to the LLaVA Image area of this tab and input a prompt related to the image.
 * Some of the LLaVA models are loaded with the following 4-bit or 8-bit settings using the `bitsandbytes` package.
 
+### Continuous Processing of Multiple Prompts
+
+* Enter `input_prompts.json` in the `Input text` textbox.
+* Ensure the `input_prompts.json` file in the current folder contains an array of objects with the key `"prompt"`.
+
+* An example of the `input_prompts.json` file structure is as follows:
+
+  ```json
+  [
+    {
+      "prompt": "What is your name?"
+    },
+    {
+      "prompt": "How are you?"
+    }
+  ]
+  ```
+
 ### options
 
 * When you enable the `Translate (ja->en/en->ja)` checkbox:

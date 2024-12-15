@@ -2,8 +2,9 @@ pyproject.toml
 models
 add_tfs_models_store.txt
 input_prompts.txt
+input_prompts.json
 model_outputs.txt
-prompt_header.txt
+model_outputs.json
 *.whl
 
 # Byte-compiled / optimized / DLL files

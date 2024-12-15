@@ -1,4 +1,5 @@
 import functools
+import json
 import os
 import time
 import warnings
@@ -134,19 +135,30 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
     if selected_tab == methods_tabs[1] and hasattr(model_params, "prepare_tokenizer"):
         tokenizer = model_params.prepare_tokenizer(tokenizer, model, cpp_chat_template)
 
+    def extract_prompts_from_json(json_file_path):
+        prompt_list = []
+
+        try:
+            with open(json_file_path, "r", encoding="utf-8") as file:
+                data = json.load(file)
+
+            if isinstance(data, list):
+                for item in data:
+                    if isinstance(item, dict) and "prompt" in item:
+                        prompt_list.append(item["prompt"])
+            else:
+                ollm_logging.error("The top level of the JSON file is not an array.")
+        except Exception as e:
+            ollm_logging.error(f"Error reading JSON file: {e}")
+
+        return prompt_list
+
     enable_loop = False
-    if input_text_box == "input_prompts.txt" and os.path.isfile("input_prompts.txt"):
+    if input_text_box == "input_prompts.json" and os.path.isfile("input_prompts.json"):
         enable_loop = True
+        model_outputs = []
 
-        header = ""
-        if os.path.isfile("prompt_header.txt"):
-            with open("prompt_header.txt", "r", encoding="utf-8") as f:
-                header = f.read()
-
-        prompts = []
-        with open("input_prompts.txt", "r", encoding="utf-8") as f:
-            for line in f:
-                prompts.append(header + line.strip())
+        prompts = extract_prompts_from_json(input_text_box)
     else:
         prompts = [input_text_box]
 
@@ -242,8 +254,19 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
         ollm_logging.info("Output text: " + output_text)
 
         if enable_loop:
-            with open("model_outputs.txt", "a", encoding="utf-8") as f:
-                f.write(output_text + "\n")
+            model_outputs.append({"prompt": input_text, "output": output_text})
+
+    def write_outputs_to_file(json_data, json_file_path):
+        try:
+            with open(json_file_path, "w", encoding="utf-8") as file:
+                json.dump(json_data, file, ensure_ascii=False, indent=4)
+            return f"The JSON file was saved: {json_file_path}"
+        except Exception as e:
+            return f"Error writing JSON file: {e}"
+
+    if enable_loop and len(model_outputs) > 0:
+        chatbot[-1][0] = f"The JSON file was loaded: {input_text_box}"
+        output_text = write_outputs_to_file(model_outputs, "model_outputs.json")
 
     if translate_chk:
         translated_output_text = translate(output_text, "en", "ja")
