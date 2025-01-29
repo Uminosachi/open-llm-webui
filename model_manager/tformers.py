@@ -507,7 +507,7 @@ class OpenELMModel(LLMConfig):
 
 @register_model("gemma")
 class GemmaModel(LLMConfig):
-    include_name: str = "Gemma"
+    include_name: str = "/gemma"
 
     download_kwargs = dict(ignore_patterns=["*.gguf"])
 

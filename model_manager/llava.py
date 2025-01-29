@@ -7,6 +7,7 @@ from huggingface_hub import snapshot_download
 from transformers import (AutoConfig, AutoModelForCausalLM, AutoProcessor, AutoTokenizer,
                           BitsAndBytesConfig, LlavaForConditionalGeneration,
                           LlavaNextForConditionalGeneration, LlavaNextProcessor,
+                          PaliGemmaForConditionalGeneration, PaliGemmaProcessor,
                           SiglipImageProcessor)
 
 from cache_manager import clear_cache_decorator
@@ -494,7 +495,53 @@ class Phi3VisionModel(LLMConfig):
         return output_text
 
 
-@register_model("llava-calm2")
+@register_model("paligemma2")
+class PaliGemma2Model(LLMConfig):
+    include_name: str = "/paligemma2"
+
+    prompt_template = "<image> {prompt}"
+
+    def __init__(self):
+        tokenizer_kwargs = {}
+
+        super().__init__(
+            model_class=PaliGemmaForConditionalGeneration,
+            tokenizer_class=PaliGemmaProcessor,
+            model_kwargs=dict(
+                device_map="auto",
+                torch_dtype=torch.bfloat16,
+            ),
+            model_generate_name="generate",
+            tokenizer_kwargs=tokenizer_kwargs,
+            tokenizer_input_kwargs=dict(
+                return_tensors="pt",
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+            output_text_only=True,
+            multimodal_image=True,
+            imagep_config=dict(prompt_is_list=False, image_is_list=False,
+                               image_is_first=(compare_package_version("transformers", "4.45.0") >= 0)),
+        )
+
+    @ replace_br_and_code
+    @ clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
+        prompt = self.prompt_template.format(prompt=input_text_box)
+        return prompt
+
+    @ clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
+        return generate_kwargs
+
+    @ clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        return output_text
+
+
+@ register_model("llava-calm2")
 class LlavaCALM2Model(LLMConfig):
     include_name: str = "llava-calm2"
 
@@ -789,6 +836,8 @@ def get_llava_ollm_model_ids():
         list: List of model IDs for the LLaVA models.
     """
     llava_ollm_model_ids = [
+        "google/paligemma2-3b-pt-224",
+        "google/paligemma2-3b-pt-448",
         "microsoft/Phi-3.5-vision-instruct",
         "microsoft/Phi-3-vision-128k-instruct",
         "meta-llama/Llama-3.2-11B-Vision",
