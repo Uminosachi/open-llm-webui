@@ -525,23 +525,23 @@ class PaliGemma2Model(LLMConfig):
                                image_is_first=(compare_package_version("transformers", "4.45.0") >= 0)),
         )
 
-    @ replace_br_and_code
-    @ clear_cache_decorator
+    @replace_br_and_code
+    @clear_cache_decorator
     def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
         prompt = self.prompt_template.format(prompt=input_text_box)
         return prompt
 
-    @ clear_cache_decorator
+    @clear_cache_decorator
     def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
         generate_kwargs = super().get_generate_kwargs(tokenizer, inputs, ollm_model_id, generate_params)
         return generate_kwargs
 
-    @ clear_cache_decorator
+    @clear_cache_decorator
     def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
         return output_text
 
 
-@ register_model("llava-calm2")
+@register_model("llava-calm2")
 class LlavaCALM2Model(LLMConfig):
     include_name: str = "llava-calm2"
 
