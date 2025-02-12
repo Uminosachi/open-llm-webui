@@ -557,7 +557,7 @@ class GemmaModel(LLMConfig):
 
 @register_model("qwen")
 class QwenModel(LLMConfig):
-    include_name: str = "Qwen"
+    include_name: str = r"reg:Qwen\d+(?:\.\d+)?-\d+(?:\.\d+)?B-Instruct$"
 
     def __init__(self):
         super().__init__(
@@ -958,7 +958,8 @@ def get_ollm_model_ids():
         "google/gemma-1.1-2b-it",
         "google/gemma-1.1-7b-it",
         "nvidia/Llama3-ChatQA-1.5-8B",
-        "Qwen/Qwen2-7B-Instruct",
+        "Qwen/Qwen2.5-1.5B-Instruct",
+        "Qwen/Qwen2.5-7B-Instruct",
         "mistralai/Mistral-7B-Instruct-v0.3",
         "Rakuten/RakutenAI-7B-chat",
         "Rakuten/RakutenAI-7B-instruct",

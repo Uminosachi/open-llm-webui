@@ -15,6 +15,9 @@ def wildcard_to_regex(pattern):
 def is_match(pattern, target):
     if isinstance(pattern, list):
         return any(is_match(p, target) for p in pattern)
+    elif isinstance(pattern, str) and pattern.startswith("reg:"):
+        regex_pattern = pattern[4:]
+        return re.search(regex_pattern, target, re.IGNORECASE) is not None
     elif "*" in pattern:
         regex_pattern = wildcard_to_regex(pattern)
         return re.search(regex_pattern, target, re.IGNORECASE) is not None

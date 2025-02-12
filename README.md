@@ -163,7 +163,7 @@ To download the model:
 | Microsoft     | Phi-3-mini-4k-instruct                                                                     |
 | Google        | gemma-2-9b-it, gemma-1.1-2b-it, gemma-1.1-7b-it                                            |
 | NVIDIA        | Llama3-ChatQA-1.5-8B                                                                       |
-| Qwen          | Qwen2-7B-Instruct                                                                          |
+| Qwen          | Qwen2.5-1.5B-Instruct, Qwen2.5-7B-Instruct                                                 |
 | Mistral AI    | Mistral-7B-Instruct-v0.3                                                                   |
 | Rakuten       | RakutenAI-7B-chat, RakutenAI-7B-instruct                                                   |
 | rinna         | youri-7b-chat                                                                              |
@@ -278,7 +278,8 @@ To download the model:
 | Microsoft           | Phi-3.5, Phi-3               | [The MIT License](https://opensource.org/licenses/MIT)         |
 | Google              | Gemma                        | [Gemma Terms of Use](https://ai.google.dev/gemma/terms)        |
 | NVIDIA              | Llama3-ChatQA                | [Llama 3 Community License](https://github.com/meta-llama/llama3/blob/main/LICENSE) |
-| Alibaba Group       | Qwen2-7B-Instruct            | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
+| Alibaba Group       | Qwen2.5-3B-Instruct          | [Qwen RESEARCH LICENSE](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct/blob/main/LICENSE) |
+| Alibaba Group       | Qwen2.5-7B-Instruct          | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Mistral AI          | Mistral-7B-Instruct          | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | Rakuten             | RakutenAI                    | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
 | rinna               | Youri                        | [Llama 2 Community License](https://ai.meta.com/llama/license/) |
