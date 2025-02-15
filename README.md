@@ -8,17 +8,17 @@ Please follow these steps to install the software:
 
 * Create a new conda environment:
 
-```bash
-conda create -n ollm python=3.10
-conda activate ollm
-```
+  ```bash
+  conda create -n ollm python=3.10
+  conda activate ollm
+  ```
 
 * Clone the software repository:
 
-```bash
-git clone https://github.com/Uminosachi/open-llm-webui.git
-cd open-llm-webui
-```
+  ```bash
+  git clone https://github.com/Uminosachi/open-llm-webui.git
+  cd open-llm-webui
+  ```
 
 ### Python Package Installation
 
@@ -48,11 +48,11 @@ cd open-llm-webui
   * It is possible to install a pre-built wheel with CUDA support.
     * Source URL: [https://abetlen.github.io/llama-cpp-python/whl/cu121/llama-cpp-python/](https://abetlen.github.io/llama-cpp-python/whl/cu121/llama-cpp-python/)
 
-  ```bash
-  wget https://github.com/abetlen/llama-cpp-python/releases/download/v0.3.4-cu121/llama_cpp_python-0.3.4-cp310-cp310-win_amd64.whl
-  pip install llama_cpp_python-0.3.4-cp310-cp310-win_amd64.whl
-  pip install -r requirements.txt
-  ```
+    ```bash
+    wget https://github.com/abetlen/llama-cpp-python/releases/download/v0.3.4-cu121/llama_cpp_python-0.3.4-cp310-cp310-win_amd64.whl
+    pip install llama_cpp_python-0.3.4-cp310-cp310-win_amd64.whl
+    pip install -r requirements.txt
+    ```
 
   ##### (Optional) Build with CUDA for Windows
 
@@ -89,11 +89,11 @@ cd open-llm-webui
   * It is possible to install a pre-built wheel with CUDA support.
     * Source URL: [https://abetlen.github.io/llama-cpp-python/whl/cu121/llama-cpp-python/](https://abetlen.github.io/llama-cpp-python/whl/cu121/llama-cpp-python/)
 
-  ```bash
-  wget https://github.com/abetlen/llama-cpp-python/releases/download/v0.3.4-cu121/llama_cpp_python-0.3.4-cp310-cp310-linux_x86_64.whl
-  pip install llama_cpp_python-0.3.4-cp310-cp310-linux_x86_64.whl
-  pip install -r requirements.txt
-  ```
+    ```bash
+    wget https://github.com/abetlen/llama-cpp-python/releases/download/v0.3.4-cu121/llama_cpp_python-0.3.4-cp310-cp310-linux_x86_64.whl
+    pip install llama_cpp_python-0.3.4-cp310-cp310-linux_x86_64.whl
+    pip install -r requirements.txt
+    ```
 
   ##### (Optional) Build with CUDA for Linux
 
@@ -136,6 +136,22 @@ cd open-llm-webui
     cmake -DCOMPUTE_BACKEND=cpu -S .
     make
     pip install .
+    ```
+
+  * Install CMake and set the compiler:
+  
+    ```bash
+    brew install cmake
+    export CC=/usr/bin/gcc
+    export CXX=/usr/bin/g++
+    ```
+
+  * Install `llama-cpp-python` with Metal support:
+
+    ```bash
+    export CMAKE_ARGS="-DLLAMA_METAL=on"
+    export FORCE_CMAKE=1
+    pip install -U llama-cpp-python --no-cache-dir
     ```
 
   * Known Issue: Running the LLaVA model on Mac results in an error.
