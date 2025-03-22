@@ -5,10 +5,10 @@ import warnings
 import torch
 from huggingface_hub import snapshot_download
 from transformers import (AutoConfig, AutoModelForCausalLM, AutoProcessor, AutoTokenizer,
-                          BitsAndBytesConfig, LlavaForConditionalGeneration,
-                          LlavaNextForConditionalGeneration, LlavaNextProcessor,
-                          PaliGemmaForConditionalGeneration, PaliGemmaProcessor,
-                          SiglipImageProcessor)
+                          BitsAndBytesConfig, Gemma3ForConditionalGeneration,
+                          LlavaForConditionalGeneration, LlavaNextForConditionalGeneration,
+                          LlavaNextProcessor, PaliGemmaForConditionalGeneration,
+                          PaliGemmaProcessor, SiglipImageProcessor)
 
 from cache_manager import clear_cache_decorator
 from custom_logging import ollm_logging
@@ -24,6 +24,7 @@ from .minicpm26.modeling_minicpmv import MiniCPMV as MiniCPMV26
 from .minicpm26.tokenization_minicpmv_fast import MiniCPMVTokenizerFast as MiniCPMVTokenizerFast26
 from .phi35vision.modeling_phi3_v import Phi3VForCausalLM
 from .phi35vision.processing_phi3_v import Phi3VProcessor
+
 
 if not check_package_installed("bitsandbytes"):
     raise ModuleNotFoundError("Please install the bitsandbytes package to use the load_in_4bit option.")
@@ -541,6 +542,65 @@ class PaliGemma2Model(LLMConfig):
         return output_text
 
 
+@register_model("gemma3")
+class Gemma3Model(LLMConfig):
+    include_name: str = "/gemma-3"
+
+    prompt_template = "<image> {prompt}"
+
+    def __init__(self):
+        tokenizer_kwargs = {"use_fast": True}
+
+        super().__init__(
+            model_class=Gemma3ForConditionalGeneration,
+            tokenizer_class=AutoProcessor,
+            model_kwargs=dict(
+                device_map="auto",
+            ),
+            model_generate_name="generate",
+            tokenizer_kwargs=tokenizer_kwargs,
+            tokenizer_input_kwargs=dict(
+                add_generation_prompt=True,
+                tokenize=True,
+                return_dict=True,
+                return_tensors="pt",
+            ),
+            tokenizer_decode_kwargs=dict(
+                skip_special_tokens=True,
+            ),
+            output_text_only=True,
+            multimodal_image=True,
+            imagep_config=dict(prompt_is_list=False, image_is_list=False,
+                               image_is_first=(compare_package_version("transformers", "4.45.0") >= 0)),
+        )
+
+    @replace_br_and_code
+    @clear_cache_decorator
+    def create_prompt(self, chatbot, ollm_model_id, input_text_box, rag_text_box, tokenizer=None):
+        messages = [
+            {
+                "role": "system",
+                "content": [{"type": "text", "text": "You are a helpful assistant."}]
+            },
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": input_text_box},
+                ]
+            }
+        ]
+        return messages
+
+    @clear_cache_decorator
+    def get_generate_kwargs(self, tokenizer, inputs, ollm_model_id, generate_params):
+        inputs.update(generate_params)
+        return inputs
+
+    @clear_cache_decorator
+    def retreive_output_text(self, input_text, output_text, ollm_model_id, tokenizer=None):
+        return output_text
+
+
 @register_model("llava-calm2")
 class LlavaCALM2Model(LLMConfig):
     include_name: str = "llava-calm2"
@@ -836,6 +896,7 @@ def get_llava_ollm_model_ids():
         list: List of model IDs for the LLaVA models.
     """
     llava_ollm_model_ids = [
+        "google/gemma-3-4b-it",
         "google/paligemma2-3b-pt-224",
         "google/paligemma2-3b-pt-448",
         "microsoft/Phi-3.5-vision-instruct",

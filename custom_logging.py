@@ -3,6 +3,7 @@ import warnings
 
 warnings.filterwarnings(action="ignore", category=FutureWarning, module="transformers")
 warnings.filterwarnings(action="ignore", category=FutureWarning, module="huggingface_hub")
+warnings.filterwarnings(action="ignore", category=FutureWarning, module="auto_gptq")
 
 ollm_logging = logging.getLogger("OpenLLM")
 ollm_logging.setLevel(logging.INFO)

@@ -220,7 +220,7 @@ To download the model:
 
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
-| Google        | google/paligemma2-3b-pt-224, google/paligemma2-3b-pt-448                                   |
+| Google        | google/gemma-3-4b-it, google/paligemma2-3b-pt-224, google/paligemma2-3b-pt-448             |
 | Microsoft     | Phi-3.5-vision-instruct, Phi-3-vision-128k-instruct                                        |
 | Meta          | Llama-3.2-11B-Vision (limited support as a trial)                                          |
 | llava-hf      | llava-v1.6-mistral-7b-hf, llava-v1.6-vicuna-7b-hf, llava-1.5-7b-hf                         |

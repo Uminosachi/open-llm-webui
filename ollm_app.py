@@ -181,6 +181,17 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
                             tokenizer,
                             **model_params.tokenizer_input_kwargs,
                         )
+                    elif isinstance(prompt, list) and len(prompt) > 0 and isinstance(prompt[0], dict):
+                        image_message = {
+                            "type": "image",
+                            "image": llava_image,
+                        }
+                        for message in prompt:
+                            if message.get("role") == "user":
+                                message["content"].insert(0, image_message)
+                                break
+                        inputs = tokenizer.apply_chat_template(
+                            prompt, **model_params.tokenizer_input_kwargs)
                     else:
                         input_args = [
                             [prompt] if model_params.imagep_config.get("prompt_is_list") else prompt,

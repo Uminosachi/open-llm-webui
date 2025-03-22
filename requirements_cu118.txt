@@ -1,12 +1,12 @@
 --extra-index-url https://download.pytorch.org/whl/cu118
 --extra-index-url https://huggingface.github.io/autogptq-index/whl/cu118
-torch==2.2.2
+torch>=2.4.1
 torchvision
 accelerate
 gradio<5.0.0
 gradio-client
 huggingface-hub
-transformers>=4.47.0
+transformers>=4.50.0
 safetensors
 sentencepiece
 # xformers
