@@ -114,6 +114,7 @@ Please follow these steps to install the software:
   * Install the necessary Python packages:
 
     ```bash
+    conda install -c conda-forge libstdcxx-ng
     pip install ninja cmake scikit-build-core[pyproject]
     export CMAKE_ARGS="-DGGML_CUDA=ON"
     pip install --force-reinstall --no-cache-dir llama-cpp-python

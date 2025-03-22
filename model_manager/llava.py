@@ -546,8 +546,6 @@ class PaliGemma2Model(LLMConfig):
 class Gemma3Model(LLMConfig):
     include_name: str = "/gemma-3"
 
-    prompt_template = "<image> {prompt}"
-
     def __init__(self):
         tokenizer_kwargs = {"use_fast": True}
 
