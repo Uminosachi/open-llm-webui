@@ -160,8 +160,8 @@ class CPPChatTemplates:
     chat_templates_map = {
         "Llama2": [llama2_template, "You are a helpful assistant."],
         "Llama3": [llama3_template, "You are a helpful assistant."],
-        "Gemma":  [gemma_template, None],
-        "Phi-3":  [phi3_template, None],
+        "Gemma": [gemma_template, None],
+        "Phi-3": [phi3_template, None],
         "Mixtral": [mixtral_template, None],
         "Qwen": [qwen_template, "You are a helpful assistant."],
         "Zephyr": [zephyr_template, "You are a helpful assistant."],

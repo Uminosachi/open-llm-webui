@@ -181,9 +181,12 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
         model_params.system_message = system_message
 
     ollm_logging.info(f"Loading {ollm_model_id}")
-    if (model_cache.get("preloaded_model_id") != ollm_model_id or
-            model_cache.get("preloaded_model") is None or model_cache.get("preloaded_tokenizer") is None or
-            model_cache.get("preloaded_device") != ("cpu device" if cpu_execution_chk else "auto device")):
+    if any([
+            model_cache.get("preloaded_model_id") != ollm_model_id,
+            model_cache.get("preloaded_model") is None,
+            model_cache.get("preloaded_tokenizer") is None,
+            model_cache.get("preloaded_device") != ("cpu device" if cpu_execution_chk else "auto device"),
+    ]):
 
         for key in model_cache.keys():
             model_cache[key] = None
@@ -318,7 +321,7 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
         with ClearCacheContext(), torch.no_grad():
             tokens = getattr(model, model_params.model_generate_name)(**generate_kwargs)
         t2 = time.time()
-        elapsed_time = t2-t1
+        elapsed_time = t2 - t1
         ollm_logging.info(f"Generation time: {elapsed_time} seconds")
 
         if model_params.multimodal_image and model_params.image_processor_class is not None:
@@ -437,7 +440,7 @@ def on_ui_tabs():
             with gr.Column():
                 with gr.Row():
                     with gr.Tabs(elem_id="methods_tabs", selected=selected_tab):
-                        with gr.TabItem(methods_tabs[0], elem_id=(methods_tabs[0]+"_tab"), id=methods_tabs[0]) as first_tab:
+                        with gr.TabItem(methods_tabs[0], elem_id=(methods_tabs[0] + "_tab"), id=methods_tabs[0]) as first_tab:
                             with gr.Row():
                                 with gr.Column():
                                     with gr.Row():
@@ -451,7 +454,7 @@ def on_ui_tabs():
                                         download_model_btn = gr.Button("Download model", elem_id="download_model_btn")
                                     with gr.Row():
                                         status_text = gr.Textbox(label="", max_lines=1, show_label=False, interactive=False)
-                        with gr.TabItem(methods_tabs[1], elem_id=(methods_tabs[1]+"_tab"), id=methods_tabs[1]) as second_tab:
+                        with gr.TabItem(methods_tabs[1], elem_id=(methods_tabs[1] + "_tab"), id=methods_tabs[1]) as second_tab:
                             with gr.Row():
                                 with gr.Column():
                                     with gr.Row():
@@ -470,7 +473,7 @@ def on_ui_tabs():
                                                                  elem_id="cpp_chat_template",
                                                                  choices=get_chat_templates_keys(),
                                                                  value="Llama2", type="value")
-                        with gr.TabItem(methods_tabs[2], elem_id=(methods_tabs[2]+"_tab"), id=methods_tabs[2]) as third_tab:
+                        with gr.TabItem(methods_tabs[2], elem_id=(methods_tabs[2] + "_tab"), id=methods_tabs[2]) as third_tab:
                             with gr.Row():
                                 with gr.Column():
                                     with gr.Row():
