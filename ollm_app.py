@@ -39,6 +39,76 @@ change_tab_second = functools.partial(change_tab, tab_num=1)
 change_tab_third = functools.partial(change_tab, tab_num=2)
 
 
+def _message_content_to_text(content):
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for item in content:
+            if isinstance(item, str):
+                parts.append(item)
+                continue
+            if isinstance(item, dict):
+                if isinstance(item.get("text"), str):
+                    parts.append(item["text"])
+                    continue
+                if isinstance(item.get("content"), str):
+                    parts.append(item["content"])
+        return " ".join(part for part in parts if part).strip()
+    if isinstance(content, dict):
+        if isinstance(content.get("text"), str):
+            return content["text"]
+        if isinstance(content.get("content"), str):
+            return content["content"]
+        return ""
+    return str(content)
+
+
+def _pairs_to_messages(chatbot_pairs):
+    messages = []
+    for user_text, assistant_text in chatbot_pairs:
+        messages.append({"role": "user", "content": _message_content_to_text(user_text)})
+        messages.append({"role": "assistant", "content": _message_content_to_text(assistant_text)})
+    return messages
+
+
+def _messages_to_pairs(chatbot_messages):
+    if not chatbot_messages:
+        return []
+    first_item = chatbot_messages[0]
+    if isinstance(first_item, (list, tuple)) and len(first_item) == 2:
+        return [list(item) for item in chatbot_messages]
+
+    pairs = []
+    pending_user = None
+    for message in chatbot_messages:
+        if not isinstance(message, dict):
+            continue
+        role = message.get("role")
+        content = _message_content_to_text(message.get("content", ""))
+        if role == "user":
+            if pending_user is not None:
+                pairs.append([pending_user, ""])
+            pending_user = content
+        elif role == "assistant":
+            if pending_user is None:
+                pairs.append(["", content])
+            else:
+                pairs.append([pending_user, content])
+                pending_user = None
+    if pending_user is not None:
+        pairs.append([pending_user, ""])
+    return pairs
+
+
+def _normalize_chatbot_messages(chatbot):
+    if not chatbot:
+        return []
+    if isinstance(chatbot[0], dict):
+        return chatbot
+    return _pairs_to_messages(_messages_to_pairs(chatbot))
+
+
 @clear_cache_decorator
 def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_id, cpp_chat_template, input_text_box, rag_text_box,
                    llava_image, max_new_tokens, temperature, top_k, top_p, repetition_penalty, translate_chk,
@@ -79,7 +149,8 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
         return_status[methods_tabs.index(selected_tab)] = "Input text is empty."
         return ("", chatbot, *return_status, "")
 
-    chatbot = [] if chatbot is None else chatbot
+    chatbot = _normalize_chatbot_messages(chatbot)
+    chatbot_pairs = _messages_to_pairs(chatbot)
 
     if selected_tab == methods_tabs[0]:
         method_class = TransformersLLM
@@ -164,10 +235,14 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
 
     for input_text in prompts:
         if enable_loop:
-            chatbot[-1][0] = input_text
-            chatbot = [chatbot[-1]]
+            if chatbot_pairs:
+                chatbot_pairs[-1][0] = input_text
+                chatbot_pairs[-1][1] = ""
+                chatbot_pairs = [chatbot_pairs[-1]]
+            else:
+                chatbot_pairs = [[input_text, ""]]
 
-        prompt = model_params.create_prompt(chatbot, ollm_model_id, input_text, rag_text_box, tokenizer)
+        prompt = model_params.create_prompt(chatbot_pairs, ollm_model_id, input_text, rag_text_box, tokenizer)
 
         ollm_logging.info(f"Input text: {prompt}")
         ollm_logging.info("Generating...")
@@ -276,7 +351,10 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
             return f"Error writing JSON file: {e}"
 
     if enable_loop and len(model_outputs) > 0:
-        chatbot[-1][0] = f"The JSON file was loaded: {input_text_box}"
+        if chatbot_pairs:
+            chatbot_pairs[-1][0] = f"The JSON file was loaded: {input_text_box}"
+        else:
+            chatbot_pairs = [[f"The JSON file was loaded: {input_text_box}", ""]]
         output_text = write_outputs_to_file(model_outputs, "model_outputs.json")
 
     if translate_chk:
@@ -291,7 +369,11 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
         output_text = replace_newlines_code_blocks(output_text)
         ollm_logging.debug(output_text)
     # chatbot.append((input_text_box, output_text))
-    chatbot[-1][1] = output_text
+    if chatbot_pairs:
+        chatbot_pairs[-1][1] = output_text
+    else:
+        chatbot_pairs = [[input_text_box, output_text]]
+    chatbot = _pairs_to_messages(chatbot_pairs)
 
     return_status[methods_tabs.index(selected_tab)] = f"Generation time: {elapsed_time} seconds"
     return ("", chatbot, *return_status, translated_output_text)
@@ -300,11 +382,12 @@ def ollm_inference(chatbot, ollm_model_id, cpp_ollm_model_id, llava_ollm_model_i
 @clear_cache_decorator
 def user(message, history, translate_chk):
     # Append the user's message to the conversation history
+    history = _normalize_chatbot_messages(history)
     if len(message.strip()) > 0:
         if translate_chk:
             message = translate(message, "ja", "en")
             ollm_logging.info("Translated input text: " + message)
-        return message, history + [[message, ""]]
+        return message, history + [{"role": "user", "content": message}, {"role": "assistant", "content": ""}]
     else:
         return message, history
 

@@ -3,10 +3,10 @@
 torch>=2.4.1
 torchvision
 accelerate
-gradio<5.0.0
+gradio>=6
 gradio-client
 huggingface-hub
-transformers>=4.50.0
+transformers>=4.50.0,<5
 safetensors
 sentencepiece
 # xformers

@@ -1,5 +1,6 @@
 import os
 import platform  # noqa: F401
+from pathlib import Path
 from typing import Any
 
 import torch  # noqa: F401
@@ -28,8 +29,13 @@ cpp_download_model_list = [
 cpp_download_model_map = dict(cpp_download_model_list)
 
 cpp_models_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "models")
-if not os.path.isdir(cpp_models_dir):
-    os.makedirs(cpp_models_dir, exist_ok=True)
+
+
+p = Path(cpp_models_dir)
+if p.is_dir() or p.is_symlink():
+    pass
+else:
+    p.mkdir(parents=True, exist_ok=True)
 
 
 def get_gguf_file_path(cpp_ollm_model_id):

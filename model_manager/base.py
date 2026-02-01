@@ -38,7 +38,11 @@ def compare_package_version(package_name: str, version: str) -> int:
 def replace_br_and_code(func):
     @wraps(func)
     def wrapper(self, chatbot, *args, **kwargs):
-        chatbot = [[convert_code_tags_to_md(item.replace("<br>", "\n")) for item in sublist] for sublist in chatbot]
+        def _normalize_item(item):
+            if isinstance(item, str):
+                return convert_code_tags_to_md(item.replace("<br>", "\n"))
+            return item
+        chatbot = [[_normalize_item(item) for item in sublist] for sublist in chatbot]
         return func(self, chatbot, *args, **kwargs)
     return wrapper
 
