@@ -953,10 +953,8 @@ def get_ollm_model_ids():
         list: List of Open LLM model IDs.
     """
     ollm_model_ids = [
-        "microsoft/Phi-3-mini-4k-instruct",
-        "google/gemma-2-9b-it",
-        "google/gemma-1.1-2b-it",
-        "google/gemma-1.1-7b-it",
+        "microsoft/Phi-4-mini-instruct",
+        "google/gemma-3-4b-it",
         "nvidia/Llama3-ChatQA-1.5-8B",
         "Qwen/Qwen2.5-1.5B-Instruct",
         "Qwen/Qwen2.5-7B-Instruct",

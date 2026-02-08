@@ -177,8 +177,8 @@ To download the model:
 
 | Provider      | Model Names                                                                                |
 |---------------|--------------------------------------------------------------------------------------------|
-| Microsoft     | Phi-3-mini-4k-instruct                                                                     |
-| Google        | gemma-2-9b-it, gemma-1.1-2b-it, gemma-1.1-7b-it                                            |
+| Microsoft     | microsoft/Phi-4-mini-instruct                                                              |
+| Google        | google/gemma-3-4b-it                                                                       |
 | NVIDIA        | Llama3-ChatQA-1.5-8B                                                                       |
 | Qwen          | Qwen2.5-1.5B-Instruct, Qwen2.5-7B-Instruct                                                 |
 | Mistral AI    | Mistral-7B-Instruct-v0.3                                                                   |
@@ -284,25 +284,38 @@ To download the model:
 
 ![UI image](images/open-ollm-webui_ui_image_1.png)
 
-## Model Credit
+## Model Credits
 
-| Developer           | Model                        | License                                                        |
-|---------------------|------------------------------|----------------------------------------------------------------|
-| Meta                | Llama-3.2                    | [Llama 3.2 Community License](https://github.com/meta-llama/llama-models/blob/main/models/llama3_2/LICENSE) |
-| Meta                | Llama-3.1                    | [Llama 3.1 Community License](https://github.com/meta-llama/llama-models/blob/main/models/llama3_1/LICENSE) |
-| Meta                | Llama-3                      | [Llama 3 Community License](https://github.com/meta-llama/llama3/blob/main/LICENSE) |
-| Meta                | Llama-2                      | [Llama 2 Community License](https://github.com/facebookresearch/llama/blob/main/LICENSE) |
-| Microsoft           | Phi-3.5, Phi-3               | [The MIT License](https://opensource.org/licenses/MIT)         |
-| Google              | Gemma                        | [Gemma Terms of Use](https://ai.google.dev/gemma/terms)        |
-| NVIDIA              | Llama3-ChatQA                | [Llama 3 Community License](https://github.com/meta-llama/llama3/blob/main/LICENSE) |
-| Alibaba Group       | Qwen2.5-3B-Instruct          | [Qwen RESEARCH LICENSE](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct/blob/main/LICENSE) |
-| Alibaba Group       | Qwen2.5-7B-Instruct          | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
-| Mistral AI          | Mistral-7B-Instruct          | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
-| Rakuten             | RakutenAI                    | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
-| rinna               | Youri                        | [Llama 2 Community License](https://ai.meta.com/llama/license/) |
-| Sanji Watsuki       | Kunoichi-7B                  | [CC-BY-NC-4.0](https://spdx.org/licenses/CC-BY-NC-4.0)         |
-| Hugging Face        | llava-v1.6-mistral-7b-hf     | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
-| Hugging Face        | llava-v1.6-vicuna-7b-hf, llava-1.5-7b-hf | [Llama 2 Community License](https://ai.meta.com/llama/license/) |
-| TinyLLaVA           | TinyLLaVA-Phi-2-SigLIP-3.1B  | [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md) |
-| OpenBMB             | MiniCPM                      | [MiniCPM Model License](https://github.com/OpenBMB/MiniCPM/blob/main/MiniCPM%20Model%20License.md) |
-| Sakana AI           | EvoVLM-JP-v1-7B              | [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) |
+| Developer     | Model                                    | License                          |
+| ------------- | ---------------------------------------- | -------------------------------- |
+| Meta          | Llama-3.2                                | [Llama 3.2 Community License][1] |
+| Meta          | Llama-3.1                                | [Llama 3.1 Community License][2] |
+| Meta          | Llama-3                                  | [Llama 3 Community License][3]   |
+| Meta          | Llama-2                                  | [Llama 2 Community License][4]   |
+| Microsoft     | Phi-4                                    | [The MIT License][5]             |
+| Google        | Gemma                                    | [Gemma Terms of Use][6]          |
+| NVIDIA        | Llama3-ChatQA                            | [Llama 3 Community License][3]   |
+| Alibaba Group | Qwen2.5-3B-Instruct                      | [Qwen RESEARCH LICENSE][7]       |
+| Alibaba Group | Qwen2.5-7B-Instruct                      | [Apache License 2.0][8]          |
+| Mistral AI    | Mistral-7B-Instruct                      | [Apache License 2.0][8]          |
+| Rakuten       | RakutenAI                                | [Apache License 2.0][8]          |
+| rinna         | Youri                                    | [Llama 2 Community License][9]   |
+| Sanji Watsuki | Kunoichi-7B                              | [CC-BY-NC-4.0][10]               |
+| Hugging Face  | llava-v1.6-mistral-7b-hf                 | [Apache License 2.0][8]          |
+| Hugging Face  | llava-v1.6-vicuna-7b-hf, llava-1.5-7b-hf | [Llama 2 Community License][9]   |
+| TinyLLaVA     | TinyLLaVA-Phi-2-SigLIP-3.1B              | [Apache License 2.0][8]          |
+| OpenBMB       | MiniCPM                                  | [MiniCPM Model License][11]      |
+| Sakana AI     | EvoVLM-JP-v1-7B                          | [Apache License 2.0][12]         |
+
+[1]: https://github.com/meta-llama/llama-models/blob/main/models/llama3_2/LICENSE
+[2]: https://github.com/meta-llama/llama-models/blob/main/models/llama3_1/LICENSE
+[3]: https://github.com/meta-llama/llama3/blob/main/LICENSE
+[4]: https://github.com/facebookresearch/llama/blob/main/LICENSE
+[5]: https://opensource.org/licenses/MIT
+[6]: https://ai.google.dev/gemma/terms
+[7]: https://huggingface.co/Qwen/Qwen2.5-3B-Instruct/blob/main/LICENSE
+[8]: https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md
+[9]: https://ai.meta.com/llama/license/
+[10]: https://spdx.org/licenses/CC-BY-NC-4.0
+[11]: https://github.com/OpenBMB/MiniCPM/blob/main/MiniCPM%20Model%20License.md
+[12]: https://www.apache.org/licenses/LICENSE-2.0

@@ -10,7 +10,7 @@ safetensors
 sentencepiece
 # xformers
 # flash-attn
-protobuf==3.20.3
+protobuf
 pysbd
 sacremoses
 auto-gptq
