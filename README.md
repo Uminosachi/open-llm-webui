@@ -46,11 +46,11 @@ Please follow these steps to install the software:
   ##### Install pre-build wheel for Windows
 
   * It is possible to install a pre-built wheel with CUDA support.
-    * Source URL: [https://abetlen.github.io/llama-cpp-python/whl/cu121/llama-cpp-python/](https://abetlen.github.io/llama-cpp-python/whl/cu121/llama-cpp-python/)
+    * Source URL: [https://abetlen.github.io/llama-cpp-python/whl/cu124/llama-cpp-python/](https://abetlen.github.io/llama-cpp-python/whl/cu124/llama-cpp-python/)
 
     ```bash
-    wget https://github.com/abetlen/llama-cpp-python/releases/download/v0.3.4-cu121/llama_cpp_python-0.3.4-cp310-cp310-win_amd64.whl
-    pip install llama_cpp_python-0.3.4-cp310-cp310-win_amd64.whl
+    wget https://github.com/abetlen/llama-cpp-python/releases/download/v0.3.16-cu124/llama_cpp_python-0.3.16-cp310-cp310-linux_x86_64.whl
+    pip install llama_cpp_python-0.3.16-cp310-cp310-linux_x86_64.whl
     pip install -r requirements.txt
     ```
 
